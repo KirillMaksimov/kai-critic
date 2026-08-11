@@ -1,0 +1,14 @@
+{
+  "name": "kai-critic",
+  "description": "Home marketplace of the kai-critic plugin — an adversarial critic over designs, strategies and instructions before they are committed to.",
+  "owner": {
+    "name": "Kirill Maksimov"
+  },
+  "plugins": [
+    {
+      "name": "kai-critic",
+      "source": "./",
+      "description": "Adversarial critic over an untested proposal: three blind lenses in parallel, merged into failure chains, every finding verified and then ratified by the owner. Names problems, never writes solutions."
+    }
+  ]
+}
