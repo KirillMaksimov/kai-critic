@@ -47,3 +47,7 @@ The charter and the skill are written to work with **no** desk and **no** lab �
 repository that has neither still gets a full run. Anything host-specific reaches
 the plugin two ways only: the `desk_path` user option, and whatever the host
 repository's own instructions say about where its lab lives. Do not add a third.
+
+## Abbreviations in design & research output
+
+Any design or research deliverable — a note written in this repo **or** the same content sent to the user as a chat message — opens with a legend of its short codes, above the body, in the language of the text (`CODE — expansion`, one per line). Covers coined indices (`D1`, `W11`), domain acronyms (`FN`, `SP`) and anything not spelled out at its first use; leaves out the universally known (API, JSON, git). An edit that introduces a new code extends the legend in the same edit. Prefer a speaking name over a coined index — the legend is a fallback, not a licence. The same duty for terms rather than codes: a term, anglicism or coined name gets its expansion in parentheses at its first use, after which it may be used bare.
