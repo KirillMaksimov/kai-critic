@@ -37,8 +37,8 @@ flowchart TD
     L2 --> M
     L3 --> M
     M --> V[Verify every checkable claim]
-    V --> R[Ratify blind, one finding per dialog]
-    R --> LAND[Review note + ledger + two numbers]
+    V --> R[Ratify blind: is it true? what do we do?]
+    R --> LAND[Review note + ledger + three numbers]
 ```
 
 **Threshold.** Three passes plus your triage time is not free. Run when at least one holds: the decision is hard to reverse; it is a new contour, not an edit; the cost of being wrong is above trivial. A tax on every small design is the same negative value as an uncalibrated critic, from the other side.
