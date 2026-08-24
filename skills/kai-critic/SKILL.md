@@ -119,6 +119,12 @@ that starts obeying the repository's operating manual has stopped being a critic
    same corpus, check yourself. The real finding may be the discrepancy: one run
    turned up three different sizes for the same artifact, and no lens reported it.
 
+**The axis survives the merge.** A duplicate keeps its axis, and when two lenses
+put the same finding on different axes, `concept` wins — one seat seeing a
+problem of the design itself is enough. A finding assembled here — a chain, a
+promoted tail — arrives without one, so you assign it, under the charter's
+tie-break: would a fully-specified version still have the problem?
+
 **Read the neighbours' `## Out of lens` tails as carefully as their findings.**
 A lens that correctly recognised something as not its seat and handed it over in
 one line has done its job; the lens that owns that ground may never walk it. Seen
@@ -167,9 +173,15 @@ you offer the moves he actually wants, and the failure it catches is a standing
 one: an agent proposes the repair it can write, which is almost always the local
 one.
 
-**Step 3 — put each finding to him blind, one per dialog.** One
-`AskUserQuestion` call, one finding, and **two questions inside it** — because a
-finding raises two separate matters and only one of them was ever being asked:
+**Step 3 — put each finding to him blind, `concept` first.** The axis sets the
+order and the packaging. `concept` findings open the wave, one per dialog, each
+with the full treatment — the owner's thinking is what they exist to buy.
+`detail` findings follow and may go two to a dialog, their fixes ready to land
+as written: the mechanical tail should cost him minutes, not attention. The axis
+itself is shown — it is the lens's claim about where the problem lives, the same
+kind of fact as severity, not a verdict. Each finding carries **two questions**
+— because a finding raises two separate matters and only one of them was ever
+being asked:
 
 | Question | Options |
 |---|---|
@@ -178,7 +190,8 @@ finding raises two separate matters and only one of them was ever being asked:
 
 He sees:
 
-- the finding as the lens wrote it — the problem, where, what breaks, severity;
+- the finding as the lens wrote it — the problem, where, what breaks, severity,
+  axis;
 - **the check from step 1** — the reproduction, or the fact as it stands;
 - **the fixes you judge sensible**, one to three, each concrete enough to act on
   as written, each with its cost;
@@ -234,11 +247,31 @@ its findings either, only whether they were true. **Enter the skill here** —
 §§1–4 already happened, so do not re-run lenses; step 0b still applies, because
 the lab is where the result goes and it names which wave is waiting.
 
+**Parked ratification** — the wave ran in a session the owner was not in. The
+wave itself changes nothing: §§1–4 run as usual, step 1 verifies, step 2 writes
+both predictions down. Then park instead of presenting. The review-note draft
+carries what step 3 would show — each finding as the lens wrote it, its axis,
+the check, the candidate fixes — and **none of what step 4 reveals**: no lens
+names, no predicted rulings, no predicted fixes. Those go to a separate parking
+file, never to a section of the same note. Seen once: a wave parked its
+predictions below a header saying "do not read until the reveal", in the very
+note it was about to show, and whether they were read before the rulings could
+not be measured afterwards. A separate file, named in the note and sealed until
+the reveal, at least cannot be scrolled into. Park it in the lab if the
+repository keeps one; otherwise in a sibling file of the note. Close the session
+with a parking notice in chat — what ran and in what mode, the finding count by
+severity and axis, the note path, the cost, and the words that resume it later —
+and nothing that step 4 hides. Resuming enters the skill here, at step 3: lenses
+are not re-run, checks are not re-run, predictions are not re-written, and the
+parking file is opened only at the reveal — the presenting session stays as
+blind as the owner.
+
 ## 6. Land it
 
 - **Review note** in the owning project, wired into wherever that project lists
-  its notes. Structure: what ran and under what limits · accepted findings by
-  severity, each with the fix he chose · accepted as questions · downgraded and
+  its notes. Structure: what ran and under what limits · accepted findings,
+  `concept` before `detail` and by severity within each, each with the fix he
+  chose · accepted as questions · downgraded and
   rejected, with reasons · findings voided by a fix that changed the object's
   shape · inter-lens disagreement as a decision · what the run said about the
   Critic itself. Under manual ratification the **owner's ruling is the verdict of

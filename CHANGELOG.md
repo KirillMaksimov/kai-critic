@@ -5,6 +5,39 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.3.0] — 2026-08-25
+
+Both changes came out of ratifying one live wave: the first from the owner's own
+words during it, the second from how that wave had to improvise a stop.
+
+### Added
+
+- **Every finding carries an axis: `detail` | `concept`.** `detail` — the
+  proposal under-specifies a step, and spelling it out settles the matter.
+  `concept` — the problem sits in the design itself — a contradiction, a cost, a
+  source of noise that survives any amount of specification — and needs the
+  owner's judgement. The lens marks it (tie-break: would a fully-specified
+  version still have the problem?), the merge keeps it (`concept` wins a lens
+  disagreement; chains and promoted tails get theirs from the main thread), and
+  ratification is ordered by it: `concept` first, one per dialog with the full
+  treatment; `detail` after, two to a dialog, fixes ready to land as written.
+  Severity says how much a finding matters; the axis says how it should be read
+  — where the owner must think, and what he can wave through in minutes. The
+  axis is shown at ratification: it is the lens's claim about where the problem
+  lives, the same kind of fact as severity, so it does not join the hidden trio.
+- **Parked ratification.** A wave run in a session the owner is not in had no
+  protocol for stopping before the dialogs. Seen in the wild: predictions parked
+  in a section of the very note the owner would ratify from, below a header
+  saying "do not read until the reveal" — and whether they were read could not
+  be measured afterwards. §5 now says how to park: the note draft carries what
+  step 3 shows (findings with axes, checks, candidate fixes) and none of what
+  step 4 reveals; predictions and lens names go to a separate file the note
+  names — the lab if the repository keeps one, else a sibling file — sealed
+  until the reveal; the session closes with a parking notice in chat and the
+  words that resume it. Resuming enters §5 at step 3: nothing is re-run or
+  re-predicted, and the parking file is opened only at the reveal, which keeps
+  the presenting session as blind as the owner.
+
 ## [0.2.0] — 2026-08-24
 
 Two protocol changes to ratification, and one to how a run is framed. All three

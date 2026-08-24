@@ -196,6 +196,7 @@ its own — a directory's CLAUDE.md or equivalent — or "none">
 
 ### F1 — <one line: the problem, not the topic>
 - **Severity:** high | medium | low
+- **Axis:** detail | concept
 - **Where:** <section title, file path, or a short quote from the proposal>
 - **What breaks:** <the concrete consequence, and for whom>
 - **How to refute:** <the cheapest thing that would prove you WRONG — a file to
@@ -223,6 +224,16 @@ its own — a directory's CLAUDE.md or equivalent — or "none">
 ## Out of lens
 - <one line each, or "none">
 ```
+
+**The axis says where the problem lives, not how bad it is.** `detail` — the
+proposal under-specifies a step: spelling it out settles the matter, and the
+owner can rule without re-opening the design. `concept` — the problem sits in
+the design itself: a contradiction, a cost, a source of noise that survives any
+amount of specification, and the owner has to think. When unsure, ask whether a
+fully-specified version of the proposal would still have the problem — if yes,
+it is `concept`. The axis is orthogonal to severity: a mechanical gap can be
+severe, and a flaw of the concept can be minor. Severity says how much a finding
+matters; the axis says how it should be read.
 
 The **Checked and found sound** section is not filler. Without it, your silence
 is uninformative — the owner cannot tell what you examined from what you skipped.
