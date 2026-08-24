@@ -23,6 +23,10 @@ teach, it moves desk-ward as craft — never as a score.
   one under `~/.claude/plugins/cache/…`; editing it in place is undone by the next
   update. Change the source, bump `version` in `.claude-plugin/plugin.json`, then
   `claude plugin update kai-critic` and restart the host.
+- **A version bump and a `CHANGELOG.md` entry are one commit, never two.** The
+  bump alone says a release happened and not what changed in it, which is worth
+  little to a reader and nothing to the next run trying to work out which text a
+  wave was run against.
 - **Agent definitions are snapshotted at launch.** A charter edit does not reach a
   run already under way. Any run started before an edit was applied was run against
   the previous text — say so rather than reporting it as a result about the new one.

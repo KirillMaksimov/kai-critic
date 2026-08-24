@@ -1,7 +1,7 @@
 {
   "name": "kai-critic",
   "description": "Adversarial critic over a proposal that reality has not yet tested — a design, a strategy, or an instruction. /kai-critic runs three lenses (beneficiary, adversary, auditor) in parallel and blind to each other, merges duplicates and failure chains, verifies every checkable claim, then puts each finding to the owner blind so the gap between his ruling and the main thread's prediction is measurable. The critic names problems and never writes solutions.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Kirill Maksimov"
   },
