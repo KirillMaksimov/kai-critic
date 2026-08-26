@@ -173,6 +173,22 @@ you offer the moves he actually wants, and the failure it catches is a standing
 one: an agent proposes the repair it can write, which is almost always the local
 one.
 
+**Before writing a plain "accepted", ask whether the finding opens a decision or
+closes one.** A finding that names a defect with one obvious repair closes the
+topic and is usually accepted as written. A finding that exposes a fork — where
+the thing should live, who owns it, which of two contours it belongs to — is
+accepted *with a correction*, because the owner supplies the half the lens could
+not: the choice. Predicting a plain "accepted" on a fork-shaped finding is the
+single most repeatable triage error measured so far.
+
+Evidence: on wave W14 the triage agreement was 0.64 against a precision of 1.00,
+and **all three misses were this shape** — twice the owner added a decision the
+finding had not contained (deliver it as its own repository, put the layer above
+the mechanisms rather than inside each), once he lowered the cost instead of
+accepting it flat. Precision 1.00 with agreement 0.64 means the lenses were fine
+and the triage was not; read it that way round, and look for the fork before you
+write the prediction.
+
 **Step 3 — put each finding to him blind, `concept` first.** The axis sets the
 order and the packaging. `concept` findings open the wave, one per dialog, each
 with the full treatment — the owner's thinking is what they exist to buy.
