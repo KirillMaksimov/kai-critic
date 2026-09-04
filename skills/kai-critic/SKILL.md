@@ -60,9 +60,9 @@ from the other side.
 | `OBJECT` | `design` (a system), `strategy` (a route to a goal), `instruction` (a skill, charter, contract — text an agent must act on) |
 | `MODE` | **by whether reality exists yet**, not by object type. Nothing built, nothing to check against → `blind`. Implementation, history or a decisions log exists → `grounded` |
 | Lenses | all three, always: `beneficiary`, `adversary`, `auditor` |
-| `EFFORT` | `normal` — one run per lens, Sonnet, the default. `enhanced` — two runs per lens in the same batch, Sonnet, and a third run offered per lens by saturation (§4). `experimental` — the configuration a hypothesis under test prescribes, run as an A/B on one object (§3). The owner picks; never escalate on your own |
+| `EFFORT` | `normal` — the default: one topic pass on Sonnet, then one run per lens on Sonnet. `enhanced` — one topic pass on Opus, then two runs per lens on Sonnet in the same batch, and a third run offered per lens by saturation (§4). `experimental` — the configuration a hypothesis under test prescribes, run as an A/B on one object (§3). The owner picks; never escalate on your own |
 | `SHAPE` | one sentence: how the object changes the shape of what it replaces ("a self-contained file becomes a long-lived local service"). Passed to every lens verbatim. Omit when nothing is replaced — the lens then derives it |
-| Two-stage | `off` by default. `on` — a topic pass (`kai-critic:kai-topics`) runs first and its merged list reaches every lens as `TOPICS:`. Until the journal says the pass pays, it is an `experimental` configuration, not part of `normal` or `enhanced` |
+| Topic pass | on in `normal` and `enhanced`: `kai-critic:kai-topics` runs first and its merged list reaches every lens as `TOPICS:`. Off only as an experimental arm — whether the pass pays is answered by an arm that runs without it, never by switching it off quietly |
 
 **`blind`:** the artifact and nothing else — inlined in the task message, or one
 named path when it is large. Say explicitly that no other file may be opened.
@@ -102,10 +102,12 @@ so they run in parallel and blind to each other. Sequential runs let the second
 anchor on the first and three seats collapse into one with an echo. How many
 calls is set by `EFFORT`:
 
-- **`normal`** — three calls, one per lens. About three quarters of a million
-  subagent tokens on a grounded design of ordinary size.
-- **`enhanced`** — six calls, two per lens, byte-identical prompts within a
-  lens (nothing distinguishes run 1 from run 2 except its result). After the
+- **`normal`** — one topic-pass call on Sonnet, then three lens calls, one per
+  lens, on Sonnet. About a million subagent tokens on a grounded design of
+  ordinary size.
+- **`enhanced`** — one topic-pass call on Opus, then six lens calls, two per
+  lens, byte-identical prompts within a lens (nothing distinguishes run 1 from
+  run 2 except its result). After the
   merge (§4) look at each lens on its own: if its second run added at least
   one topic to what its first run found, **offer** the owner a third run of
   that lens, with its cost; a lens whose second run added nothing has
@@ -117,20 +119,21 @@ calls is set by `EFFORT`:
   the lab names the factor and the measure; the run record names the arm each
   agent belonged to. One factor, or the result cannot be attributed.
 
-**Models.** The charter's default is Sonnet for a lens and Opus for the topic
-pass; the `Agent` tool's `model` parameter overrides either for an experimental
-arm. The auditor never goes below Sonnet — it is an existential check, the
-class where a cheap tier has produced false negatives before.
+**Models.** Both charters default to Sonnet. `enhanced` lifts the topic pass
+to Opus through the `Agent` tool's `model` parameter, and an experimental arm
+may override either agent the same way. The auditor never goes below Sonnet —
+it is an existential check, the class where a cheap tier has produced false
+negatives before.
 
-**Two-stage runs.** Launch the topic pass first — `subagent_type:
+**Order of launch.** The topic pass goes first — `subagent_type:
 "kai-critic:kai-topics"`, the same problem statement, proposal, paths,
-unreachable list, `SHAPE:` and desk path as a lens would get; one or two calls,
-as the hypothesis says. Merge its lists yourself: drop duplicates, keep every
-seat tag, cap at forty, number them `T1…`. Then launch the lenses with that
-list as a `TOPICS:` block appended to the otherwise identical prompt. Say in
-the record that the run was two-stage: the lenses are then not blind to the
-topic pass, by design, and a ledger row that hides it cannot be compared with
-a single-stage row.
+unreachable list, `SHAPE:` and desk path as a lens would get; one call, two
+only when a hypothesis says so. Merge its list yourself: drop duplicates, keep
+every seat tag, cap at forty, number them `T1…`. Then launch the lenses with
+that list as a `TOPICS:` block appended to the otherwise identical prompt.
+Record the topic pass's model and call count with the wave: the lenses are not
+blind to the topic pass, by design, and a ledger row that hides how the pass
+was run cannot be compared with one that ran without it.
 
 Identical prompts except `LENS:`. Each carries: `LENS` / `MODE` / `OBJECT`, the
 problem the proposal must solve (written from the beneficiary's world, not the

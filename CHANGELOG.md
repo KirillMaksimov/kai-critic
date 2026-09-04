@@ -5,6 +5,23 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.5.1] — 2026-09-04
+
+The owner's call on the same day: the topic pass is not an experiment to
+switch on, it is the first stage of every run.
+
+### Changed
+
+- **The topic pass runs by default** in `normal` (on Sonnet) and `enhanced`
+  (on Opus); `agents/kai-topics.md` now defaults to Sonnet and `enhanced`
+  lifts it through the `Agent` tool's `model` parameter. Whether the pass pays
+  is still a question — the journal answers it with an experimental arm that
+  runs *without* it, never by switching it off quietly. The run record names
+  the pass's model and call count, so a wave with the pass is never compared
+  blind with one that ran before it existed.
+- The cost line for `normal` is about a million subagent tokens on a grounded
+  design of ordinary size, up from three quarters.
+
 ## [0.5.0] — 2026-09-04
 
 All of it came out of one measured wave: three identical runs of each lens on

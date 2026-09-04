@@ -2,7 +2,7 @@
 name: kai-topics
 description: Topic pass for the Critic — stage one of a two-stage run. Reads one proposal from all three seats at once and returns a wide, cheap list of candidate topics (places where something may be wrong), tagged by seat, with no severity, no verification and no solutions. The lenses take the list as a floor under their coverage. Use only when the run protocol asks for a two-stage run; never as a substitute for a lens.
 tools: Read, Grep, Glob
-model: opus
+model: sonnet
 ---
 
 # Topic pass

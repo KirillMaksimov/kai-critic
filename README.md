@@ -58,8 +58,8 @@ Hidden until you have ruled: the main thread's predicted ruling, its predicted c
 One run of a lens is a **sample** from a large space of findings, not the space. Measured on one grounded design: three identical runs of each lens found 19 topics between them, a single run covered 47–63% of that union, and the adversary's three runs shared no topic at all. Three things follow.
 
 - **Every lens answers a sweep before its free findings** — a short list of ways to look that have paid off on that seat (walk the one real entry end to end; what became possible only in the new shape; same problem twice, same answer once; every named thing opened and checked). Each question is answered explicitly: found, nothing here, not applicable. A skipped question is not a result; "nothing here" is.
-- **Three effort levels**, the owner's choice. `normal` — one run per lens. `enhanced` — two runs per lens, byte-identical, and a third offered per lens only while its second run still added topics. `experimental` — an A/B on one object, two configurations differing in exactly one factor, serving a hypothesis from the lab's journal.
-- **A topic pass** (`kai-topics`) — a separate, wide, cheap first stage that lists candidate topics by seat, with no severity and no verification; the lenses then take the list as a floor under their coverage and still run their own sweep. It is an experimental configuration until the journal says it pays.
+- **Three effort levels**, the owner's choice. `normal` — a topic pass on Sonnet, then one run per lens. `enhanced` — a topic pass on Opus, then two runs per lens, byte-identical, and a third offered per lens only while its second run still added topics. `experimental` — an A/B on one object, two configurations differing in exactly one factor, serving a hypothesis from the lab's journal.
+- **A topic pass** (`kai-topics`) — a separate, wide first stage that lists candidate topics by seat, with no severity and no verification; the lenses then take the list as a floor under their coverage and still run their own sweep. It runs by default; whether it pays is a question the journal answers with an arm that runs without it.
 
 The unit all of this is counted in is the **topic**: the same problem found in different words by different runs. Stability numbers — topics per run, the union, pairwise overlap, saturation — are read at merge time and go to the lab.
 
@@ -117,7 +117,7 @@ The agent has no write tools. That is deliberate: it proposes desk edits in a `#
 
 ## Status
 
-`0.5.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its second question — what to do about a finding, asked separately from whether the finding is true — is newer still, and the number attached to it is the youngest of the three.
+`0.5.1` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its second question — what to do about a finding, asked separately from whether the finding is true — is newer still, and the number attached to it is the youngest of the three.
 
 ## License
 
