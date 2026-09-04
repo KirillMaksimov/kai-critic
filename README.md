@@ -53,6 +53,16 @@ flowchart TD
 
 Hidden until you have ruled: the main thread's predicted ruling, its predicted choice of fix, and which lens produced the finding. All three are anchors. Afterwards you see one table — finding · lens · prediction · your ruling · agree? · the fix you chose — and three numbers: **precision** (your acceptances ÷ findings), **triage agreement** (how often the prediction matched your ruling), and **fix hit rate** (how often you took an offered fix instead of writing your own). A low agreement with a high precision means the lenses are fine and the triage is not. A low fix hit rate with a high precision means the lenses find the right things and the main thread keeps reaching for the wrong instrument, usually the small one. Both are the more useful failures.
 
+## Effort, sweeps and the topic pass
+
+One run of a lens is a **sample** from a large space of findings, not the space. Measured on one grounded design: three identical runs of each lens found 19 topics between them, a single run covered 47–63% of that union, and the adversary's three runs shared no topic at all. Three things follow.
+
+- **Every lens answers a sweep before its free findings** — a short list of ways to look that have paid off on that seat (walk the one real entry end to end; what became possible only in the new shape; same problem twice, same answer once; every named thing opened and checked). Each question is answered explicitly: found, nothing here, not applicable. A skipped question is not a result; "nothing here" is.
+- **Three effort levels**, the owner's choice. `normal` — one run per lens. `enhanced` — two runs per lens, byte-identical, and a third offered per lens only while its second run still added topics. `experimental` — an A/B on one object, two configurations differing in exactly one factor, serving a hypothesis from the lab's journal.
+- **A topic pass** (`kai-topics`) — a separate, wide, cheap first stage that lists candidate topics by seat, with no severity and no verification; the lenses then take the list as a floor under their coverage and still run their own sweep. It is an experimental configuration until the journal says it pays.
+
+The unit all of this is counted in is the **topic**: the same problem found in different words by different runs. Stability numbers — topics per run, the union, pairwise overlap, saturation — are read at merge time and go to the lab.
+
 ## Install
 
 The repo is its own plugin marketplace:
@@ -98,6 +108,7 @@ A **lab** is the other half, and the plugin deliberately does not ship one. It i
 .claude-plugin/plugin.json       manifest + the desk_path option
 .claude-plugin/marketplace.json  so the repo installs as its own marketplace
 agents/kai-critic.md             the charter — one lens per invocation, Read/Grep/Glob only, no Agent tool
+agents/kai-topics.md             the topic pass — stage one of a two-stage run, wide and cheap, no findings
 skills/kai-critic/SKILL.md       the run protocol: threshold, framing, launch, merge, ratification, landing
 desk/desk_critic.md              the generic desk (override with desk_path)
 ```
@@ -106,7 +117,7 @@ The agent has no write tools. That is deliberate: it proposes desk edits in a `#
 
 ## Status
 
-`0.3.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its second question — what to do about a finding, asked separately from whether the finding is true — is newer still, and the number attached to it is the youngest of the three.
+`0.5.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its second question — what to do about a finding, asked separately from whether the finding is true — is newer still, and the number attached to it is the youngest of the three.
 
 ## License
 

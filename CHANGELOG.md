@@ -5,6 +5,92 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.5.0] — 2026-09-04
+
+All of it came out of one measured wave: three identical runs of each lens on
+one grounded design. A single run covered about half of what three runs found,
+the adversary's runs shared no topic at all, and seven findings out of twenty
+were accepted into work the owner had already planned rather than into the
+object. The release answers those three facts.
+
+### Added
+
+- **A sweep in the charter.** Every lens answers a short list of *ways to look*
+  before its free findings — three questions every seat asks in `grounded`
+  mode (every named thing opened and checked; the neighbour's promise "when X
+  exists this is handled there"; numbers checked against the artifact, not the
+  document quoting it) and four per seat (the one real entry walked end to end;
+  whose hours a system-term cost is; what the old mechanism did on the side;
+  the level a promised control is implemented at; both ends of a retention
+  rule; same problem twice, same answer once; the predecessor's fork; one-shot
+  or standing sync; the rollback never mentioned). Each is answered explicitly
+  in a new `## Sweep` section — found, nothing here, not applicable — so
+  "nothing here" is a result and a skipped question is not. The sweep does not
+  lower the bar: what it turns up still has to meet every rule.
+- **Three optional task lines.** `SHAPE:` — one sentence on how the object
+  changes the shape of what it replaces, a property of the object and not a
+  hint; `TOPICS:` — the merged list of a topic pass, each entry dispositioned
+  in a new `## Topics` section; `SWEEP: skip <ids>` — for experiments that
+  switch a sweep question off.
+- **A topic pass** (`agents/kai-topics.md`, Opus by default): stage one of a
+  two-stage run. Reads the proposal from all three seats at once and returns up
+  to forty candidate topics — a question and a check phrase each, tagged by
+  seat, no severity, no verification, no solutions. The lenses then take the
+  list as a floor under their coverage and still run their own sweep. Until the
+  owner's journal says the pass pays, it is an experimental configuration.
+- **Effort levels** in the run protocol, the owner's choice and never escalated
+  by the main thread: `normal` (one run per lens, Sonnet), `enhanced` (two runs
+  per lens in one batch, a third offered per lens only while its second run
+  still added topics), `experimental` (an A/B on one object, two configurations
+  differing in exactly one factor, serving a hypothesis from the lab).
+- **Topics as the unit of measurement.** Merge job 4 maps every finding to a
+  topic — the same problem found in different words by different runs — and
+  keeps the run × topic matrix. Saturation, the third-run offer, the stability
+  numbers for the ledger and the comparison between experimental arms are all
+  read from it. A divergence picture shown before ratification carries run
+  numbers and hides the lenses.
+- **Step 0c — the hypotheses journal.** If the lab keeps a journal of what is
+  believed about the mechanism itself (which model, how many runs, whether the
+  topic pass pays), the main thread reads it before a run and may *offer* the
+  owner to serve one hypothesis with this run. The lenses never learn a
+  hypothesis exists.
+- **A ruling of its own: "into a task".** The second ratification question
+  gains an option for a finding that is true, accepted, and belongs to work the
+  owner has planned rather than to this object. The main thread then asks which
+  task, and — with his yes — carries the finding there as a subtask whose
+  description is enough for a session that has never seen this conversation.
+  Counted as accepted for precision, outside the fix-hit-rate denominator. The
+  triage rule that goes with it: a finding about a channel outside the object —
+  diagnostics, backup, delivery, monitoring, security — is predicted as
+  deferred, not as a plain acceptance; measured three waves running as the most
+  repeatable miss.
+- **Hard rule 10:** paths outside the list are outside the run; one opened
+  anyway is named in the header as a breach, and a finding resting on it is a
+  check to run. The header also carries the shape the lens took.
+
+### Changed
+
+- Landing appends stability numbers (enhanced) or one measurement row
+  (experimental) to the hypotheses journal; a hypothesis is confirmed or
+  refuted by the owner on the journal, never by the main thread on one wave.
+- A third standing caution: effort is the owner's money.
+
+## [0.4.0] — 2026-08-27
+
+Recorded retroactively in the 0.5.0 release: the bump shipped without its
+entry, which is exactly the omission the rule at the top of this file exists
+to prevent.
+
+### Changed
+
+- **Before predicting a plain "accepted", the main thread asks whether the
+  finding opens a decision or closes one.** A finding with one obvious repair
+  closes its topic and is usually accepted as written; a finding that exposes a
+  fork — where a thing should live, who owns it, which of two contours it
+  belongs to — is accepted *with a correction*, because the owner supplies the
+  choice the lens could not. Predicting a plain acceptance on a fork-shaped
+  finding was the single most repeatable triage error measured.
+
 ## [0.3.0] — 2026-08-25
 
 Both changes came out of ratifying one live wave: the first from the owner's own

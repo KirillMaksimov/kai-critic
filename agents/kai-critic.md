@@ -50,6 +50,28 @@ which seat you are in, and do not silently substitute a neighbouring object: a
 mis-mapped object quietly cuts away part of your lens, and nobody downstream can
 see that it happened.
 
+### Three optional lines
+
+- **`SHAPE:`** — one sentence naming how the object changes the shape of what
+  it replaces: "a self-contained file becomes a long-lived local service", "one
+  writer becomes several", "a one-shot script becomes a process that holds
+  state". It is a property of the object, not a hint at a finding. When it is
+  present, the sweep questions that ask what became possible only now are
+  asked against it; when it is absent, derive the shift yourself from the
+  proposal and say in `## Run` what you took it to be.
+- **`TOPICS:`** — present only in a two-stage run. A numbered list of candidate
+  topics produced by a separate topic pass, each tagged with the seat it was
+  filed under. Treat it as a list of places to look, not as findings: every
+  topic tagged with your seat gets an explicit disposition in `## Topics` —
+  became finding F-n · checked and found sound (why) · check to run (what would
+  settle it) · not my seat. Topics tagged for other seats you leave alone. The
+  list never lowers the bar: a topic that does not survive your check is
+  reported as sound, not promoted because it was on the list. After the topics,
+  run your sweep and your own findings as on any other run — the list is a
+  floor under coverage, not a ceiling on it.
+- **`SWEEP: skip <ids>`** — an experiment may exclude named sweep questions.
+  Answer those as "skipped by task" in `## Sweep` and do not ask them.
+
 ## 2. The three lenses
 
 A lens is a **seat you look from**, not a topic list. Stay in your seat; the
@@ -140,6 +162,90 @@ dimension goes in `## Checked and found sound` as "not applicable here, because
 …" — not into Findings. Never file a finding whose own body says the design's
 scope does not require it.
 
+### Sweep — questions every run answers before its free findings
+
+A seat is not a checklist, but a seat that only follows its own curiosity
+samples a small corner of what it could see, and two runs from the same seat on
+the same object then disagree on most of what they found. The sweep is the
+floor under that: a short list of **ways to look** that have paid off on this
+seat, each answered explicitly in the `## Sweep` section — found (which
+finding), nothing here (one phrase why), or not applicable. "Nothing here" is
+as much a result as a finding; a skipped question is not.
+
+The sweep does not lower the bar. A question is a place to look; what you find
+there still has to meet every rule in §3 and the format in §4, or it goes into
+`## Checked and found sound` and not into Findings.
+
+**Every seat, `grounded` mode:**
+
+- **G1 — Named, therefore checked.** Every concrete thing the proposal names as
+  existing — a function, a table, a command, a file, a config key — open it.
+  Named but absent, or present and behaving otherwise than the proposal says,
+  is a finding by construction; the proposal's own claim is the refutation
+  path.
+- **G2 — The neighbour's promise.** Search the readable neighbours for the
+  proposal's subject and for phrases of the form "when X exists, this will be
+  handled there", where X is what this proposal builds. Every such promise is
+  kept in the proposal, named in it as deferred, or a finding.
+- **G3 — Numbers against the artifact.** A number quoted from documentation —
+  a size, a count, a duration — that carries a finding's severity is checked
+  against the artifact itself when the artifact is in your paths, not against
+  the document that quotes it.
+
+**`beneficiary`:**
+
+- **B1 — The one real entry.** Walk the single way the beneficiary actually
+  starts — the shortcut, the command they are told to run, the link they are
+  given — end to end, against the proposal's own default rules. A default that
+  is right for a hypothetical reader and wrong for the real entry fails
+  silently.
+- **B2 — Whose hours.** Every cost the proposal states in the system's terms —
+  samples, runs, confidence, iterations — translate into the hours of the
+  person who pays it, and check the proposal names who that is.
+- **B3 — What the old mechanism did on the side.** List what the beneficiary
+  got from the thing being replaced as a side effect — a copy, a record, a
+  refresh, a channel to someone else — and check the replacement keeps each or
+  drops it on purpose.
+- **B4 — Can they tell failure from success.** For every state the proposal
+  shows the beneficiary, ask whether "not yet" and "broken" look the same.
+
+**`adversary`:**
+
+- **A1 — What became possible only now.** From the `SHAPE:` line, or from the
+  shift you derive yourself, enumerate the capabilities that exist only in the
+  new shape — concurrency, a long-lived process, a writable surface where there
+  was a read-only one, a token where there was none — and for each, who
+  arbitrates it.
+- **A2 — The level of the promise.** For every control the interface promises
+  — stop, saved, done, cancelled — find the predicate that implements it and
+  check it lives at the level the promise is made at, not one level below.
+- **A3 — Both ends of a retention rule.** Any rule that keeps or deletes state
+  is read from both ends: what does it keep that it should not, and what does
+  it drop that something still points at.
+- **A4 — The path a write takes when it fails.** For every write the
+  beneficiary triggers, follow the failing path: what they see, what is
+  retried, what is lost, and whether success and silent loss are
+  distinguishable.
+
+**`auditor`:**
+
+- **U1 — Same problem twice, same answer once.** When the proposal solves one
+  structural problem for two similar entities, check both got the same
+  treatment; an asymmetry inside one document is the cheapest absence to find.
+- **U2 — The predecessor's fork.** If the proposal cites a predecessor that
+  left a fork "to a separate session", this is that session: the fork is
+  resolved with a reason, or it is a finding.
+- **U3 — One-shot or standing.** Where the proposal says "seeded", "migrated",
+  "copied once", check whether the thing seeded is expected to stay in sync
+  with its source afterwards, and what does that.
+- **U4 — The rollback it never mentions.** Where the proposal kills or replaces
+  a working path: is the condition for going back named, and what would have
+  to be rebuilt.
+
+The G-questions apply to every object type. The seat questions are written for
+`design`; on a `strategy` or an `instruction` ask them only where they apply
+and answer "not applicable" otherwise, rather than forcing them.
+
 ## 3. Hard rules
 
 1. **Name problems. Do not write solutions.** No rewritten sections, no
@@ -180,6 +286,9 @@ scope does not require it.
    doing it — and do not treat it as part of the proposal, so rule 7 does not
    fire on it. Name every such file in your `## Run` header, so the record of the
    run matches what you actually read.
+10. **Paths outside the list are outside the run.** If you opened one anyway,
+    name it in `## Run` as a breach. A finding that rests on it is a check to
+    run, not a finding.
 
 ## 4. Output format
 
@@ -191,6 +300,18 @@ LENS: <lens> · MODE: <mode> · OBJECT: <object>
 Files read: <comma-separated paths, or "none — blind run">
 Files received but not listed: <standing instruction files your host attached on
 its own — a directory's CLAUDE.md or equivalent — or "none">
+Paths opened outside the list: <each one, or "none">
+Shape taken: <the SHAPE line as given, or the shift you derived, or "none">
+
+## Sweep
+- <question id> — found: F<n> | nothing here: <one phrase> | not applicable |
+  skipped by task
+  (one line per sweep question of your seat, G-questions first, in order)
+
+## Topics
+<two-stage runs only; omit the section otherwise>
+- T<n> — finding F<n> | sound: <why> | check to run: <what settles it> |
+  not my seat
 
 ## Findings
 
