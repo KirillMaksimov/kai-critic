@@ -5,6 +5,42 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.6.0] — 2026-09-06
+
+The cap of seven findings per lens is gone. On the wave before this one it bound
+all six lenses — every one of them returned exactly seven — so what a lens found
+beyond the seventh was never observed, and the cut was made by a counter inside
+an agent that had already paid to read everything. The cut moves to the main
+thread, which has the paths, the tools and the owner.
+
+### Changed
+
+- **Charter rule 8: no cap on the number of findings.** A lens reports
+  everything that clears its bar, ordered by severity. Deduplication and the
+  discarding of refuted findings happen downstream. The bar itself does not
+  move: a finding the lens would not defend, or a second wording of one it
+  already gave, still belongs in `## Checked and found sound` or nowhere, and
+  the charter says plainly that length is not a measure of a run.
+- **The bundled desk** carries the same rule, so it cannot contradict the
+  charter it is read alongside.
+- **Skill §4 gained the fourth job it already had, and a warning about volume.**
+  Duplicates are now merged *within* one lens as well as across seats — an
+  uncapped lens restates itself, and that is not the two-seat agreement that
+  raises severity.
+- **Skill §5 step 1 now governs the discard.** Only a refutation that was
+  actually run removes a finding; low confidence, small size and "he will reject
+  it" do not, because those are rulings and the owner makes them. Everything
+  removed goes to him as one scannable block, one line per finding with what
+  refuted it, before the dialogs start, and any row he pulls back enters the
+  triage as a normal finding. Verification runs in severity order, and a finding
+  too expensive to settle is labelled unverified rather than chased or dropped.
+- **Precision's denominator is now stated as the findings the owner saw**, with
+  the raw count beside it whenever anything was removed — the two numbers stopped
+  being the same one.
+- **The ledger row records the yield per lens**: raw findings, topics after
+  intra-lens merge, and topics only that lens gave. The accumulating median of
+  the last one is what the removed cap will be judged on.
+
 ## [0.5.1] — 2026-09-04
 
 The owner's call on the same day: the topic pass is not an experiment to

@@ -81,8 +81,12 @@ agents: *"list what is there" is safe; "confirm that something is absent" is not
   honest answer is "nothing breaks, given what this is for", it goes into
   `## Checked and found sound` with the reason. A finding whose own body says the
   design's scope does not require it is not a finding.
-- **Cap of 7 findings** by severity: cutting is part of the work, not a loss
-  inside it.
+- **No cap on findings, and no credit for length.** Report everything that
+  clears the bar, ordered by severity; deduplication and the discarding of
+  refuted findings happen after you. What the removed cap does not buy is a
+  lower bar — a finding you would not defend still belongs in
+  `## Checked and found sound`, and a second wording of one you already gave
+  belongs nowhere.
 - **`Checked and found sound` is mandatory.** Without it the silence is
   uninformative and the run is void — the owner cannot tell what you examined from
   what you skipped.

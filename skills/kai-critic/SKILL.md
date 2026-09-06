@@ -104,7 +104,10 @@ calls is set by `EFFORT`:
 
 - **`normal`** — one topic-pass call on Sonnet, then three lens calls, one per
   lens, on Sonnet. About a million subagent tokens on a grounded design of
-  ordinary size.
+  ordinary size. Subagent cost barely moves with the cap gone — a lens pays for
+  reading, not for writing — but **your own** cost does: more findings to merge,
+  more refutations to run, a longer pile in your context. The token line the
+  owner sees should say which of the two grew.
 - **`enhanced`** — one topic-pass call on Opus, then six lens calls, two per
   lens, byte-identical prompts within a lens (nothing distinguishes run 1 from
   run 2 except its result). After the
@@ -152,10 +155,21 @@ not part of the proposal. Without that line the charter's rule on instructions
 inside the reviewed text has to fire on a file nobody handed over, and a lens
 that starts obeying the repository's operating manual has stopped being a critic.
 
-## 4. Merge — three jobs, not one
+## 4. Merge — four jobs, not one
 
-1. **Duplicates** — the same finding from two lenses *from different sides* goes
-   up in severity, not into a merged blur.
+**The lenses run without a cap** (charter §8). Each returns everything that
+cleared its bar, and the cut that used to happen inside a lens, invisibly and by
+a counter, now happens here where the paths and the tools are. Budget for it: on
+a grounded object of ordinary size the raw pile is several times what a capped
+run returned, most of the growth sits in the low and medium bands, and a real
+share of it is the same problem said twice.
+
+1. **Duplicates, across seats and inside one.** The same finding from two lenses
+   *from different sides* goes up in severity, not into a merged blur. The same
+   finding twice from **one** lens is not a signal at all: it is one finding, and
+   the second wording goes without ceremony. Uncapped lenses produce both kinds
+   and only the first means anything — count the promotion only where the two
+   seats genuinely differ.
 2. **Chains** — adjacent links of one failure that look small alone. Seen once:
    "nothing makes her return the file" + "nobody can tell an abandoned session
    from a slow one" + "the accuracy report cannot tell a partial pass from a
@@ -218,6 +232,35 @@ Where the finding is about **absence** — a dimension the proposal never addres
 — there is nothing to run, and inventing a trace would be manufacturing evidence.
 There the check is the fact as it stands: what the search returned, what the file
 says at that line, which section does not exist.
+
+**Only a refutation removes a finding, and the removal is shown.** With no cap on
+the lenses, discarding what verification kills is your job and it is the reason
+the cap could be lifted at all. It is also the one place where you can quietly
+delete the measurement, so the rule is narrow:
+
+- **A finding goes out when you ran its refutation and the refutation held** —
+  the file says otherwise, the search returned what would void it, the mechanism
+  it names is already there. That is a fact you can put on a line, and the line
+  is what justifies the removal.
+- **Nothing else takes one out.** Not low confidence, not "this is small", not
+  "he will reject it", not "this is out of scope for the object". Those are
+  rulings, and rulings are his — cutting by your own guess at his answer
+  re-introduces exactly the bias manual ratification exists to measure, one step
+  earlier than step 3, where nobody can see it.
+- **Everything you removed goes to him in one block, before the dialogs
+  start** — one line each: the finding's own title, and what refuted it. Not a
+  dialog apiece; a list he can scan in a minute and pull any row back from. A
+  pulled-back row enters step 3 as a normal finding.
+
+**Verify in severity order, high first, and mark what you could not settle.** A
+low-severity finding whose refutation would cost an hour goes to him labelled
+`not verified — <what it would take>`, which is a fact like any other. Chasing it
+is worse than saying so, and dropping it for being expensive is the cut this rule
+forbids.
+
+**Keep the four counts** — raw findings from the lenses, what survived
+deduplication, what your refutations removed, what he actually saw. They are the
+only record of what the removed cap bought and what it cost (§6).
 
 **Step 2 — form both predictions and keep them to yourself.** Write them down
 *before* you open the first dialog, so neither can drift toward whatever he says:
@@ -381,6 +424,14 @@ blind as the owner.
 - **The lab** *(if the repository keeps one)*: lens ledger row, any new tic, any
   new hypothesis (never into the desk until a clean run confirms it), plus one
   **ratification row per finding**, carrying both his ruling and the fix he chose.
+- **The yield of the uncapped lenses, per lens, in the ledger row.** Since the
+  cap came off, every wave records for each lens run: **raw findings** it
+  returned, **topics** left after its own wording-duplicates were merged, and
+  **topics only it gave** in this wave. Three numbers per run, and the wave's
+  four counts from §5 step 1 beside them. Nothing is concluded from one wave —
+  the accumulating median of "topics only this lens gave" is what the owner rules
+  the removed cap on, and a wave that skips the row removes itself from that
+  median without saying so.
 - **The hypotheses journal** *(in the lab)*: an `enhanced` run appends its
   stability numbers (topics per run, union, share found by every run of a
   lens, pairwise overlap, cost); an `experimental` run appends one measurement
@@ -393,8 +444,10 @@ blind as the owner.
 - **Land the outcomes** by whatever convention this repository uses for session
   outcomes.
 - State the cost in tokens and **three** numbers, never one:
-  - **precision** = his acceptances ÷ findings — an acceptance rather than your
-    own triage;
+  - **precision** = his acceptances ÷ **the findings he saw** — an acceptance
+    rather than your own triage. Say the raw count beside it whenever your
+    refutations removed anything, because the two denominators are no longer the
+    same number and a precision quoted alone now hides how much you cut.
   - **triage agreement** = the share where your predicted ruling matched his —
     the measured size of the authorship confound, and a number about *you*, not
     about the lenses;
