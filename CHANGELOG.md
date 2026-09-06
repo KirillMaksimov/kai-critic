@@ -5,6 +5,27 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.6.1] — 2026-09-06
+
+Fallout from lifting the cap, caught the same day: step 0c knew exactly one way
+to test a hypothesis, and the hypothesis it had just been handed could not be
+tested that way.
+
+### Changed
+
+- **Step 0c distinguishes the two shapes of hypothesis.** A configuration
+  hypothesis — which model, how many runs, whether a stage is present — is an
+  A/B on one object and belongs in `EFFORT: experimental`. A hypothesis about
+  the charter or this skill is not: the text also decides how much work the main
+  thread does downstream, so two arms would differ by more than the factor and
+  nothing could be attributed. Those are settled by landing the change and
+  watching the ledger accumulate. Offer the shape that fits, and say which it is.
+- **A charter or skill change invalidates comparison with every wave before it.**
+  New numbers may be read against waves under the same text and against the other
+  arm of their own run, never against an earlier baseline. Journals quote
+  baselines by name, and a later session has no way to see that the text moved —
+  so the ledger row and the journal entry that owns the baseline both say it.
+
 ## [0.6.0] — 2026-09-06
 
 The cap of seven findings per lens is gone. On the wave before this one it bound

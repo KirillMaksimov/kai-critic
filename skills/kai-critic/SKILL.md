@@ -40,6 +40,24 @@ with the cost stated. Never fold a hypothesis into a run without the owner's
 yes, and never tell the lenses a hypothesis exists — the lab stays behind their
 back for exactly this reason.
 
+**Not every hypothesis is an A/B, and offering the wrong shape wastes a wave.**
+A hypothesis about a **configuration** — which model, how many runs, whether a
+stage is present — is settled by two arms on one object, and that is what
+`EFFORT: experimental` exists for. A hypothesis about the **charter or this
+skill** is not: writing the change into one arm and not the other makes the arms
+differ by more than the factor, because the text also decides how much work the
+main thread does downstream, and nothing can then be attributed. Such a
+hypothesis is settled by landing the change and watching the ledger accumulate
+across ordinary waves — so what it needs from a run is not a configuration but a
+number recorded every time. Offer the shape that fits, and say which it is.
+
+**A charter or skill change invalidates comparison with every wave before it.**
+After one, this wave's numbers may be compared with waves under the same text,
+and with the other arm of its own run, but never with a baseline from earlier —
+the journal quotes those baselines by name, and a later session reading them has
+no way to see that the text moved. When it applies, say so in the ledger row and
+in the journal entry that owns the baseline.
+
 ## 1. Should this run at all?
 
 Calling the Critic costs three passes and, more expensively, the owner's time
