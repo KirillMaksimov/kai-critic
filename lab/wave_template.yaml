@@ -1,0 +1,97 @@
+# One record per wave. Copy into <your lab>/waves/W<NN>.yaml and fill it in
+# during §6 of the run, after the owner has ruled.
+#
+# This file is the SOURCE OF TRUTH for every number in the lab. The main thread
+# writes it once; `tools/wave_stats.py` computes the ledger row, the three
+# ratios, the per-lens yield and the cross-wave medians from it. Nothing is
+# counted by hand, and nothing is retyped into prose.
+#
+# Validate before trusting anything:
+#   python tools/wave_stats.py --lab <your lab dir> check W<NN>
+
+wave: W22
+date: '2026-09-07'
+object: design # design | strategy | instruction
+mode: grounded # blind | grounded
+effort: normal # normal | enhanced | experimental
+
+# The charter the lenses actually ran under. This is what separates eras: a
+# charter change invalidates comparison with every wave before it, and the tool
+# refuses to pool across the change rather than quietly averaging over it.
+charter_version: '0.6.1'
+
+# Optional pointers, for the human reading the lab later.
+note: path/to/review-note.md
+paths: 40 # how many paths the run was granted
+
+tokens:
+  total: 2100000
+  by_arm: { A: 924337, B: 1173089 } # experimental waves only
+
+# ---------------------------------------------------------------------------
+# One entry per RUN, not per lens: at `enhanced` a lens runs twice, and the two
+# runs are the measurement. `topics` holds the topic ids this run named AFTER its
+# own restatements were merged — with no cap on findings a lens repeats itself,
+# and that repetition is not a signal.
+# ---------------------------------------------------------------------------
+runs:
+  - id: ben-1
+    lens: beneficiary # beneficiary | adversary | auditor
+    arm: A # experimental waves only; omit otherwise
+    model: sonnet
+    raw_findings: 9 # what it returned, before any merging
+    topics: [T1, T4, T9]
+  - id: adv-1
+    lens: adversary
+    arm: A
+    model: sonnet
+    raw_findings: 12
+    topics: [T2, T3, T4, T11]
+  - id: aud-1
+    lens: auditor
+    arm: A
+    model: sonnet
+    raw_findings: 7
+    topics: [T5, T6]
+
+# ---------------------------------------------------------------------------
+# One entry per finding AFTER the merge. A finding the main thread refuted before
+# showing it carries `status: removed` and the refutation that removed it: it
+# leaves every denominator but stays visible, so the removal can never flatter
+# the precision it is measured against.
+#
+# `from` lists the runs that named it — this is what makes a topic's uniqueness
+# computable, and a run id that does not exist is a validation error, not a
+# smaller number.
+# ---------------------------------------------------------------------------
+findings:
+  - id: F1
+    topic: T4
+    from: [ben-1, adv-1] # two seats from different sides — severity goes up
+    severity: high # high | medium | low
+    axis: concept # concept | detail
+    status: shown # shown | removed
+    predicted: accept_with_correction
+    ruling: accept # accept | accept_with_correction | downgrade | into_task | reject
+    fix: mine # mine | own | none
+
+  - id: F2
+    topic: T11
+    from: [adv-1]
+    severity: medium
+    axis: detail
+    status: removed
+    removed_reason: >-
+      ran the refutation: the guard it says is missing is at db.py:212 and every
+      writer goes through it.
+
+  # A finding of the main thread's own, outside the lenses: `from` stays empty.
+  - id: F3
+    topic: T12
+    from: []
+    severity: medium
+    axis: detail
+    status: shown
+    predicted: accept
+    ruling: into_task
+    fix: none

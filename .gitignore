@@ -6,3 +6,13 @@ CLAUDE.local.md
 __pycache__/
 *.pyc
 *.log
+
+# A lab is private and lives in ITS OWNER's repository, never here. The plugin
+# ships only lab/lab_template.md and lab/wave_template.yaml; any real record that
+# lands in this tree is an accident and must not be committed.
+lab/waves/
+lab/*.md
+!lab/lab_template.md
+!lab/README.md
+lab/*.yaml
+!lab/wave_template.yaml

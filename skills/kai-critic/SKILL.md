@@ -20,10 +20,27 @@ bundled one. If neither resolves, run on the charter alone and say so in one
 line — the charter treats the desk as optional by design, and a repository
 without one still gets a full run.
 
-**Step 0b — read the lab** if this repository keeps one. A lab is the file that
-carries the lens ledger, the open hypotheses and the calibration history; where
-it lives is named in the repository's own instructions. It is optional
-infrastructure — without it, run anyway and skip the ledger update in §6.
+**Step 0b — read the lab** if there is one. A lab carries the lens ledger, the
+open hypotheses and the calibration history. It lives in **the owner's own
+repository**, never in this plugin: it holds their objects and their rulings, and
+a plugin update would destroy anything kept here. Resolve it once:
+
+- configured lab directory: `${user_config.lab_path}`
+- otherwise, whatever the repository's own instructions name
+
+It is optional infrastructure — without one, run anyway and skip the ledger
+update in §6. To start one, `${CLAUDE_PLUGIN_ROOT}/lab/lab_template.md` is the
+empty shape and `${CLAUDE_PLUGIN_ROOT}/lab/README.md` says how to wire it up;
+offer that, never create it unasked.
+
+**When a lab directory is configured, its numbers are computed, never counted.**
+`${CLAUDE_PLUGIN_ROOT}/tools/wave_stats.py` owns every deterministic figure the
+protocol asks for — the four counts, the three ratios, per-run and per-lens
+yield, topic overlaps, the cross-wave medians. You supply the judgment it cannot
+make (which findings are one topic, which refutation held) as one wave record;
+it supplies the arithmetic. Counting any of it by hand re-introduces exactly the
+error the layer exists to prevent, and the mistake does not raise — it prints a
+plausible number.
 
 > **Never put the lab in a run's allowed paths, and never inline it.** It holds
 > the hypotheses under test and the lens ledger; an agent that reads them stops
@@ -439,17 +456,37 @@ blind as the owner.
   the patch you had ready because it is the cheaper thing to write — that
   substitution is the failure the second question exists to catch, and making it
   after he has ruled is worse than never asking.
-- **The lab** *(if the repository keeps one)*: lens ledger row, any new tic, any
-  new hypothesis (never into the desk until a clean run confirms it), plus one
-  **ratification row per finding**, carrying both his ruling and the fix he chose.
-- **The yield of the uncapped lenses, per lens, in the ledger row.** Since the
-  cap came off, every wave records for each lens run: **raw findings** it
-  returned, **topics** left after its own wording-duplicates were merged, and
-  **topics only it gave** in this wave. Three numbers per run, and the wave's
-  four counts from §5 step 1 beside them. Nothing is concluded from one wave —
-  the accumulating median of "topics only this lens gave" is what the owner rules
-  the removed cap on, and a wave that skips the row removes itself from that
-  median without saying so.
+- **The wave record — write this first, because everything else reads it.** One
+  YAML file at `<lab>/waves/W<NN>.yaml`, from the template at
+  `${CLAUDE_PLUGIN_ROOT}/lab/wave_template.yaml`: the runs (one entry per run,
+  with its lens, model, arm, **raw findings** and the **topic ids** it named), and
+  the findings after the merge (topic, the runs it came `from`, severity, axis,
+  `status`, and once he has ruled — your prediction, his ruling, whose fix he
+  took). A finding you removed carries `status: removed` with the refutation that
+  removed it; a finding of your own outside the lenses carries `from: []`. Record
+  `charter_version` as the charter the lenses actually ran under — it is what
+  keeps a charter change from being averaged over.
+  Then validate and compute, in that order:
+
+  ```
+  python "${CLAUDE_PLUGIN_ROOT}/tools/wave_stats.py" --lab <lab dir> check W<NN>
+  python "${CLAUDE_PLUGIN_ROOT}/tools/wave_stats.py" --lab <lab dir> stats W<NN>
+  ```
+
+  `check` refuses a record that does not hold together — a topic attributed to a
+  run that never named it, a removal with no refutation, a lens outside the three.
+  Each of those, unvalidated, yields a plausible number rather than an error.
+- **The lab** *(if there is one)*: lens ledger row **from the tool's output, not
+  retyped from memory**, any new tic, any new hypothesis (never into the desk
+  until a clean run confirms it), plus one **ratification row per finding**,
+  carrying both his ruling and the fix he chose.
+- **The yield of the uncapped lenses, per lens.** Since the cap came off, the
+  ledger row carries for each lens run: raw findings, topics after its own
+  wording-duplicates were merged, and topics only it gave in this wave — all three
+  printed by `stats`. Nothing is concluded from one wave: the accumulating median
+  of "topics only this lens gave" (`wave_stats.py … median`) is what the owner
+  rules the removed cap on, and a wave that skips its record removes itself from
+  that median without saying so.
 - **The hypotheses journal** *(in the lab)*: an `enhanced` run appends its
   stability numbers (topics per run, union, share found by every run of a
   lens, pairwise overlap, cost); an `experimental` run appends one measurement
@@ -461,7 +498,10 @@ blind as the owner.
   update overwrites it.
 - **Land the outcomes** by whatever convention this repository uses for session
   outcomes.
-- State the cost in tokens and **three** numbers, never one:
+- State the cost in tokens and **three** numbers, never one. With a lab
+  configured these come from `wave_stats.py stats`, which knows each of the three
+  denominators below; without one, compute them by these definitions and say that
+  you did it by hand:
   - **precision** = his acceptances ÷ **the findings he saw** — an acceptance
     rather than your own triage. Say the raw count beside it whenever your
     refutations removed anything, because the two denominators are no longer the

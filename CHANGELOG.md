@@ -5,6 +5,61 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.7.0] — 2026-09-06
+
+The lab gets a deterministic layer. Every number the protocol asks for used to be
+computed by the main thread in prose and retyped into a markdown table; now the
+agent supplies one structured record per wave and a script computes the rest.
+It found an arithmetic error on its first run.
+
+### Added
+
+- **`tools/wave_stats.py`** — the arithmetic: the four counts, the three ratios
+  with their separate denominators, per-run and per-lens yield, topic overlaps
+  and cores, per-arm cost, and the cross-wave median of unique topics per lens.
+  `check` validates a record before anything is computed from it, because every
+  integrity error it catches — a topic attributed to a run that never named it, a
+  removal with no refutation, a lens outside the three — produces a plausible
+  number rather than an exception.
+- **`tools/test_wave_stats.py`** — plain-python guard, no framework. Each test
+  protects a number a human would read as a fact and act on.
+- **`lab/lab_template.md`, `lab/wave_template.yaml`, `lab/README.md`** — the empty
+  shape of a lab and the record schema.
+- **`lab_path` user config** — the directory holding your own lab and its
+  `waves/`. The skill resolves it at step 0b, keeps it out of every run's allowed
+  paths, and passes it to the tool.
+
+**Your lab is yours and stays in your repository.** This plugin ships the empty
+template and nothing else: a lab holds your objects, your failures and your
+owner's rulings, and a plugin update replaces its own directory, so a record kept
+here would be both exposed and destroyed. `.gitignore` refuses any real lab file
+that lands in this tree.
+
+### Changed
+
+- **Step 0b names the tool** instead of gesturing at "whatever the repository
+  provides". A skill that references machinery the installer does not have is
+  either vague or wrong, and this one was heading for both.
+- **§6 writes the wave record first**, then validates it, then reads its numbers
+  off the tool. The ledger row is no longer retyped from memory.
+- **The three ratios** are defined once, in the tool, and the skill points at it;
+  without a lab they are computed by the stated definitions and the run says so.
+
+### Found by the new layer, on the wave that motivated it
+
+Backfilling the previous wave from its ratification registry reproduced precision
+(31/31), triage agreement (15/30) and fix hit rate (31/31) exactly — and
+disagreed on one per-arm count: 19 accepted findings for the second arm where the
+hand tally said 18. The layer's split closes at 31 findings; the hand tally's
+closes at 30. The consequence is small and real: the expensive topic model is
+1.27× more cost-effective, not 1.34×.
+
+The deeper cause was not arithmetic. **Nothing said how a merged finding should
+be credited between arms**, so both numbers were defensible under rules nobody
+had written. The rule is now stated — a finding counts for an arm when at least
+one of that arm's runs produced it — which is the thing prose is not obliged to
+do and a script cannot avoid.
+
 ## [0.6.1] — 2026-09-06
 
 Fallout from lifting the cap, caught the same day: step 0c knew exactly one way

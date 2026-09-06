@@ -1,7 +1,7 @@
 {
   "name": "kai-critic",
   "description": "Adversarial critic over a proposal that reality has not yet tested — a design, a strategy, or an instruction. /kai-critic runs three lenses (beneficiary, adversary, auditor) in parallel and blind to each other, merges duplicates and failure chains, verifies every checkable claim, then puts each finding to the owner blind so the gap between his ruling and the main thread's prediction is measurable. The critic names problems and never writes solutions.",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "author": {
     "name": "Kirill Maksimov"
   },
@@ -10,6 +10,11 @@
       "type": "file",
       "title": "Desk path",
       "description": "Optional. Absolute path to your own critic desk — the accumulated craft the agent reads before every run. Leave empty to use the generic desk bundled with the plugin. A desk that names your projects, your failures and your conventions is worth far more than the generic one; keep it outside this plugin so updates never overwrite it."
+    },
+    "lab_path": {
+      "type": "directory",
+      "title": "Lab directory",
+      "description": "Optional. Absolute path to the directory holding your own lab — the ledger, the calibration history, the hypotheses, and a `waves/` subdirectory of one structured record per wave. The plugin ships only an empty template (lab/lab_template.md); your lab is private and lives in your own repository, because it holds your objects and your rulings and because a plugin update would destroy anything kept here. With this set, the skill computes every ledger number with tools/wave_stats.py instead of counting by hand. Without it, runs work normally and the ledger step is skipped."
     }
   }
 }
