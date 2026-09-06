@@ -21,9 +21,12 @@ committed here by accident.
 1. Copy `lab_template.md` into your repository — anywhere, next to the work it
    measures. Rename it as you like.
 2. Create a `waves/` directory beside it.
-3. Set the plugin's **`lab_path`** user config to that directory. The skill reads
-   it at step 0b, keeps it out of every run's allowed paths, and passes it to the
-   tool.
+3. Set the plugin's **`lab_path`** user config to that file. The skill reads it at
+   step 0b, keeps it out of every run's allowed paths, and passes it to the tool.
+
+The tool accepts either the lab **file** or the **directory** holding it, and looks
+for `waves/` beside it. Point it at the file: that is the type the config field
+takes, and it is the path a human recognises.
 
 The tool can also be pointed by hand:
 

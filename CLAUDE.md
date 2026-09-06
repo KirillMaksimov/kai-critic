@@ -1,9 +1,19 @@
 # kai-critic — repository instructions
 
 Source of the `kai-critic` Claude Code plugin: an adversarial critic over a proposal
-reality has not tested yet. Three components and nothing else — a charter
-(`agents/kai-critic.md`), a run protocol (`skills/kai-critic/SKILL.md`), and a
-generic desk (`desk/desk_critic.md`). No code, no dependencies, no MCP server.
+reality has not tested yet. What it ships:
+
+| Path | What it is |
+|---|---|
+| `agents/kai-critic.md` | the charter — one lens per invocation |
+| `agents/kai-topics.md` | the topic pass that runs first |
+| `skills/kai-critic/SKILL.md` | the run protocol, executed by the main thread |
+| `desk/desk_critic.md` | the generic desk, read before every run |
+| `lab/` | the **empty shape** of a lab: template, wave-record schema, README |
+| `tools/wave_stats.py` | the deterministic number layer, plus its guard |
+
+Python 3.10+ and `pyyaml` for the tool; nothing else, and no MCP server. Everything
+apart from `tools/` is plain markdown and runs with no dependencies at all.
 
 ## The two-file rule — the one thing not to break
 
@@ -11,11 +21,20 @@ generic desk (`desk/desk_critic.md`). No code, no dependencies, no MCP server.
 **Lab** = what we measure it by — lens ledger, precision, tics, hypotheses under
 test; read on **no** run, ever.
 
-This repository ships a desk and deliberately ships **no** lab. Never move a
-measurement into the desk, and never add a lab file here for convenience: an agent
-that has read the hypothesis stops being its test, and a lens that has read its own
-precision starts playing to the scoreboard. If a technique is confirmed enough to
-teach, it moves desk-ward as craft — never as a score.
+This repository ships a desk, and it ships the **shape** of a lab — a template with
+no data in it — and never a lab's contents. Never move a measurement into the desk,
+and never add a real lab file here for convenience: an agent that has read the
+hypothesis stops being its test, and a lens that has read its own precision starts
+playing to the scoreboard. If a technique is confirmed enough to teach, it moves
+desk-ward as craft — never as a score.
+
+**Shapes ship, data does not.** `lab/lab_template.md`, `lab/wave_template.yaml` and
+`lab/README.md` are the only files `lab/` may contain. A real lab holds its owner's
+objects, failures and rulings, so it lives in **their** repository — and it would be
+destroyed here anyway, because a plugin update replaces this directory. `.gitignore`
+enforces it: `lab/waves/` and every `lab/*.md` but the two templates are refused, so
+a private record cannot be committed here by accident. If you add a file under
+`lab/`, add its exception in the same edit or it will silently not ship.
 
 ## Editing
 
@@ -49,8 +68,28 @@ Everything here is public. Keep it that way:
 
 The charter and the skill are written to work with **no** desk and **no** lab — a
 repository that has neither still gets a full run. Anything host-specific reaches
-the plugin two ways only: the `desk_path` user option, and whatever the host
-repository's own instructions say about where its lab lives. Do not add a third.
+the plugin through **user options only**: `desk_path` and `lab_path`. Do not add a
+third mechanism, and in particular do not let the skill say "wherever this
+repository keeps it" — that phrasing was here until 2026-09-06 and it is the shape
+of the mistake below.
+
+**A skill may only name machinery the plugin ships or a user option supplies.**
+The number layer was first designed to live in the host repository, with the skill
+pointing at it as "if the repository provides a tool". Kirill stopped it: a fresh
+install would then have a run protocol talking about something that does not exist,
+and the alternative phrasing is so vague it cannot be followed. So the tool ships
+here and is invoked through `${CLAUDE_PLUGIN_ROOT}`, while the *data* it reads is
+named by a user option. Every future extension splits the same way — **the
+machinery is ours, the data is theirs** — and a skill sentence that cannot name a
+path under `${CLAUDE_PLUGIN_ROOT}` or a `${user_config.*}` value is a sentence that
+does not belong in the skill.
+
+**A `userConfig` entry's `type` must be one the host actually supports.** `file` is
+the verified one; `directory` was used here for a day and silently would not have
+rendered its field. When a path could be either, take the file and derive the rest
+from it — `tools/wave_stats.py` accepts the lab file or its directory for exactly
+this reason. `claude plugin validate .` does not catch this: it checks the
+marketplace manifest, not the option schema.
 
 ## Abbreviations in design & research output
 
