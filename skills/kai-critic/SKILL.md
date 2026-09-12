@@ -1,6 +1,6 @@
 ---
 name: kai-critic
-description: Run the Critic over a design, a strategy or an instruction — three lenses in parallel, then merge and triage, with every finding ratified by the owner. Trigger when the user asks to criticise, review or pressure-test a proposal before committing to it — «прогони критика», «покритикуй дизайн», «что здесь не так», «дай адверсарий-взгляд», «run the critic», «/kai-critic» — when a past wave is to be ratified — «ратифицируем W11», «разбери находки прошлого прогона» — and whenever this session has produced a design or strategy that meets the calling threshold in §1. NOT for a finished deliverable whose recipient has already reacted, NOT for measuring a system that already runs, and NOT for code review (use /code-review).
+description: Run the Critic over a design, a strategy or an instruction — three lenses in parallel, then merge, verify, and write every finding into a review file the owner rules on. Trigger ONLY when the user asks for it by name — «прогони критика», «покритикуй дизайн», «что здесь не так», «дай адверсарий-взгляд», «run the critic», «/kai-critic» — or when a past wave is to be ratified — «ратифицируем W11», «разбери находки прошлого прогона». Never launch it because a session has just produced a design (§1). NOT for a finished deliverable whose recipient has already reacted, NOT for measuring a system that already runs, and NOT for code review (use /code-review).
 ---
 
 # Critic — run protocol
@@ -75,18 +75,33 @@ the journal quotes those baselines by name, and a later session reading them has
 no way to see that the text moved. When it applies, say so in the ledger row and
 in the journal entry that owns the baseline.
 
-## 1. Should this run at all?
+## 1. Who starts a run
 
-Calling the Critic costs three passes and, more expensively, the owner's time
-triaging what comes back. Run when **at least one** holds:
+**The owner starts it, and nothing else does.** The skill runs when he asks for
+it — by name, by `/kai-critic`, or in his own words. It does **not** run because
+this session has just produced a design, because an object looks new or hard to
+reverse, or because some threshold appears to be met. A session that finishes a
+design says what it finished and stops there; whether the critic gets a seat is
+his call, and he makes it with the cost in front of him.
 
-- the decision is hard to reverse once built;
-- it is a new contour, not an edit to an existing one;
-- the cost of being wrong is above the trivial (client delivery, money, data loss).
+That cost, so the number is available when he asks what a run would take: a
+topic pass plus three lens passes, around a million subagent tokens on a
+grounded design of ordinary size, and — the expensive half — his own attention
+ruling on what comes back.
 
-Otherwise say plainly that the threshold is not met and do not run. A tax on
-every small design is the same negative value as an uncalibrated critic, just
-from the other side.
+You may say **once**, in one line, that the object looks small and reversible,
+or that one of the classes below fits it better. Say it once and run anyway if
+he still wants the run: a second unasked opinion about his priorities is a tax
+of exactly the kind this section used to impose.
+
+Where another instrument fits better:
+
+- **a finished deliverable whose recipient has already reacted** — reality
+  arrived, so the question is "did it work", not "will it";
+- **a system that already runs** — that needs an evaluation pipeline, one per
+  system, with no agent in the loop;
+- **code review** — a different instrument with different failure modes
+  (`/code-review`).
 
 ## 2. Frame the run
 
@@ -244,7 +259,7 @@ of three it was not: the adversary's fixes were subtractive (name a population,
 drop an unbacked claim, add one rule) and cost the beneficiary no ritual at all.
 Only a genuine trade-off goes to the owner as a decision.
 
-## 5. Triage — verify, then put every finding to the owner
+## 5. Triage — verify, then write the review file
 
 **Manual ratification is the default.** Your verdict is a **prediction**, not a
 decision. The owner rules on every finding, and the gap between his ruling and
@@ -252,6 +267,14 @@ yours is the measurement — without it, the precision in the ledger is your own
 triage of an object you often wrote yourself. Turning this off is **his** call,
 made on the evidence the ledger produces. Do not propose it because a wave went
 well; a good wave under manual control is exactly the data that has never existed.
+
+**He rules in a file, not in a dialog.** Everything that survives verification is
+written into one review file, in full, and he answers it at his own pace — by
+commenting in the file or by a list in chat, whichever suits him in the moment.
+Nothing is put to him one finding at a time: a wave of twenty findings asked one
+by one spends his evening on the dialog rather than on the findings, and the two
+waves ratified by file comment (W18, W20) cost him a fraction of that with the
+same rulings coming back.
 
 **Step 1 — verify, and keep the trace.** Every checkable claim gets checked **by
 you** before it reaches him. The `How to refute` line exists so this costs
@@ -282,10 +305,10 @@ delete the measurement, so the rule is narrow:
   rulings, and rulings are his — cutting by your own guess at his answer
   re-introduces exactly the bias manual ratification exists to measure, one step
   earlier than step 3, where nobody can see it.
-- **Everything you removed goes to him in one block, before the dialogs
-  start** — one line each: the finding's own title, and what refuted it. Not a
-  dialog apiece; a list he can scan in a minute and pull any row back from. A
-  pulled-back row enters step 3 as a normal finding.
+- **Everything you removed goes to him in one block at the top of the review
+  file** — one line each: the finding's own title, and what refuted it. A list he
+  can scan in a minute and pull any row back from; a pulled-back row is
+  renumbered into the body as a normal finding.
 
 **Verify in severity order, high first, and mark what you could not settle.** A
 low-severity finding whose refutation would cost an hour goes to him labelled
@@ -297,8 +320,12 @@ forbids.
 deduplication, what your refutations removed, what he actually saw. They are the
 only record of what the removed cap bought and what it cost (§6).
 
-**Step 2 — form both predictions and keep them to yourself.** Write them down
-*before* you open the first dialog, so neither can drift toward whatever he says:
+**Step 2 — form both predictions and keep them to yourself.** Write them into the
+sealed file of step 3 **before the review file exists on disk**, so neither can
+drift toward whatever he says. The order is not pedantry: on W14 he began
+answering the moment the note appeared, a prediction had not been written yet,
+and that finding had to be dropped from the measurement rather than "predicted"
+after the fact. Predictions first, note second, always:
 
 - **the ruling** — accepted / accepted with correction / downgraded / rejected,
   with the reason;
@@ -332,15 +359,15 @@ accepting it flat. Precision 1.00 with agreement 0.64 means the lenses were fine
 and the triage was not; read it that way round, and look for the fork before you
 write the prediction.
 
-**Step 3 — put each finding to him blind, `concept` first.** The axis sets the
-order and the packaging. `concept` findings open the wave, one per dialog, each
-with the full treatment — the owner's thinking is what they exist to buy.
-`detail` findings follow and may go two to a dialog, their fixes ready to land
-as written: the mechanical tail should cost him minutes, not attention. The axis
-itself is shown — it is the lens's claim about where the problem lives, the same
-kind of fact as severity, not a verdict. Each finding carries **two questions**
-— because a finding raises two separate matters and only one of them was ever
-being asked:
+**Step 3 — write the review file: every finding at once, blind.** The axis sets
+the order inside it — `concept` findings first, by severity, because the owner's
+thinking is what they exist to buy; `detail` findings after them, their fixes
+ready to land as written, because the mechanical tail should cost him minutes
+rather than attention. The axis itself is shown — it is the lens's claim about
+where the problem lives, the same kind of fact as severity, not a verdict. Each
+finding is **numbered** (`N1`, `N2`, … — a real id, so a whole ruling fits in a
+line: "N7 — accept, fix b") and carries **two questions**, because a
+finding raises two separate matters and only one of them was ever being asked:
 
 | Question | Options |
 |---|---|
@@ -350,19 +377,28 @@ being asked:
 **Into a task.** A finding can be true, accepted, and belong to work the owner
 has already planned or will plan — a backup, a delivery channel, a security
 pass — rather than to this object. That is a ruling of its own, not a rejected
-finding and not a fix. When he chooses it, ask one more thing: **which task** —
-an existing one from his task tree, or a new one he names. The lenses never
-learn this class exists; they keep finding such things, and it is the main
-thread's job to carry each one into the task it belongs to (§6).
+finding and not a fix. The entry's second question therefore names a slot for
+**which task** — an existing one from his task tree, or a new one he names; if
+he chooses "into a task" without naming one, that is a gap, and gaps are asked
+together at the end rather than one at a time. The lenses never learn this class
+exists; they keep finding such things, and it is the main thread's job to carry
+each one into the task it belongs to (§6).
 
-He sees:
+Each numbered entry carries:
 
 - the finding as the lens wrote it — the problem, where, what breaks, severity,
   axis;
 - **the check from step 1** — the reproduction, or the fact as it stands;
-- **the fixes you judge sensible**, one to three, each concrete enough to act on
-  as written, each with its cost;
+- **the fixes you judge sensible**, one to three, lettered `a` / `b` / `c` so he
+  can name one in a word, each concrete enough to act on as written, each with
+  its cost;
+- **two empty answer slots**, one per question above, for him to fill in place;
 - nothing else.
+
+**The removed block goes at the top of the same file** — what your refutations
+killed, one line each: the finding's title and what refuted it. He scans it in a
+minute and pulls any row back; a pulled-back row is renumbered into the body as
+a normal finding.
 
 **Before writing the first fix, put three moves on the table for yourself: patch
 the place · rebuild the contour · cut the feature.** Then propose whichever are
@@ -377,9 +413,14 @@ was never asked the question he would have said yes to.
 
 Do not rank the fixes and do not say which you would pick: that is a verdict
 wearing the clothes of a fact. If none of them is what he wants, he writes his
-own, and that is a datum rather than a failure of the dialog.
+own in the slot, and that is a datum rather than a failure of the file.
 
-Three things stay hidden until step 4, for the same reason:
+Three things stay out of the file until step 4, for the same reason. They live in
+a **separate sealed file** — never a section of the review file, however it is
+headed. Seen once: a wave put its predictions under "do not read until the
+reveal" in the very note it was about to hand over, and whether they had been
+read before the rulings could not be established afterwards. A sibling file at
+least cannot be scrolled into.
 
 - **your predicted ruling** — he anchors on it, and then the number measures
   whether he agrees with what you showed him. That is the Goodhart the
@@ -389,14 +430,44 @@ Three things stay hidden until step 4, for the same reason:
 - **which lens produced it** — the lenses carry reputations in the ledger, and a
   reputation is an anchor like any other.
 
+The sealed file goes in the lab if the repository keeps one
+(`<lab>/waves/W<NN>_sealed.md`), otherwise beside the review file; the review
+file names its path and says it is sealed until the reveal.
+
 **Never filter by your own confidence**, on either question. "Ask what to do only
 where I can see a big move" re-introduces precisely the bias under measurement —
 the one that never sees the big move in the first place.
 
-**Step 4 — reveal, then record.** Once he has ruled on all of them, show one
-table: finding · lens · your predicted ruling · his ruling · agree? · the fix he
-chose (yours, or his own). Name the disagreements plainly and do not argue them —
-a disagreement is a labelled example, which is worth more than being right. All
+**Where the review file lives:** the review note of §6, in the owning project, at
+its final path — the same file the wave lands in, written now in its
+before-rulings form rather than drafted somewhere and moved later. It opens with
+what ran and under what limits, then the removed block, then the numbered
+findings.
+
+**Then one message in chat, and nothing more:** what ran and in what mode, the
+finding counts by severity and axis, the path to the file, the run's cost, and
+the two ways he can answer. Nothing step 4 hides. Do not paste the findings into
+chat as well — the file is the artifact, and a chat copy is what the per-finding
+dialog turns back into.
+
+**He answers however suits him:** comments or filled slots in the file, or a list
+in chat by number. Accept both, in any mix, and never push him toward one form.
+If his answers leave gaps — a finding with no ruling, an "into a task" with no
+task, an accepted finding with no fix chosen — collect them all and ask them in
+**one** message at the end. That is the only question you put to him per wave.
+
+**Then wait.** No reminders, no re-summarising, no starting to land the obvious
+ones. If the session ends before he rules, that is normal: resuming enters here,
+at step 3, with the lenses not re-run, the checks not re-run, the predictions not
+re-written, and the sealed file unopened — the resuming session stays as blind as
+the owner.
+
+**Step 4 — reveal, then record.** Once he has ruled on all of them, open the
+sealed file and write one table **into the review file** — finding · lens · your
+predicted ruling · his ruling · agree? · the fix he chose (yours, or his own) —
+with the three numbers under it; in chat, the table's headline and the numbers,
+not the table again. Name the disagreements plainly and do not argue them — a
+disagreement is a labelled example, which is worth more than being right. All
 three numbers go to §6.
 
 **If a chosen fix changes the shape of the object rather than repairing a place
@@ -407,42 +478,33 @@ the ruling voided. Nothing is landed before this point, so the order is already
 safe.
 
 **Backdated ratification** (a wave triaged before this section existed) runs the
-same way: read the findings out of that wave's review note, present them blind,
-and do not show the verdicts already written there. Both questions apply there
-too — a wave triaged before this section existed was never asked what to do about
-its findings either, only whether they were true. **Enter the skill here** —
-§§1–4 already happened, so do not re-run lenses; step 0b still applies, because
-the lab is where the result goes and it names which wave is waiting.
+same way: read the findings out of that wave's review note, write them into a
+review file in the shape of step 3, and do not show the verdicts already written
+there. Both questions apply there too — a wave triaged before this section
+existed was never asked what to do about its findings either, only whether they
+were true. **Enter the skill here** — §§1–4 already happened, so do not re-run
+lenses; step 0b still applies, because the lab is where the result goes and it
+names which wave is waiting.
 
-**Parked ratification** — the wave ran in a session the owner was not in. The
-wave itself changes nothing: §§1–4 run as usual, step 1 verifies, step 2 writes
-both predictions down. Then park instead of presenting. The review-note draft
-carries what step 3 would show — each finding as the lens wrote it, its axis,
-the check, the candidate fixes — and **none of what step 4 reveals**: no lens
-names, no predicted rulings, no predicted fixes. Those go to a separate parking
-file, never to a section of the same note. Seen once: a wave parked its
-predictions below a header saying "do not read until the reveal", in the very
-note it was about to show, and whether they were read before the rulings could
-not be measured afterwards. A separate file, named in the note and sealed until
-the reveal, at least cannot be scrolled into. Park it in the lab if the
-repository keeps one; otherwise in a sibling file of the note. Close the session
-with a parking notice in chat — what ran and in what mode, the finding count by
-severity and axis, the note path, the cost, and the words that resume it later —
-and nothing that step 4 hides. Resuming enters the skill here, at step 3: lenses
-are not re-run, checks are not re-run, predictions are not re-written, and the
-parking file is opened only at the reveal — the presenting session stays as
-blind as the owner.
+**When the owner was never in the session at all,** nothing about the protocol
+changes — the file is written the same way, because the file *is* the protocol
+now. Close with the same chat message step 3 asks for, add the words that resume
+the wave later, and leave it. The old "parked ratification" mode was the
+difference between a file and a dialog; that difference is gone.
 
 ## 6. Land it
 
-- **Review note** in the owning project, wired into wherever that project lists
-  its notes. Structure: what ran and under what limits · accepted findings,
-  `concept` before `detail` and by severity within each, each with the fix he
-  chose · accepted as questions · downgraded and
-  rejected, with reasons · findings voided by a fix that changed the object's
-  shape · inter-lens disagreement as a decision · what the run said about the
-  Critic itself. Under manual ratification the **owner's ruling is the verdict of
-  record**; yours is kept beside it as the prediction, not quietly replaced by his.
+- **Review note** — the file step 3 already wrote, now completed rather than
+  written again: his rulings and chosen fixes filled in where the answer slots
+  were, the reveal table of step 4 appended, and the note wired into wherever the
+  owning project lists its notes. What it holds by the end: what ran and under
+  what limits · what verification removed · accepted findings, `concept` before
+  `detail` and by severity within each, each with the fix he chose · accepted as
+  questions · downgraded and rejected, with reasons · findings voided by a fix
+  that changed the object's shape · inter-lens disagreement as a decision · what
+  the run said about the Critic itself. Under manual ratification the **owner's
+  ruling is the verdict of record**; yours is kept beside it as the prediction,
+  not quietly replaced by his.
 - **Carry every deferred finding into its task.** With the owner's yes, add to
   the task he named a subtask whose title is the finding's one line and whose
   description carries the finding as the lens wrote it, the check, the

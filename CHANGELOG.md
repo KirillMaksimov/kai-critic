@@ -5,6 +5,46 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.8.0] — 2026-09-12
+
+Two owner decisions, both narrowing what the skill may do on its own.
+
+### Changed
+
+- **The run starts only when the owner asks.** §1 was a calling threshold — three
+  conditions, any one of which licensed a session to launch the critic over work
+  it had just produced, before showing that work. It is now a statement of who
+  starts a run: the owner, by name, and nothing else. The cost of a run is stated
+  so he can decide with it in front of him, and the skill may say once that an
+  object looks small — then run anyway if he still wants the run. The old
+  threshold also lived in the caller's own instructions (a vault `CLAUDE.md`
+  convention, a design skill's landing step); those callers drop it in the same
+  change.
+- **Ratification happens in a file, never as a per-finding interview.** Step 3
+  used to open one dialog per `concept` finding and two per `detail` finding;
+  on a twenty-finding wave that spent the owner's evening on the dialog rather
+  than on the findings. Now everything that survives verification is written into
+  the review note in its before-rulings form — numbered findings, the removed
+  block at the top, each entry carrying the check, lettered candidate fixes and
+  two empty answer slots — and he answers in the file or by a list in chat, in
+  any mix, at his own pace. The session writes it, says one thing in chat, and
+  waits; gaps in his answers are collected and asked **once**, at the end. Two
+  waves had already been ratified this way at his request (W18, W20).
+- **The sealed-predictions file is now part of the default path**, not of a
+  parked-wave mode: predictions are written **before the review file exists on
+  disk**, because on W14 he began answering the moment the note appeared and a
+  finding had to be dropped from the measurement. The separate-file rule stands
+  for the reason it was found — a "do not read until the reveal" section inside
+  the note being handed over cannot be shown to have gone unread.
+- **"Parked ratification" is gone as a mode.** It was the difference between a
+  file and a dialog, and the file is now the protocol; a wave run without the
+  owner present differs only in that nobody answers yet. Resuming still enters at
+  step 3 with lenses, checks and predictions untouched and the sealed file
+  unopened.
+- Step 4 writes its reveal table into the review file, with the headline and the
+  three numbers in chat; §6 completes that same file rather than writing a note
+  from scratch.
+
 ## [0.7.0] — 2026-09-06
 
 The lab gets a deterministic layer. Every number the protocol asks for used to be

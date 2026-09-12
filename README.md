@@ -49,7 +49,7 @@ flowchart TD
 
 **Merge is three jobs, not one.** Duplicates from two lenses *from different sides* go **up** in severity rather than into a merged blur. **Chains** — adjacent links of one failure, each small alone — are looked for on purpose; they are the payoff of separating the seats. And when two lenses cite different numbers from the same corpus, the discrepancy itself may be the finding.
 
-**Ratification is blind by default, and asks you two things.** Every checkable claim is verified first — where the finding is about behaviour, verified means a reproduction, from creating the object to the wrong result. Then each finding goes to you one dialog at a time carrying that trace, the finding as the lens wrote it, and one to three fixes the main thread judges sensible, each concrete enough to act on. You answer twice: **is it true** (accept · accept with correction · downgrade · reject) and **what do we do** (one of the offered fixes · don't fix · your own). The second question exists because the first four options only ever asked whether a finding was true, so a finding whose right answer was "rebuild this" got accepted and quietly patched. Before writing a fix the main thread is required to consider all three moves — patch the place, rebuild the contour, cut the feature — and then propose whichever are actually sensible, not a ladder. Findings arrive ordered by an **axis** each one carries: `concept` — the problem lives in the design itself and needs your judgement — first, one per dialog; `detail` — a step is under-specified and spelling it out settles it — after, two to a dialog with fixes ready to land. A wave run in a session you are not in **parks** its ratification: findings wait in the review note, predictions and lens names in a separate sealed file the note points at, and ratifying later resumes at the dialog step.
+**Ratification happens in a file, it is blind, and it asks you two things.** Every checkable claim is verified first — where the finding is about behaviour, verified means a reproduction, from creating the object to the wrong result. What survives is written into one review file: numbered findings, each with that trace, the finding as the lens wrote it, and one to three fixes the main thread judges sensible, each concrete enough to act on. You answer twice per finding: **is it true** (accept · accept with correction · downgrade · reject) and **what do we do** (one of the offered fixes · don't fix · into a task · your own). The second question exists because the first four options only ever asked whether a finding was true, so a finding whose right answer was "rebuild this" got accepted and quietly patched. Before writing a fix the main thread is required to consider all three moves — patch the place, rebuild the contour, cut the feature — and then propose whichever are actually sensible, not a ladder. Findings are ordered by an **axis** each one carries: `concept` — the problem lives in the design itself and needs your judgement — first; `detail` — a step is under-specified and spelling it out settles it — after, with fixes ready to land. Answer in the file or by a list in chat, now or next week; the main thread's predicted rulings and the lens names sit in a separate sealed file until you are done, so the number it reports measures agreement rather than your reading of its guess.
 
 Hidden until you have ruled: the main thread's predicted ruling, its predicted choice of fix, and which lens produced the finding. All three are anchors. Afterwards you see one table — finding · lens · prediction · your ruling · agree? · the fix you chose — and three numbers: **precision** (your acceptances ÷ findings), **triage agreement** (how often the prediction matched your ruling), and **fix hit rate** (how often you took an offered fix instead of writing your own). A low agreement with a high precision means the lenses are fine and the triage is not. A low fix hit rate with a high precision means the lenses find the right things and the main thread keeps reaching for the wrong instrument, usually the small one. Both are the more useful failures.
 
@@ -81,7 +81,9 @@ Install at **user** scope — the critic is meant to be reachable from any repos
 /kai-critic <the design, strategy or instruction to criticise>
 ```
 
-The skill frames the run, launches the three lenses, merges, verifies, and walks you through ratification. It also fires on its own when a session has just produced a design that clears the threshold — the point is to be called *before* the work is shown, not after someone asks for a second opinion.
+The skill frames the run, launches the three lenses, merges, verifies every checkable claim, and writes what survives into a **review file** — every finding numbered, each with the check behind it, candidate fixes and two empty answer slots. You rule in that file, or by a list in chat, at whatever pace suits you; nothing is put to you one finding at a time.
+
+It runs **only when you ask**. It does not fire on its own because a session has just produced a design — whether the critic gets a seat is your call, with the cost in front of you.
 
 ## Bring your own desk (and keep a lab)
 
@@ -100,7 +102,7 @@ A **lab** is the other half, and the plugin deliberately does not ship one. It i
 - **A finished deliverable with a real recipient who has already reacted.** Reality arrived; the question is "did it work", not "will it".
 - **A system that already runs.** That needs an evaluation pipeline, one per system, with no agent in the loop.
 - **Code review.** Different instrument, different failure modes.
-- **Small reversible edits.** See the threshold above.
+- **Small reversible edits.** A run costs a topic pass, three lens passes and your attention on what comes back; on an edit you can undo, that is the whole price for nothing. The skill will say so once and still run if you want it — the call is yours, not its.
 
 ## Layout
 
@@ -109,7 +111,7 @@ A **lab** is the other half, and the plugin deliberately does not ship one. It i
 .claude-plugin/marketplace.json  so the repo installs as its own marketplace
 agents/kai-critic.md             the charter — one lens per invocation, Read/Grep/Glob only, no Agent tool
 agents/kai-topics.md             the topic pass — stage one of a two-stage run, wide and cheap, no findings
-skills/kai-critic/SKILL.md       the run protocol: threshold, framing, launch, merge, ratification, landing
+skills/kai-critic/SKILL.md       the run protocol: who starts a run, framing, launch, merge, ratification, landing
 desk/desk_critic.md              the generic desk (override with desk_path)
 ```
 
@@ -117,7 +119,7 @@ The agent has no write tools. That is deliberate: it proposes desk edits in a `#
 
 ## Status
 
-`0.7.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its second question — what to do about a finding, asked separately from whether the finding is true — is newer still, and the number attached to it is the youngest of the three.
+`0.8.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its second question — what to do about a finding, asked separately from whether the finding is true — is newer still, and the number attached to it is the youngest of the three.
 
 ## License
 
