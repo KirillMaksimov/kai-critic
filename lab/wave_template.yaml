@@ -1,24 +1,36 @@
 # One record per wave. Copy into <your lab>/waves/W<NN>.yaml and fill it in
-# during §6 of the run, after the owner has ruled.
+# during §6 of the run: the runs and the findings before the owner has answered,
+# his answers once he has.
 #
 # This file is the SOURCE OF TRUTH for every number in the lab. The main thread
-# writes it once; `tools/wave_stats.py` computes the ledger row, the three
-# ratios, the per-lens yield and the cross-wave medians from it. Nothing is
-# counted by hand, and nothing is retyped into prose.
+# writes it once; `tools/wave_stats.py` computes the ledger row, the main
+# thread's ratios, the per-lens yield and the cross-wave medians from it. Nothing
+# is counted by hand, and nothing is retyped into prose.
 #
 # Validate before trusting anything:
 #   python tools/wave_stats.py --lab <your lab dir> check W<NN>
 
-wave: W22
-date: '2026-09-07'
+wave: W27
+date: '2026-09-28'
 object: design # design | strategy | instruction
 mode: grounded # blind | grounded
 effort: normal # normal | enhanced | experimental
 
-# The charter the lenses actually ran under. This is what separates eras: a
-# charter change invalidates comparison with every wave before it, and the tool
-# refuses to pool across the change rather than quietly averaging over it.
-charter_version: '0.6.1'
+# Two texts decide what this wave's numbers mean, and the record names both.
+#
+# `charter_version` — the charter the LENSES actually ran under. It decides what
+# they return: raw findings, topics, unique topics. Agent definitions are
+# snapshotted when the session starts, so this can be older than the skill.
+#
+# `skill_version` — the skill the MAIN THREAD worked under. It decides what the
+# owner is asked and so what the ratios measure. Before 0.9.0 he was asked "is it
+# true?"; from 0.9.0 "was it useful?". The tool computes each record by the rules
+# of its own skill era and never puts the two eras in one table.
+#
+# A change to either text cuts ITS numbers off from every wave before it and
+# leaves the other's alone.
+charter_version: '0.8.0'
+skill_version: '0.9.0'
 
 # Optional pointers, for the human reading the lab later.
 note: path/to/review-note.md
@@ -55,27 +67,102 @@ runs:
     topics: [T5, T6]
 
 # ---------------------------------------------------------------------------
-# One entry per finding AFTER the merge. A finding the main thread refuted before
-# showing it carries `status: removed` and the refutation that removed it: it
-# leaves every denominator but stays visible, so the removal can never flatter
-# the precision it is measured against.
+# One entry per finding AFTER the merge.
 #
 # `from` lists the runs that named it — this is what makes a topic's uniqueness
 # computable, and a run id that does not exist is a validation error, not a
 # smaller number.
+#
+# `block` says who decided (skill §5 step 2):
+#   owner — ruling on it meant choosing what a person sees or gets. Carries the
+#           owner's two answers and the main thread's two sealed predictions.
+#   agent — every sensible fix gave a person the same thing; the main thread
+#           decided and showed the decision as a row. Carries `correction` only.
 # ---------------------------------------------------------------------------
 findings:
-  - id: F1
+  - id: N1
     topic: T4
     from: [ben-1, adv-1] # two seats from different sides — severity goes up
     severity: high # high | medium | low
     axis: concept # concept | detail
     status: shown # shown | removed
-    predicted: accept_with_correction
-    ruling: accept # accept | accept_with_correction | downgrade | into_task | reject
-    fix: mine # mine | own | none
+    block: owner # owner | agent
+    predicted_useful: refined
+    useful: changed # changed | refined | noise — HIS mark; leave out if he left it blank
+    predicted: fix
+    ruling: fix # fix | no_fix | into_task | until_shown
+    fix: own # mine | own | delegated | none
 
-  - id: F2
+  # "Your choice": he handed the decision back. Nobody's repair was chosen, so it
+  # leaves the fix-hit denominator and is counted beside it — it is a datum about
+  # the sorting (this belonged in the agent block), not about the repertoire.
+  - id: N2
+    topic: T9
+    from: [ben-1]
+    severity: medium
+    axis: concept
+    status: shown
+    block: owner
+    predicted_useful: refined
+    useful: refined
+    predicted: fix
+    ruling: fix
+    fix: delegated
+
+  # "I will know when I see it": not an acceptance, not a rejection. No mark, no
+  # repair; the finding stays open and §6 carries it to where the showing happens.
+  # A blank mark is left out, never guessed.
+  - id: N3
+    topic: T1
+    from: [ben-1]
+    severity: high
+    axis: concept
+    status: shown
+    block: owner
+    predicted_useful: noise
+    predicted: no_fix
+    ruling: until_shown
+
+  # The main thread's own block. `accepted` is written for every row he left
+  # uncorrected once he has returned the file — silence is assent. A correction
+  # is `amended` (the decision stands, made more exact) or `overturned` (a
+  # different decision replaces it). Leave `correction` out until he has answered.
+  - id: N4
+    topic: T2
+    from: [adv-1]
+    severity: high
+    axis: detail
+    status: shown
+    block: agent
+    correction: accepted
+
+  - id: N5
+    topic: T5
+    from: [aud-1]
+    severity: medium
+    axis: detail
+    status: shown
+    block: agent
+    correction: amended
+
+  # A row he took back from the main thread's block: written out in full in his
+  # block and ruled on like the rest. `returned: true` keeps the datum.
+  - id: N6
+    topic: T3
+    from: [adv-1]
+    severity: medium
+    axis: detail
+    status: shown
+    block: owner
+    returned: true
+    useful: changed
+    ruling: into_task
+    fix: none
+
+  # A finding the main thread refuted before showing it: it leaves every
+  # denominator but stays visible, so the removal can never flatter a number it
+  # is measured against.
+  - id: N7
     topic: T11
     from: [adv-1]
     severity: medium
@@ -86,12 +173,19 @@ findings:
       writer goes through it.
 
   # A finding of the main thread's own, outside the lenses: `from` stays empty.
-  - id: F3
+  - id: N8
     topic: T12
     from: []
     severity: medium
     axis: detail
     status: shown
-    predicted: accept
-    ruling: into_task
-    fix: none
+    block: agent
+    correction: accepted
+
+# ---------------------------------------------------------------------------
+# Records written under a skill before 0.9.0 keep their own vocabulary and stay
+# valid as they are — `predicted` / `ruling`: accept | accept_with_correction |
+# downgrade | into_task | reject; `fix`: mine | own | none; no `block`, no
+# `useful`, no `skill_version`. Do not convert them: a precision re-expressed as
+# a usefulness share would be a number nobody measured.
+# ---------------------------------------------------------------------------

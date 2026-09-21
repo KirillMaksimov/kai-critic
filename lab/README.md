@@ -45,9 +45,10 @@ or through the `KAI_CRITIC_LAB` environment variable.
 ## The wave record
 
 One YAML file per wave in `<lab>/waves/W<NN>.yaml`, written by the main thread in
-§6 after the owner has ruled. It is the **source of truth for every number in the
-lab**: the ledger row, the three ratios, the per-lens yield and the cross-wave
-medians are all computed from it, and none of them is ever counted by hand.
+§6 — the runs and the findings before the owner has answered, his answers once he
+has. It is the **source of truth for every number in the lab**: the ledger row,
+the main thread's ratios, the per-lens yield and the cross-wave medians are all
+computed from it, and none of them is ever counted by hand.
 
 `wave_template.yaml` beside this file is a filled-in example. The fields:
 
@@ -55,23 +56,58 @@ medians are all computed from it, and none of them is ever counted by hand.
 |---|---|
 | `wave`, `date` | the wave's id and when it ran |
 | `object`, `mode`, `effort` | as given to the lenses: `design`/`strategy`/`instruction`, `blind`/`grounded`, `normal`/`enhanced`/`experimental` |
-| `charter_version` | **the charter the lenses actually ran under** — this is what separates eras; the tool refuses to pool numbers across a charter change |
+| `charter_version` | **the charter the lenses actually ran under** — it decides what they return, and it separates the eras of the lens-side numbers |
+| `skill_version` | **the skill the main thread worked under** — it decides what the owner is asked, and it separates the eras of the main thread's ratios. Required from 0.9.0; a record without it is read as the era before |
 | `note`, `paths` | optional pointers for whoever reads the lab later |
 | `tokens.total`, `tokens.by_arm` | cost; per-arm only on experimental waves |
 | `runs[]` | one entry per **run**, not per lens — at `enhanced` a lens runs twice and the two runs are the measurement. Each carries `lens`, optional `arm` and `model`, `raw_findings` (what it returned before any merging) and `topics` (the topic ids it named, after its own restatements were merged) |
-| `findings[]` | one entry per finding **after** the merge: `topic`, `from` (the runs that named it), `severity`, `axis`, `status`, and — once the owner has ruled — `predicted`, `ruling`, `fix` |
+| `findings[]` | one entry per finding **after** the merge: `topic`, `from` (the runs that named it), `severity`, `axis`, `status`, `block`, and — once the owner has answered — his answers beside the main thread's predictions (below) |
+
+What a shown finding carries depends on its `block` — who decided it (skill §5,
+step 2):
+
+| `block` | Fields | Values |
+|---|---|---|
+| `owner` — ruling on it meant choosing what a person sees or gets | `predicted_useful`, `useful` | `changed` (a decision is different after it) · `refined` (the decision stands, the text got more exact) · `noise`. **His mark; a blank is left out, never guessed** |
+| | `predicted`, `ruling` | `fix` · `no_fix` · `into_task` · `until_shown` ("I will know when I see it" — the finding stays open) |
+| | `fix` | `mine` · `own` · `delegated` ("your choice") · `none`. Only a `ruling: fix` carries a repair |
+| | `returned: true` | he took this row back from the main thread's block |
+| `agent` — every sensible fix gave a person the same thing; the main thread decided | `correction` | `accepted` (no correction — silence is assent once he has returned the file) · `amended` (the decision stands, made more exact) · `overturned` (a different decision replaces it). Left out until he has answered |
 
 Two fields carry protection rather than data:
 
 - **`status: removed` with `removed_reason`.** A finding the main thread refuted
   before showing it leaves every denominator but stays visible. Without this the
-  removal would silently flatter the precision it is measured against.
+  removal would silently flatter the numbers it is measured against.
 - **`from`.** It ties a finding to the runs that named it, which is what makes a
   topic's uniqueness computable. A run id that does not exist is a validation
   error, not a smaller number.
 
 A finding of the main thread's own — outside the lenses — carries `from: []`. Its
 topic belongs to no run, and it counts toward no lens's uniqueness.
+
+## Two eras, two axes
+
+Two texts decide what a wave's numbers mean. **The charter** decides what the
+lenses return — raw findings, topics, unique topics. **The skill** decides what
+the main thread asks the owner — and so what its ratios measure. A change to
+either cuts *its* numbers off from every wave before it, and leaves the other's
+alone. That is why a record names both versions, and why they can differ inside
+one session: agent definitions are snapshotted when the session starts, the skill
+is read when it is invoked.
+
+| Boundary | What it cut | What survives it |
+|---|---|---|
+| charter 0.6.0 — the cap on findings per lens came off | raw findings, topics, unique topics per lens; `median` reports the two sides apart | — |
+| skill 0.9.0 — "is it true?" became "was it useful?" | precision, triage agreement, fix hit rate: `stats` computes each record by the rules of its own era, and `ledger` prints one table per era with the boundary named between them | everything lens-side, the `median` included — the charter did not move |
+
+**Records from before skill 0.9.0 keep their own vocabulary and stay valid as they
+are**: `predicted` / `ruling` of `accept` · `accept_with_correction` · `downgrade` ·
+`into_task` · `reject`, `fix` of `mine` · `own` · `none`, no `block`, no `useful`.
+Do not convert them — a precision re-expressed as a usefulness share would be a
+number nobody measured. `check` refuses a record that mixes the two vocabularies,
+because a mislabelled record is computed by the wrong rules and prints a plausible
+ratio.
 
 ## The numbers
 
@@ -82,18 +118,30 @@ python tools/wave_stats.py --lab <dir> ledger        # every wave, one table
 python tools/wave_stats.py --lab <dir> median        # median unique topics per lens
 ```
 
-**The three ratios are all computed over findings the owner actually saw**, never
-over the raw pile:
+**Every ratio is computed over findings the owner actually saw**, never over the
+raw pile. From skill 0.9.0:
 
-- **precision** = accepted ÷ ruled on. `accept`, `accept_with_correction`,
-  `downgrade` and `into_task` all count as accepted: a downgrade does not deny the
-  finding, and a deferral is an acceptance that landed in other work.
-- **triage agreement** = predictions that matched ÷ findings carrying both a
-  prediction and a ruling. A finding whose prediction was never written leaves the
-  denominator rather than counting as a miss.
-- **fix hit rate** = the owner took one of your fixes ÷ accepted-and-not-deferred
-  findings with a fix recorded. Rejected findings needed no fix; deferred ones got
-  a task instead of one.
+- **usefulness** = his marks over the findings of **his block that he rated**:
+  the share that `changed` a decision is the headline, the share of `noise` stands
+  beside it, and the count rated goes with both. It replaces precision, which an
+  owner who does not read the code answers with "you checked, so yes" — a ratio
+  that saturates and measures the main thread's verification, not the lenses.
+- **triage agreement**, twice: predicted usefulness against his mark, and
+  predicted decision against his decision. A finding missing either half of a pair
+  leaves that denominator rather than counting as a miss.
+- **fix hit rate** = he took one of the main thread's fixes ÷ findings where he
+  chose between one of those and his own. `delegated` is **out of the
+  denominator** and counted beside it: he chose nobody's repair, so it says
+  nothing about the repertoire — it says the finding was sorted into the wrong
+  block. Not fixing, a task and "when I see it" chose no repair either.
+- **the main thread's decisions** = accepted · amended · overturned, over the rows
+  of its own block he has answered, with the rows he took back counted beside.
+
+Before skill 0.9.0 the three were **precision** (accepted ÷ ruled on, with
+`accept`, `accept_with_correction`, `downgrade` and `into_task` all accepting),
+**triage agreement** (predicted ruling against his) and **fix hit rate** (`mine` ÷
+accepted-and-not-deferred findings with a fix recorded). They are still computed
+for those records, by those rules.
 
 **Per lens:** runs, raw findings, topics, **unique topics** (topics no *other lens*
 gave — not merely the ones its own second run missed), core (topics every run of
@@ -102,15 +150,22 @@ against the lens's union.
 
 **Per arm**, on experimental waves: accepted findings, tokens, accepted per
 million, and — when the wave has a topic matrix — topics and topics unique to that
-arm. **A finding counts for an arm when at least one of that arm's runs is in its
+arm. "Accepted" follows the wave's own era: before skill 0.9.0, his ruling accepted
+it; from 0.9.0, he rated it anything but `noise` in his block, or has returned the
+file on a row of the main thread's block — an overturned decision is still a
+finding that was real. The count that `changed` a decision is printed beside it.
+**A finding counts for an arm when at least one of that arm's runs is in its
 `from`.** A merged finding therefore counts for both arms, and the per-arm sums
 legitimately exceed the number of findings shown. The rule is stated here because
 the first wave measured without it produced a per-arm count nobody could
 reproduce, and it was out by one.
 
-**Across waves:** the median of unique topics per lens, split by charter era. A
-wave with no topic matrix — a backfilled one, typically — is named and left out
-rather than silently thinning the median.
+**Across waves:** the median of unique topics per lens, split by charter era — and
+by nothing else: a skill change does not cut it, because topics are named by the
+lenses and the charter is their text. A wave with no topic matrix — a backfilled
+one, typically — is named and left out rather than silently thinning the median.
+The main thread's ratios are **never** aggregated across waves by the tool, in
+either era.
 
 ## What the layer does not do
 

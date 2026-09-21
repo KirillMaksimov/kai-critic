@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """Deterministic number layer for the Critic's lab.
 
-Every number the run protocol asks for -- the three ratios, the per-run and
-per-lens yield, the topic overlaps, the cross-wave median a charter hypothesis is
-judged on -- is arithmetic over one structured record per wave. This module owns
-that arithmetic so the main thread never retypes a count into prose.
+Every number the run protocol asks for -- the main thread's ratios, the per-run
+and per-lens yield, the topic overlaps, the cross-wave median a charter hypothesis
+is judged on -- is arithmetic over one structured record per wave. This module
+owns that arithmetic so the main thread never retypes a count into prose.
+
+Two texts decide what a wave's numbers mean, and a record names both. The
+CHARTER decides what the lenses return (raw findings, topics, unique topics). The
+SKILL decides what the main thread asks the owner and therefore what its ratios
+measure. A change to either cuts its own numbers off from every wave before it,
+and leaves the other's alone.
 
 What stays with the agent: deciding that two differently-worded findings are the
 same topic, whether a refutation held, whether a finding is real. What comes here:
@@ -51,19 +57,50 @@ MODES = ("blind", "grounded")
 OBJECTS = ("design", "strategy", "instruction")
 EFFORTS = ("normal", "enhanced", "experimental")
 
-# A ruling that counts as the owner agreeing the finding was real. `into_task` is
-# an acceptance that lands in planned work rather than in this object (skill §5),
-# and a downgrade lowers severity without denying the finding -- both count.
+# ---- the truth-question era: skill before 0.9.0 --------------------------------
+# The owner was asked "is it true?". A ruling that counts as him agreeing the
+# finding was real: `into_task` is an acceptance that lands in planned work rather
+# than in this object, and a downgrade lowers severity without denying the finding.
 RULINGS = ("accept", "accept_with_correction", "downgrade", "into_task", "reject")
 ACCEPTING = ("accept", "accept_with_correction", "downgrade", "into_task")
 
 # Whose repair the owner took. `mine` is the only one that scores.
 FIXES = ("mine", "own", "none")
 
+# ---- the usefulness era: skill 0.9.0 and later ---------------------------------
+# Findings are shown in two blocks: the owner's (a decision about what a person
+# sees or gets) and the main thread's own (mechanism only, shown as a row he may
+# correct).
+BLOCKS = ("owner", "agent")
+
+# The owner's first answer, best first: the finding changed a decision, refined
+# one, or he would have lost nothing without it. Truth is no longer asked -- it
+# is the main thread's verification, and a ratio built on "you checked, so yes"
+# saturates and measures the checker.
+USEFUL = ("changed", "refined", "noise")
+
+# His second answer. `until_shown` is "I will know when I see it": not an
+# acceptance, not a rejection, and not a downgrade -- the finding stays open.
+DECISIONS = ("fix", "no_fix", "into_task", "until_shown")
+
+# `delegated` is "your choice". He chose nobody's repair, so it says nothing
+# about the repertoire and leaves the fix-hit denominator; counted as `mine` it
+# flattered that ratio on the wave that prompted the split.
+FIXES_V2 = ("mine", "own", "delegated", "none")
+
+# What became of a main-thread decision once he had returned the file. Silence is
+# assent, so `accepted` is written by the main thread for every uncorrected row.
+CORRECTIONS = ("accepted", "amended", "overturned")
+
 # The charter version that removed the seven-finding cap. Waves under an earlier
 # charter are a different population and are reported apart: comparing across a
 # charter change is exactly what such a change makes illegal.
 CAP_LIFTED_IN = (0, 6, 0)
+
+# The skill version that replaced "is it true?" with "was it useful?". The main
+# thread's ratios on either side of it answer different questions and never share
+# a table, let alone an average. Lens-side numbers are untouched by it.
+USEFULNESS_FROM = (0, 9, 0)
 
 
 def _version_tuple(v: str) -> tuple[int, ...]:
@@ -99,6 +136,12 @@ class Finding:
     predicted: str | None = None
     ruling: str | None = None
     fix: str | None = None
+    # usefulness era only
+    block: str | None = None
+    predicted_useful: str | None = None
+    useful: str | None = None
+    correction: str | None = None
+    returned: bool = False
 
 
 @dataclass
@@ -117,6 +160,20 @@ class Wave:
     def capped(self) -> bool:
         """True when this wave ran under a charter that still capped findings."""
         return _version_tuple(self.charter) < CAP_LIFTED_IN
+
+    @property
+    def skill(self) -> str:
+        """The skill text the main thread worked under. Records written before
+        the field existed carry `charter_version` alone -- the two were one
+        number then, and nothing in those records depends on telling them apart."""
+        return str(self.raw.get("skill_version") or self.charter)
+
+    @property
+    def usefulness_era(self) -> bool:
+        """True when the owner was asked "was it useful?" rather than "is it
+        true?" -- which decides both the vocabulary a record may use and which
+        ratios can be computed from it."""
+        return _version_tuple(self.skill) >= USEFULNESS_FROM
 
     @property
     def has_topics(self) -> bool:
@@ -179,6 +236,11 @@ def parse(doc: dict, path: Path | None = None) -> Wave:
                 predicted=f.get("predicted"),
                 ruling=f.get("ruling"),
                 fix=f.get("fix"),
+                block=f.get("block"),
+                predicted_useful=f.get("predicted_useful"),
+                useful=f.get("useful"),
+                correction=f.get("correction"),
+                returned=bool(f.get("returned")),
             )
         )
     return wave
@@ -220,6 +282,15 @@ def validate(wave: Wave) -> list[str]:
         val = doc.get(key)
         if val is not None and val not in allowed:
             problems.append(f"`{key}: {val}` — допустимо только {'/'.join(allowed)}")
+    # Agent definitions are snapshotted at session start and the skill is read at
+    # invocation, so one session can run an old charter under a new skill. From
+    # the version where that distinction began to matter, the record says both.
+    if not doc.get("skill_version") and _version_tuple(wave.charter) >= USEFULNESS_FROM:
+        problems.append(
+            "нет `skill_version` — с 0.9.0 запись называет и чартер линз, и скилл "
+            "главного потока: числа главного потока сравнимы только внутри одной "
+            "версии скилла"
+        )
 
     run_ids = [r.id for r in wave.runs]
     if len(set(run_ids)) != len(run_ids):
@@ -268,12 +339,92 @@ def validate(wave: Wave) -> list[str]:
                 f"находка {f.id}: снята без `removed_reason` — снимает только прогнанное "
                 "опровержение, и оно записывается"
             )
-        if f.status == "removed" and f.ruling:
+        if f.status == "removed" and (f.ruling or f.useful or f.correction):
             problems.append(f"находка {f.id}: снята до показа, но несёт вердикт владельца")
-        for key, allowed in (("predicted", RULINGS), ("ruling", RULINGS), ("fix", FIXES)):
-            val = getattr(f, key)
-            if val is not None and val not in allowed:
-                problems.append(f"находка {f.id}: `{key}: {val}` — допустимо {'/'.join(allowed)}")
+        problems.extend(
+            _validate_usefulness(f) if wave.usefulness_era else _validate_truth(f)
+        )
+    return problems
+
+
+def _vocab(f: Finding, pairs) -> list[str]:
+    return [
+        f"находка {f.id}: `{key}: {val}` — допустимо {'/'.join(allowed)}"
+        for key, allowed in pairs
+        if (val := getattr(f, key)) is not None and val not in allowed
+    ]
+
+
+def _validate_truth(f: Finding) -> list[str]:
+    """A record of the truth-question era. A usefulness-era field in it means the
+    record is mislabelled, and the ratios would be computed by the wrong rules."""
+    problems = _vocab(f, (("predicted", RULINGS), ("ruling", RULINGS), ("fix", FIXES)))
+    stray = [
+        k for k in ("block", "useful", "predicted_useful", "correction") if getattr(f, k)
+    ]
+    if stray or f.returned:
+        problems.append(
+            f"находка {f.id}: поля {', '.join(stray) or 'returned'} принадлежат эпохе "
+            "вопроса «полезна ли», а запись — эпохи «правда ли»; если волна шла по "
+            "скиллу 0.9.0 или новее, укажи `skill_version`"
+        )
+    return problems
+
+
+def _validate_usefulness(f: Finding) -> list[str]:
+    problems = _vocab(
+        f,
+        (
+            ("block", BLOCKS),
+            ("predicted_useful", USEFUL),
+            ("useful", USEFUL),
+            ("predicted", DECISIONS),
+            ("ruling", DECISIONS),
+            ("fix", FIXES_V2),
+            ("correction", CORRECTIONS),
+        ),
+    )
+    if f.status != "shown":
+        return problems
+    if not f.block:
+        problems.append(
+            f"находка {f.id}: показана, но без `block` — owner (решает владелец) или "
+            "agent (решил главный поток)"
+        )
+    if f.block == "agent":
+        # The main thread's own block is measured directly -- did the decision
+        # stand -- so an owner's answer or a prediction there is a record filled
+        # in against the wrong block, not extra data.
+        stray = [
+            k for k in ("predicted_useful", "useful", "predicted", "ruling", "fix")
+            if getattr(f, k)
+        ]
+        if stray:
+            problems.append(
+                f"находка {f.id}: блок agent, но несёт {', '.join(stray)} — у решённого "
+                "главным потоком есть только `correction`"
+            )
+        if f.returned:
+            problems.append(
+                f"находка {f.id}: `returned: true` ставится на находке, которая уже "
+                "переехала в блок owner"
+            )
+    if f.block == "owner":
+        if f.correction:
+            problems.append(
+                f"находка {f.id}: блок owner, но несёт `correction` — поправка бывает "
+                "только к решению главного потока"
+            )
+        took_a_fix = f.fix in ("mine", "own", "delegated")
+        if f.ruling == "fix" and not took_a_fix:
+            problems.append(
+                f"находка {f.id}: `ruling: fix` без `fix` — чья починка: mine/own/delegated"
+            )
+        if f.ruling != "fix" and took_a_fix:
+            problems.append(
+                f"находка {f.id}: `fix: {f.fix}` при `ruling: {f.ruling}` — починку "
+                "несёт только решение `fix`"
+            )
     return problems
 
 
@@ -344,6 +495,23 @@ def lens_stats(wave: Wave) -> list[dict]:
     return out
 
 
+def _counts_as_accepted(wave: Wave, f: Finding) -> bool:
+    """What "accepted" means for a per-arm count, by era.
+
+    Truth era: the owner's ruling accepted it. Usefulness era: in his block, he
+    rated it anything but noise; in the main thread's block, he has returned the
+    file -- an overturned decision is still a finding that was real. Unanswered
+    findings count for nobody in either era.
+    """
+    if not wave.usefulness_era:
+        return f.ruling in ACCEPTING
+    if f.status != "shown":
+        return False
+    if f.block == "agent":
+        return f.correction is not None
+    return f.useful in ("changed", "refined")
+
+
 def arm_stats(wave: Wave) -> list[dict]:
     """Per experimental arm, when the wave had them: the A/B comparison."""
     arms = sorted({r.arm for r in wave.runs if r.arm})
@@ -361,17 +529,20 @@ def arm_stats(wave: Wave) -> list[dict]:
     for arm in arms:
         others: set[str] = set().union(*(t for a, t in topics.items() if a != arm))
         tokens = ((wave.raw.get("tokens") or {}).get("by_arm") or {}).get(arm)
-        accepted = sum(
-            1
-            for f in wave.findings
-            if f.ruling in ACCEPTING and by_arm[arm] & set(f.frm)
-        )
+        mine = [f for f in wave.findings if by_arm[arm] & set(f.frm)]
+        accepted = sum(1 for f in mine if _counts_as_accepted(wave, f))
         out.append(
             {
                 "arm": arm,
                 "topics": len(topics[arm]) if matrix else None,
                 "unique": len(topics[arm] - others) if matrix else None,
                 "accepted": accepted,
+                # the discriminating count of the usefulness era; blank before it
+                "changed": (
+                    sum(1 for f in mine if f.useful == "changed")
+                    if wave.usefulness_era
+                    else None
+                ),
                 "tokens": tokens,
                 "per_mtok": round(accepted / (tokens / 1_000_000), 1) if tokens else None,
                 "jaccard": None,
@@ -384,6 +555,7 @@ def arm_stats(wave: Wave) -> list[dict]:
                 "topics": None,
                 "unique": None,
                 "accepted": None,
+                "changed": None,
                 "tokens": None,
                 "per_mtok": None,
                 "jaccard": round(_jaccard(topics[arms[0]], topics[arms[1]]) or 0, 2),
@@ -392,16 +564,86 @@ def arm_stats(wave: Wave) -> list[dict]:
     return out
 
 
-def wave_stats(wave: Wave) -> dict:
-    """The four counts and the three ratios, each with its own denominator.
+def _ratio(num: int, den: int) -> float | None:
+    return round(num / den, 2) if den else None
 
-    All three are computed over findings the owner actually SAW: a finding the
+
+def wave_stats(wave: Wave) -> dict:
+    """The four counts, then the main thread's ratios under the rules of the
+    wave's own skill era -- each ratio with its own denominator.
+
+    Every ratio is computed over findings the owner actually SAW: a finding the
     main thread refuted never reached him, and counting it would let the removal
-    flatter the precision it is supposed to be measured against.
+    flatter the number it is supposed to be measured against.
     """
     shown = [f for f in wave.findings if f.status == "shown"]
     removed = [f for f in wave.findings if f.status == "removed"]
+    common = {
+        "wave": wave.id,
+        "date": wave.raw.get("date"),
+        "charter": wave.charter,
+        "skill": wave.skill,
+        "capped": wave.capped,
+        "era": "usefulness" if wave.usefulness_era else "truth",
+        "raw_total": sum(r.raw_findings for r in wave.runs),
+        "after_merge": len(wave.findings),
+        "removed": len(removed),
+        "shown": len(shown),
+        "tokens": (wave.raw.get("tokens") or {}).get("total"),
+    }
+    era = _usefulness_ratios(shown) if wave.usefulness_era else _truth_ratios(shown)
+    return {**common, **era}
 
+
+def _usefulness_ratios(shown: list[Finding]) -> dict:
+    """Skill 0.9.0 and later: usefulness, two agreements, fix hit rate, and what
+    became of the main thread's own decisions."""
+    owner = [f for f in shown if f.block == "owner"]
+    agent = [f for f in shown if f.block == "agent"]
+
+    # A blank mark is unrated, never a mark: folding blanks into "accepted" is
+    # the main thread's judgment inside the owner's number.
+    rated = [f for f in owner if f.useful]
+    marks = {u: sum(1 for f in rated if f.useful == u) for u in USEFUL}
+
+    both_useful = [f for f in owner if f.predicted_useful and f.useful]
+    hit_useful = sum(1 for f in both_useful if f.predicted_useful == f.useful)
+    both_decision = [f for f in owner if f.predicted and f.ruling]
+    hit_decision = sum(1 for f in both_decision if f.predicted == f.ruling)
+
+    # He chose between a repair of the main thread's and one of his own. "Your
+    # choice" chose neither; not fixing, a task and "when I see it" chose none.
+    chose = [f for f in owner if f.ruling == "fix" and f.fix in ("mine", "own")]
+    took_mine = [f for f in chose if f.fix == "mine"]
+
+    answered = [f for f in agent if f.correction]
+    corrections = {c: sum(1 for f in answered if f.correction == c) for c in CORRECTIONS}
+
+    return {
+        "shown_owner": len(owner),
+        "shown_agent": len(agent),
+        "marks": marks,
+        "rated_n": f"{len(rated)}/{len(owner)}",
+        "changed": _ratio(marks["changed"], len(rated)),
+        "changed_n": f"{marks['changed']}/{len(rated)}",
+        "noise": _ratio(marks["noise"], len(rated)),
+        "noise_n": f"{marks['noise']}/{len(rated)}",
+        "agree_useful": _ratio(hit_useful, len(both_useful)),
+        "agree_useful_n": f"{hit_useful}/{len(both_useful)}",
+        "agree_decision": _ratio(hit_decision, len(both_decision)),
+        "agree_decision_n": f"{hit_decision}/{len(both_decision)}",
+        "fix_hit": _ratio(len(took_mine), len(chose)),
+        "fix_hit_n": f"{len(took_mine)}/{len(chose)}",
+        "delegated": sum(1 for f in owner if f.fix == "delegated"),
+        "until_shown": sum(1 for f in owner if f.ruling == "until_shown"),
+        "corrections": corrections,
+        "answered_n": f"{len(answered)}/{len(agent)}",
+        "returned": sum(1 for f in owner if f.returned),
+    }
+
+
+def _truth_ratios(shown: list[Finding]) -> dict:
+    """Skill before 0.9.0: precision, triage agreement, fix hit rate."""
     ruled = [f for f in shown if f.ruling]
     accepted = [f for f in ruled if f.ruling in ACCEPTING]
 
@@ -417,25 +659,13 @@ def wave_stats(wave: Wave) -> dict:
     ]
     took_mine = [f for f in fixable if f.fix == "mine"]
 
-    def ratio(num: int, den: int) -> float | None:
-        return round(num / den, 2) if den else None
-
     return {
-        "wave": wave.id,
-        "date": wave.raw.get("date"),
-        "charter": wave.charter,
-        "capped": wave.capped,
-        "raw_total": sum(r.raw_findings for r in wave.runs),
-        "after_merge": len(wave.findings),
-        "removed": len(removed),
-        "shown": len(shown),
-        "precision": ratio(len(accepted), len(ruled)),
+        "precision": _ratio(len(accepted), len(ruled)),
         "precision_n": f"{len(accepted)}/{len(ruled)}",
-        "agreement": ratio(len(matched), len(predicted)),
+        "agreement": _ratio(len(matched), len(predicted)),
         "agreement_n": f"{len(matched)}/{len(predicted)}",
-        "fix_hit": ratio(len(took_mine), len(fixable)),
+        "fix_hit": _ratio(len(took_mine), len(fixable)),
         "fix_hit_n": f"{len(took_mine)}/{len(fixable)}",
-        "tokens": (wave.raw.get("tokens") or {}).get("total"),
     }
 
 
@@ -492,6 +722,46 @@ def _table(rows: list[dict], cols: list[tuple[str, str]]) -> str:
     return "\n".join(out)
 
 
+ERA_NAMES = {
+    "truth": "вопрос «правда ли»",
+    "usefulness": "вопрос «полезна ли»",
+}
+
+ERA_BOUNDARY = (
+    "  Числа главного потока через эту границу не сравниваются: до скилла "
+    + ".".join(map(str, USEFULNESS_FROM))
+    + " владельца спрашивали,\n  правда ли находка, после — полезна ли она. Сырые "
+    "находки, темы и уникальные темы линз\n  границу переживают: их задаёт чартер, "
+    "а не скилл."
+)
+
+
+def _print_usefulness(s: dict) -> None:
+    m, c = s["marks"], s["corrections"]
+    print(
+        f"  из них: на решение владельцу {s['shown_owner']} · "
+        f"решено главным потоком {s['shown_agent']}"
+    )
+    print("\nЧисла главного потока (знаменатель — показанное, не сырое):")
+    print(
+        f"  польза            изменила решение {m['changed']} · уточнила {m['refined']} · "
+        f"шум {m['noise']}  (оценено {s['rated_n']})"
+    )
+    print(f"  доля изменивших   {_fmt(s['changed'])}  ({s['changed_n']})")
+    print(f"  доля шума         {_fmt(s['noise'])}  ({s['noise_n']})")
+    print(f"  согласие: польза  {_fmt(s['agree_useful'])}  ({s['agree_useful_n']})")
+    print(f"  согласие: решение {_fmt(s['agree_decision'])}  ({s['agree_decision_n']})")
+    print(
+        f"  попадание починок {_fmt(s['fix_hit'])}  ({s['fix_hit_n']}) · "
+        f"отдано агенту {s['delegated']} · ждут показа {s['until_shown']}"
+    )
+    print(
+        f"  решения главного потока: принято {c['accepted']} · уточнено {c['amended']} · "
+        f"изменено {c['overturned']} · возвращено владельцу {s['returned']}  "
+        f"(ответ получен по {s['answered_n']})"
+    )
+
+
 def cmd_check(args, waves_dir: Path) -> int:
     waves = [load(args.wave, waves_dir)] if args.wave else load_all(waves_dir)
     if not waves:
@@ -521,16 +791,22 @@ def cmd_stats(args, waves_dir: Path) -> int:
 
     s = wave_stats(w)
     era = "с потолком" if s["capped"] else "без потолка"
-    print(f"\n=== {w.id} · {s['date']} · чартер {s['charter']} ({era}) ===\n")
+    print(
+        f"\n=== {w.id} · {s['date']} · чартер {s['charter']} ({era}) · "
+        f"скилл {s['skill']} ({ERA_NAMES[s['era']]}) ===\n"
+    )
     print("Четыре счёта волны:")
     print(f"  сырых от всех линз : {s['raw_total']}")
     print(f"  после сведения     : {s['after_merge']}")
     print(f"  снято опровержением: {s['removed']}")
     print(f"  показано владельцу : {s['shown']}")
-    print("\nТри числа (знаменатель — показанное, не сырое):")
-    print(f"  precision       {_fmt(s['precision'])}  ({s['precision_n']})")
-    print(f"  согласие триажа {_fmt(s['agreement'])}  ({s['agreement_n']})")
-    print(f"  fix hit rate    {_fmt(s['fix_hit'])}  ({s['fix_hit_n']})")
+    if s["era"] == "usefulness":
+        _print_usefulness(s)
+    else:
+        print("\nТри числа (знаменатель — показанное, не сырое):")
+        print(f"  precision       {_fmt(s['precision'])}  ({s['precision_n']})")
+        print(f"  согласие триажа {_fmt(s['agreement'])}  ({s['agreement_n']})")
+        print(f"  fix hit rate    {_fmt(s['fix_hit'])}  ({s['fix_hit_n']})")
     if s["tokens"]:
         print("  токенов         " + f"{s['tokens']:,}".replace(",", " "))
 
@@ -558,8 +834,8 @@ def cmd_stats(args, waves_dir: Path) -> int:
             _table(
                 arms,
                 [("arm", "рука"), ("topics", "тем"), ("unique", "уник"),
-                 ("accepted", "принято"), ("tokens", "токенов"), ("per_mtok", "на млн"),
-                 ("jaccard", "жаккар")],
+                 ("accepted", "принято"), ("changed", "измен"), ("tokens", "токенов"),
+                 ("per_mtok", "на млн"), ("jaccard", "жаккар")],
             )
         )
     print()
@@ -572,15 +848,24 @@ def cmd_ledger(args, waves_dir: Path) -> int:
         print(f"нет записей волн в {waves_dir}")
         return 0
     rows = [wave_stats(w) for w in waves]
-    print("\n=== Все волны ===\n")
-    print(
-        _table(
-            rows,
-            [("wave", "волна"), ("date", "дата"), ("charter", "чартер"), ("capped", "потолок"),
-             ("raw_total", "сырых"), ("shown", "показ"), ("precision", "prec"),
-             ("agreement", "согл"), ("fix_hit", "fix")],
-        )
-    )
+    head = [("wave", "волна"), ("date", "дата"), ("charter", "чартер"), ("skill", "скилл"),
+            ("capped", "потолок"), ("raw_total", "сырых"), ("shown", "показ")]
+    # One table per skill era, never one column through both: a precision and a
+    # usefulness share side by side read as one series, and they are not.
+    truth = [r for r in rows if r["era"] == "truth"]
+    useful = [r for r in rows if r["era"] == "usefulness"]
+    if truth:
+        print(f"\n=== Все волны · {ERA_NAMES['truth']} ===\n")
+        print(_table(truth, head + [("precision", "prec"), ("agreement", "согл"),
+                                    ("fix_hit", "fix")]))
+    if truth and useful:
+        print("\n" + ERA_BOUNDARY)
+    if useful:
+        print(f"\n=== Все волны · {ERA_NAMES['usefulness']} ===\n")
+        print(_table(useful, head + [("rated_n", "оценено"), ("changed", "измен"),
+                                     ("noise", "шум"), ("agree_useful", "согл:польза"),
+                                     ("agree_decision", "согл:реш"), ("fix_hit", "fix"),
+                                     ("delegated", "отдано")]))
     print()
     return 0
 
@@ -599,6 +884,8 @@ def cmd_median(args, waves_dir: Path) -> int:
     if res["skipped"]:
         print(f"\n  Без матрицы тем, в медиану не вошли: {', '.join(res['skipped'])}")
         print("  (запись волны есть, но `topics:` у прогонов пуст — обычно бэкфилл старой волны)")
+    print("\n  Эпохи здесь — по чартеру. Правка скилла эту медиану не рвёт: темы называют")
+    print("  линзы, а их текст задаёт чартер.")
     print()
     return 0
 

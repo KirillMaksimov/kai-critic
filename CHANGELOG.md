@@ -5,6 +5,103 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.9.0] — 2026-09-21
+
+The review file is rewritten for the person who actually reads it: an owner who
+decides what the system does for a person and does not open the code. One wave
+showed all four ways the old form failed him — a coined name read as an ordinary
+word, so a verified finding was doubted; a finding that could only be judged by
+looking at the built thing, with no ruling to say so; a finding written through
+the internal names of a script's steps, understood not at all; and a finding that
+was true while its meaning for a person was a different one. The lenses and the
+charter are untouched: the language of a finding is born where the main thread
+translates it, and that is where the change is.
+
+**This release cuts the main thread's numbers off from every wave before it.**
+Precision, triage agreement and fix hit rate as measured under a skill before
+0.9.0 answered a different question and do not compare with anything after. The
+charter did not move, so **the lens-side numbers — raw findings, topics, unique
+topics, and the cross-wave median of unique topics per lens — run on through the
+boundary unbroken.** Say so in the ledger row of the first wave after it, and in
+every journal entry that quotes a baseline from before.
+
+### Changed
+
+- **Findings are sorted by who decides (§5, step 2).** *Requirement level* — what
+  a person observes and gets: behaviour on the screens, the facts shown and their
+  freshness, disk, load, his own time. *Specification level* — how the system is
+  built so the requirement holds: queues, locks, tables, the order of steps in a
+  script. A finding goes to the owner's block when ruling on it means choosing
+  what a person will see or get; to the main thread's block when every sensible
+  fix gives the person the same thing. The working test is to write the scenario
+  first: if the options cannot be told apart by what a person sees, the choice is
+  the main thread's; if unsure, it is the owner's, still in his terms. Sorting is
+  not a filter — both blocks are in the file, and any row of the main thread's is
+  the owner's to correct or take back.
+- **A finding opens with scenario and effect.** Who does what → what they see or
+  get that is wrong → what it threatens; a sequence is written as steps with
+  actors. Internal names appear only as an address in parentheses after a phrase
+  that already said it plainly — strike every parenthesis and the entry must still
+  read whole. A coined name that is also an ordinary word is described, not named.
+  Fixes are written as what changes for the person and what it costs.
+- **The first question is "was it useful?", not "is it true?"** — three steps: it
+  changed a decision · it refined one · noise. Truth stays with the main thread's
+  verification and is stated in the file as a fact with its trace. An owner who
+  does not read the code answers "is it true" with "you checked, so yes"; the
+  ratio built on that saturated and measured the checker.
+- **Two new answers to "what do we do".** *When I see it* — the finding cannot be
+  judged on paper; it is not accepted, not rejected and not downgraded, it stays
+  open, and §6 carries it to the task where the showing will happen. *Your
+  choice* — the owner hands the decision back; recorded as `fix: delegated`,
+  which is out of the fix-hit denominator instead of scoring as a hit.
+- **The main thread's block is measured directly**: one row per finding — effect
+  for a person, what was chosen and why, a slot for the owner's correction.
+  Silence is assent; a correction is an amendment or an overturn; the count is
+  decisions accepted · amended · overturned. No predictions are made for it.
+- **Four numbers instead of three (§6)**: usefulness (share that changed a
+  decision, share of noise, count rated) · triage agreement, once for the mark
+  and once for the decision · fix hit rate without the delegated · the main
+  thread's decisions. A blank answer is recorded as blank and never folded into a
+  mark.
+- **Step 0c says which numbers each kind of change cuts**: a charter change the
+  lens-side ones, a skill change the main thread's ratios — and nothing lens-side
+  as long as framing, launch and merge are left alone.
+
+### Added
+
+- **`skill_version` in the wave record — a second era axis.** `charter_version`
+  alone could not express this release: the plugin has one version, but the
+  charter is snapshotted when a session starts and the skill is read when it is
+  invoked, so they can differ inside one session, and they separate different
+  numbers. Required from 0.9.0; a record without it is read as the era before.
+- **`wave_stats.py` computes each record by the rules of its own skill era.**
+  `stats` names both versions in its header; `ledger` prints one table per era
+  with the boundary stated between them, never one column through both; `median`
+  stays split by charter only and says why a skill change does not cut it. The
+  tool aggregates no main-thread ratio across waves in either era.
+- **New record fields**: `block` (`owner` / `agent`), `useful` and
+  `predicted_useful`, `correction`, `returned`; `ruling` takes `fix` · `no_fix` ·
+  `into_task` · `until_shown`; `fix` takes `delegated`. `check` refuses a record
+  that mixes the two eras' vocabularies, an owner's mark on a main-thread row, a
+  repair on a decision that chose none — each of which would print a plausible
+  ratio.
+- The guard covers the new era, the untouched old one, and the shipped
+  `wave_template.yaml` itself, which must pass `check`.
+
+### Compatibility
+
+Records written before 0.9.0 stay valid as they are and are computed as they
+were. Do not convert them: a precision re-expressed as a usefulness share is a
+number nobody measured.
+
+### Depends on
+
+The line between the two blocks uses a working glossary — *requirement* for what
+a person observes and gets, *specification* for how the system is built so the
+requirement holds — that was a draft when this release was written. If the
+ratified wording differs, the names of the blocks and the list of what counts as
+requirement level follow it; the mechanics do not change.
+
 ## [0.8.0] — 2026-09-12
 
 Two owner decisions, both narrowing what the skill may do on its own.

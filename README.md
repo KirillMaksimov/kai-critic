@@ -37,8 +37,9 @@ flowchart TD
     L2 --> M
     L3 --> M
     M --> V[Verify every checkable claim]
-    V --> R[Ratify blind: is it true? what do we do?]
-    R --> LAND[Review note + ledger + three numbers]
+    V --> S[Sort by who decides: the owner / the main thread]
+    S --> R[Ratify blind: was it useful? what do we do?]
+    R --> LAND[Review note + ledger + four numbers]
 ```
 
 **Threshold.** Three passes plus your triage time is not free. Run when at least one holds: the decision is hard to reverse; it is a new contour, not an edit; the cost of being wrong is above trivial. A tax on every small design is the same negative value as an uncalibrated critic, from the other side.
@@ -49,9 +50,15 @@ flowchart TD
 
 **Merge is three jobs, not one.** Duplicates from two lenses *from different sides* go **up** in severity rather than into a merged blur. **Chains** — adjacent links of one failure, each small alone — are looked for on purpose; they are the payoff of separating the seats. And when two lenses cite different numbers from the same corpus, the discrepancy itself may be the finding.
 
-**Ratification happens in a file, it is blind, and it asks you two things.** Every checkable claim is verified first — where the finding is about behaviour, verified means a reproduction, from creating the object to the wrong result. What survives is written into one review file: numbered findings, each with that trace, the finding as the lens wrote it, and one to three fixes the main thread judges sensible, each concrete enough to act on. You answer twice per finding: **is it true** (accept · accept with correction · downgrade · reject) and **what do we do** (one of the offered fixes · don't fix · into a task · your own). The second question exists because the first four options only ever asked whether a finding was true, so a finding whose right answer was "rebuild this" got accepted and quietly patched. Before writing a fix the main thread is required to consider all three moves — patch the place, rebuild the contour, cut the feature — and then propose whichever are actually sensible, not a ladder. Findings are ordered by an **axis** each one carries: `concept` — the problem lives in the design itself and needs your judgement — first; `detail` — a step is under-specified and spelling it out settles it — after, with fixes ready to land. Answer in the file or by a list in chat, now or next week; the main thread's predicted rulings and the lens names sit in a separate sealed file until you are done, so the number it reports measures agreement rather than your reading of its guess.
+**Ratification happens in a file, it is blind, and it is written for someone who will not open the code.** Every checkable claim is verified first — where the finding is about behaviour, verified means a reproduction, from creating the object to the wrong result. What survives is **sorted by who decides**. A finding is yours when ruling on it means choosing what a person will see or get — behaviour on the screens, the facts shown and how fresh they are, disk, load, your own time. It is the main thread's when every sensible fix gives the person the same thing and the fixes differ only in mechanism: queues, locks, tables, the order of steps in a script. Nothing is filtered — both blocks are in the file.
 
-Hidden until you have ruled: the main thread's predicted ruling, its predicted choice of fix, and which lens produced the finding. All three are anchors. Afterwards you see one table — finding · lens · prediction · your ruling · agree? · the fix you chose — and three numbers: **precision** (your acceptances ÷ findings), **triage agreement** (how often the prediction matched your ruling), and **fix hit rate** (how often you took an offered fix instead of writing your own). A low agreement with a high precision means the lenses are fine and the triage is not. A low fix hit rate with a high precision means the lenses find the right things and the main thread keeps reaching for the wrong instrument, usually the small one. Both are the more useful failures.
+**Your block** is written as scenario and effect: who does what → what they see or get that is wrong → what it threatens. Internal names appear only as an address in parentheses, after a phrase that has already said it in plain words; fixes are written as what changes for the person and what it costs. You answer twice per finding: **was it useful** (it changed a decision · it refined one · noise) and **what do we do** (one of the offered fixes · don't fix · into a task · when I see it · your choice · your own). Whether the finding is *true* is not asked: that was the main thread's job, and it is stated as a fact with its trace beside it. An owner who does not read the code answers "is it true" with "you checked, so yes" — a ratio built on that saturates and measures the checker. Usefulness is the question only you can answer, and the one that tells one version of the critic from another.
+
+**The main thread's block** is one row per finding: the effect for a person, what it chose and why, and an empty slot for your correction. Silence is assent; a correction amends the decision or overturns it; any row can be taken back and ruled on in full.
+
+Before writing a fix the main thread is required to consider all three moves — patch the place, rebuild the contour, cut the feature — and then propose whichever are actually sensible, not a ladder. Findings are ordered by an **axis** each one carries: `concept` — the problem lives in the design itself and needs your judgement — first; `detail` — a step is under-specified and spelling it out settles it — after. Answer in the file or by a list in chat, now or next week.
+
+Hidden until you have answered, in a separate sealed file: the main thread's predicted mark of usefulness, its predicted decision, and which lens produced the finding. All three are anchors. Afterwards you see the predictions beside your answers and four numbers: **usefulness** (the share of the findings you rated that changed a decision, with the share of noise beside it), **triage agreement** (how often the predictions matched you), **fix hit rate** (how often you took an offered fix instead of writing your own — "your choice" is left out of it, not scored as a hit), and **the main thread's own decisions** (accepted · amended · overturned). A low agreement with a high usefulness means the lenses are fine and the triage is not. Many "your choice" answers mean the line between the blocks sits too far toward you; overturned rows mean it sits too far toward the main thread.
 
 ## Effort, sweeps and the topic pass
 
@@ -81,7 +88,7 @@ Install at **user** scope — the critic is meant to be reachable from any repos
 /kai-critic <the design, strategy or instruction to criticise>
 ```
 
-The skill frames the run, launches the three lenses, merges, verifies every checkable claim, and writes what survives into a **review file** — every finding numbered, each with the check behind it, candidate fixes and two empty answer slots. You rule in that file, or by a list in chat, at whatever pace suits you; nothing is put to you one finding at a time.
+The skill frames the run, launches the three lenses, merges, verifies every checkable claim, and writes what survives into a **review file** in two blocks: the decisions that are yours — each finding as a scenario and its effect for a person, with the check behind it, candidate fixes and two empty answer slots — and the decisions the main thread took itself, one row each with room for your correction. You rule in that file, or by a list in chat, at whatever pace suits you; nothing is put to you one finding at a time.
 
 It runs **only when you ask**. It does not fire on its own because a session has just produced a design — whether the critic gets a seat is your call, with the cost in front of you.
 
@@ -119,7 +126,7 @@ The agent has no write tools. That is deliberate: it proposes desk edits in a `#
 
 ## Status
 
-`0.8.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its second question — what to do about a finding, asked separately from whether the finding is true — is newer still, and the number attached to it is the youngest of the three.
+`0.9.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its newest part is the form of the review file — findings sorted by who decides and written as scenario and effect, usefulness asked instead of truth — and no wave has been measured under it yet. The line between the two blocks follows a working glossary (*requirement*: what a person observes and gets; *specification*: how the system is built so the requirement holds) that is itself still a draft; the names of the blocks may move with it.
 
 ## License
 

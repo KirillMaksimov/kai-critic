@@ -100,9 +100,24 @@ cost one round of confusion.
 
 ## Ratification registry
 
-*(One row per finding, when the owner rules on each of them himself. This table
-is what `tools/wave_stats.py` cross-checks; the wave record in `waves/` is the
-source of truth, and this is the human-readable face of it.)*
+*(One row per finding. The wave record in `waves/` is the source of truth, and
+this is the human-readable face of it. Two tables, because the two blocks of the
+review file are measured differently — skill §5, steps 2 and 3.)*
 
-| Wave | # | Lens | Sev | My prediction | Owner's ruling | Agreed | Decision |
-|---|---|---|---|---|---|---|---|
+**The owner's block** — findings where ruling meant choosing what a person sees
+or gets. His mark of usefulness and his decision, each beside the prediction that
+was sealed before he saw the file.
+
+| Wave | # | Lens | Sev | Predicted usefulness | His mark | Agreed | Predicted decision | His decision | Whose fix |
+|---|---|---|---|---|---|---|---|---|---|
+
+**The main thread's block** — findings it decided itself and showed as a row.
+Silence is assent; a correction is an amendment or an overturn.
+
+| Wave | # | Lens | Sev | What the main thread chose | His correction | Accepted / amended / overturned |
+|---|---|---|---|---|---|---|
+
+*(A lab that was kept before skill 0.9.0 has an older table here — prediction,
+ruling, agreed, decision — from the time the first question was "is it true?".
+Leave it as it is and start these two beneath it: the rows on either side of that
+boundary answer different questions.)*

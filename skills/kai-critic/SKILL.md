@@ -35,8 +35,8 @@ offer that, never create it unasked.
 
 **When a lab directory is configured, its numbers are computed, never counted.**
 `${CLAUDE_PLUGIN_ROOT}/tools/wave_stats.py` owns every deterministic figure the
-protocol asks for — the four counts, the three ratios, per-run and per-lens
-yield, topic overlaps, the cross-wave medians. You supply the judgment it cannot
+protocol asks for — the four counts, the main thread's ratios, per-run and
+per-lens yield, topic overlaps, the cross-wave medians. You supply the judgment it cannot
 make (which findings are one topic, which refutation held) as one wave record;
 it supplies the arithmetic. Counting any of it by hand re-introduces exactly the
 error the layer exists to prevent, and the mistake does not raise — it prints a
@@ -68,12 +68,20 @@ hypothesis is settled by landing the change and watching the ledger accumulate
 across ordinary waves — so what it needs from a run is not a configuration but a
 number recorded every time. Offer the shape that fits, and say which it is.
 
-**A charter or skill change invalidates comparison with every wave before it.**
-After one, this wave's numbers may be compared with waves under the same text,
-and with the other arm of its own run, but never with a baseline from earlier —
-the journal quotes those baselines by name, and a later session reading them has
-no way to see that the text moved. When it applies, say so in the ledger row and
-in the journal entry that owns the baseline.
+**A charter or skill change invalidates comparison with every wave before it —
+each for its own numbers.** The charter decides what the lenses return, so a
+charter change cuts the lens-side numbers: raw findings, topics, unique topics,
+and everything computed from them. This skill decides what the owner is asked and
+how his answers are counted, so a skill change cuts the main thread's ratios —
+and, as long as it leaves framing, launch and merge (§§2–4) alone, **nothing
+lens-side**: the median of unique topics per lens runs on through it. After a
+change, that side's numbers may be compared with waves under the same text, and
+with the other arm of its own run, but never with a baseline from earlier — the
+journal quotes those baselines by name, and a later session reading them has no
+way to see that the text moved. When it applies, say so in the ledger row and in
+the journal entry that owns the baseline. The wave record names both versions
+(§6) for exactly this reason, and the tool keeps the two sides of a skill change
+in separate tables rather than in one column.
 
 ## 1. Who starts a run
 
@@ -262,9 +270,10 @@ Only a genuine trade-off goes to the owner as a decision.
 ## 5. Triage — verify, then write the review file
 
 **Manual ratification is the default.** Your verdict is a **prediction**, not a
-decision. The owner rules on every finding, and the gap between his ruling and
-yours is the measurement — without it, the precision in the ledger is your own
-triage of an object you often wrote yourself. Turning this off is **his** call,
+decision. The owner rules on every finding that is his to rule on — step 2 draws
+that line, and step 3 shows him the rest — and the gap between his answer and your
+prediction is the measurement: without it, the usefulness in the ledger is your
+own opinion of an object you often wrote yourself. Turning this off is **his** call,
 made on the evidence the ledger produces. Do not propose it because a wave went
 well; a good wave under manual control is exactly the data that has never existed.
 
@@ -282,9 +291,10 @@ minutes. Run it.
 
 Where the finding is about **behaviour**, the check has to end in a
 **reproduction** — from creating the object to the wrong result: the input, the
-call, what came out, and what should have come out. That trace is what he rules
-on in step 3, and it is worth more than the lens's description of it, because the
-description is the part that can be wrong.
+call, what came out, and what should have come out. That trace is what the
+finding rests on in step 3 — he is told the fact in his own terms, and the trace
+stays beside it as its address — and it is worth more than the lens's description
+of it, because the description is the part that can be wrong.
 
 Where the finding is about **absence** — a dimension the proposal never addresses
 — there is nothing to run, and inventing a trace would be manufacturing evidence.
@@ -320,61 +330,150 @@ forbids.
 deduplication, what your refutations removed, what he actually saw. They are the
 only record of what the removed cap bought and what it cost (§6).
 
-**Step 2 — form both predictions and keep them to yourself.** Write them into the
+**Step 2 — sort by who decides, then form both predictions and keep them to
+yourself.**
+
+**Sort first — two levels, two blocks.** He decides what the system does for a
+person; how it is built is yours. So before anything is predicted or written,
+each finding that survived step 1 is placed by the level its decision lives on.
+
+- **Requirement level** — what a person observes and gets: behaviour on the
+  screens, the facts shown and how fresh they are, space on disk, load on the
+  network and the machine, his own time and attention.
+- **Specification level** — how the system is built so that a requirement holds:
+  queues, locks, processes, tables, logs, classes, the order of steps inside a
+  script.
+
+A finding goes to **his block** when ruling on it means choosing what a person
+will see or get: a requirement is missing; two requirements collide; the
+proposal breaks a requirement he has already set, and the ways out differ in what
+the person ends up with; a sensible fix cuts a feature; or the sensible fixes
+differ in cost by an order he would want to know about — a rebuild against a
+patch is his money. It goes to **your block** when every sensible fix gives
+the person the same thing and the fixes differ only in mechanism.
+
+**The working test: write the scenario first.** If you cannot say what a person
+would see or get differently between the options, the choice is yours. If you are
+unsure, it is his — and still written in his terms; doubt is never a licence to
+hand him the mechanism.
+
+**Sorting is not a filter.** Every finding that survived step 1 appears in the
+file, in one block or the other; your block is shown to him row by row, and any
+row is his to correct or to take back. What step 1 forbids — cutting by your own
+guess at his answer — stays forbidden: sorting decides who answers, never whether
+a finding is seen.
+
+**Then predict.** Write both predictions into the
 sealed file of step 3 **before the review file exists on disk**, so neither can
 drift toward whatever he says. The order is not pedantry: on W14 he began
 answering the moment the note appeared, a prediction had not been written yet,
 and that finding had to be dropped from the measurement rather than "predicted"
-after the fact. Predictions first, note second, always:
+after the fact. Predictions first, note second, always. They are made only for
+the findings that go to **his** block:
 
-- **the ruling** — accepted / accepted with correction / downgraded / rejected,
-  with the reason;
-- **which of your proposed fixes he will take**, or that he will write his own.
+- **how useful he will find it** — it changed a decision / it refined one / noise;
+- **what he will do** — take one of your proposed fixes, write his own, hand the
+  choice to you, not fix, move it into a task, or wait until he can see the thing.
 
-The second is the newer half and the more uncomfortable one. It measures whether
-you offer the moves he actually wants, and the failure it catches is a standing
-one: an agent proposes the repair it can write, which is almost always the local
-one.
+Findings in your own block get no prediction: what is measured there is direct —
+whether your decision stood.
+
+The second is the more uncomfortable one. It measures whether you offer the moves
+he actually wants, and the failure it catches is a standing one: an agent proposes
+the repair it can write, which is almost always the local one.
 
 **A finding about a channel outside the object — diagnostics, backup,
-delivery, monitoring, security — is predicted as "accepted, deferred to a
-task", not as a plain "accepted".** Measured three waves running: the owner
-accepts such a finding and moves it to work he has already planned, and the
-main thread, having noticed the pattern in the aggregate, still predicts a
-plain acceptance row by row. Predict the deferral.
+delivery, monitoring, security — is predicted as "into a task", not as one of
+your fixes.** Measured three waves running: the owner agrees with such a finding
+and moves it to work he has already planned, and the main thread, having noticed
+the pattern in the aggregate, still predicts a plain repair row by row. Predict
+the deferral.
 
-**Before writing a plain "accepted", ask whether the finding opens a decision or
-closes one.** A finding that names a defect with one obvious repair closes the
-topic and is usually accepted as written. A finding that exposes a fork — where
-the thing should live, who owns it, which of two contours it belongs to — is
-accepted *with a correction*, because the owner supplies the half the lens could
-not: the choice. Predicting a plain "accepted" on a fork-shaped finding is the
-single most repeatable triage error measured so far.
-
-Evidence: on wave W14 the triage agreement was 0.64 against a precision of 1.00,
-and **all three misses were this shape** — twice the owner added a decision the
+**Before predicting one of your own letters, ask whether the finding opens a
+decision or closes one.** A finding that names a defect with one obvious repair
+closes the topic, and he usually takes the repair as written. A finding that
+exposes a fork — where the thing should live, who owns it, which of two contours
+it belongs to — is where he writes **his own**, because the owner supplies the
+half the lens could not: the choice. Predicting one of your letters on a
+fork-shaped finding is the single most repeatable triage error measured so far:
+on one wave every miss was this shape — twice the owner added a decision the
 finding had not contained (deliver it as its own repository, put the layer above
 the mechanisms rather than inside each), once he lowered the cost instead of
-accepting it flat. Precision 1.00 with agreement 0.64 means the lenses were fine
-and the triage was not; read it that way round, and look for the fork before you
-write the prediction.
+taking it flat. When the lenses look fine and the agreement is low, the triage is
+what failed; read it that way round, and look for the fork before you write the
+prediction.
 
-**Step 3 — write the review file: every finding at once, blind.** The axis sets
-the order inside it — `concept` findings first, by severity, because the owner's
-thinking is what they exist to buy; `detail` findings after them, their fixes
-ready to land as written, because the mechanical tail should cost him minutes
-rather than attention. The axis itself is shown — it is the lens's claim about
-where the problem lives, the same kind of fact as severity, not a verdict. Each
-finding is **numbered** (`N1`, `N2`, … — a real id, so a whole ruling fits in a
-line: "N7 — accept, fix b") and carries **two questions**, because a
-finding raises two separate matters and only one of them was ever being asked:
+**Step 3 — write the review file: every finding at once, blind, in the owner's
+terms.**
+
+**The reader will not open the code, and should not have to.** He decides what
+the system does for a person; how it is built is yours. So the file speaks in
+what a person does, sees and gets, and it puts to him only the decisions that are
+his: the two blocks of step 2 become the two blocks of the file, and every line
+he reads is written as **scenario and effect**. The lenses are not
+part of this — they write in the language of the object, with addresses in the
+code, and they should. The translation is yours, and this step is where it
+happens.
+
+**His block — "your decisions".** The axis sets the order inside it — `concept`
+findings first, by severity, because the owner's thinking is what they exist to
+buy; `detail` findings after them, because the tail should cost him minutes
+rather than attention. Each finding is **numbered** (`N1`, `N2`, … — a real id,
+one sequence through both blocks, so a whole ruling fits in a line: "N7 —
+changed a decision, fix b"). Each entry carries, in this order:
+
+1. **The title — the effect, in one line a person would say**: "after the
+   rebuild, the Refresh-all button does nothing for hours" — not the name of the
+   component that causes it.
+2. **Scenario → effect → stake**: who does what → what they see or get that is
+   wrong → what it threatens. When the finding is a sequence, write it as steps
+   with actors — who sent what to whom and what came back — because a conclusion
+   shown without its path can be believed but not judged.
+3. **Internal names only as an address** — in parentheses, after the phrase that
+   has already said it in plain words: "the job that refreshes the prices
+   (`price_sync.py`)". Never as the subject of a sentence. The check is
+   mechanical: strike every parenthesis and every code span, and the entry must
+   still read whole. Seen once: a finding whose effect for a person was real and
+   was in the text — a button that would sit idle for hours — reached the owner
+   under the names of two phases of a script and three mechanisms to choose
+   from. He understood none of it, said so, and answered with a requirement for
+   the button instead; the finding was useful and its form nearly killed it.
+4. **A name the object coined that is also an ordinary word is the dangerous
+   kind.** A priority class called "explicit" reads as "explicitly set", and the
+   reader then doubts a finding that was verified. Describe the thing instead of
+   naming it; if the name must appear, quote it and say once what it is.
+5. **Severity and axis.** The axis is shown — it is the lens's claim about where
+   the problem lives, the same kind of fact as severity, not a verdict.
+6. **Verified — stated as a fact, never asked.** One sentence in his terms saying
+   what you checked and what came back, then the trace from step 1 under it as
+   the address for whoever wants it. Whether a finding is true was your job and
+   step 1 did it; asking him re-opens a question he has no means to answer short
+   of reading the code. A finding you could not settle says so: `not verified —
+   <what it would take>`.
+7. **The fixes you judge sensible**, one to three, lettered `a` / `b` / `c` so he
+   can name one in a word — each written as **what changes for the person, and
+   what it costs** (time to build, what is lost, what risk stays), the mechanism
+   in parentheses if at all. "b) the button asks every collector to start now;
+   the separate night sequence goes away (half a day)" — not "b) drop phases A
+   and C of the chain".
+8. **Two empty answer slots**, one per question below, for him to fill in place.
+9. Nothing else.
 
 | Question | Options |
 |---|---|
-| **Is it true?** | accept · accept with correction · downgrade severity · reject |
-| **What do we do?** | your proposed fixes, one to three · don't fix · **into a task** · his own, in free text |
+| **Was it useful?** | it changed a decision · it refined one · noise |
+| **What do we do?** | your proposed fixes, one to three · don't fix · **into a task** · **when I see it** · **your choice** · his own, in free text |
 
-**Into a task.** A finding can be true, accepted, and belong to work the owner
+**Was it useful — not "is it true".** An owner who does not read the code answers
+"is it true" with "you checked, so yes", and leaves the slot empty; the ratio
+built on those answers saturates and measures your verification, not the lenses.
+Usefulness is the question only he can answer, and the one that tells one version
+of the critic from another. **It changed a decision** — after this finding
+something is different: what the system does, a requirement, the plan. **It
+refined one** — the decision stands; the text or the details got more exact.
+**Noise** — he would have lost nothing without it.
+
+**Into a task.** A finding can be real, useful, and belong to work the owner
 has already planned or will plan — a backup, a delivery channel, a security
 pass — rather than to this object. That is a ruling of its own, not a rejected
 finding and not a fix. The entry's second question therefore names a slot for
@@ -384,16 +483,37 @@ together at the end rather than one at a time. The lenses never learn this class
 exists; they keep finding such things, and it is the main thread's job to carry
 each one into the task it belongs to (§6).
 
-Each numbered entry carries:
+**When I see it.** Some findings cannot be judged on paper — whether a screen
+carries too much is a thing he will know when he looks at it. That is a ruling
+of its own: not an acceptance, not a rejection, and not a lowered severity. The
+object is built as designed, the finding stays open, and §6 carries it to where
+the showing will happen.
 
-- the finding as the lens wrote it — the problem, where, what breaks, severity,
-  axis;
-- **the check from step 1** — the reproduction, or the fact as it stands;
-- **the fixes you judge sensible**, one to three, lettered `a` / `b` / `c` so he
-  can name one in a word, each concrete enough to act on as written, each with
-  its cost;
-- **two empty answer slots**, one per question above, for him to fill in place;
-- nothing else.
+**Your choice.** He may hand any decision back. That is a datum about your
+sorting — the finding belonged in your block — and never a hit for whichever fix
+you then pick (§6).
+
+**Your block — "decided by the main thread".** One row per finding, numbered in
+the same sequence:
+
+- the effect for a person, in one phrase — or, plainly, that nothing changes for
+  a person, and what stays as it was;
+- **what you chose and why**, in one sentence;
+- the address, in parentheses;
+- an **empty slot for his correction**.
+
+No usefulness question here and no menu of fixes: he is not being asked, he is
+being shown. **Silence is assent** — once he has returned the file, a row without
+a correction stands. A correction either amends your decision or overturns it
+(step 4). He may also take a row back: it is then written out in full in his
+block, renumbered, and ruled on like the rest. The row is short on purpose; the
+full finding, its check and the alternatives you weighed go into an appendix at
+the end of the file, so the evidence is kept without being put in his way.
+
+**The file is written in the owner's language.** The codes it coins (`N1`, `T4`)
+are listed at its top with their meaning, one per line, and a term is explained
+where it first appears — the same duty, one level down, as keeping the mechanism
+in parentheses.
 
 **The removed block goes at the top of the same file** — what your refutations
 killed, one line each: the finding's title and what refuted it. He scans it in a
@@ -406,10 +526,12 @@ actually sensible here. They may all be patches; one may be an amputation; the
 point is not to offer a ladder but to have considered the rungs. What he sees is
 your judgement of this finding, not a menu of scales.
 
-This is the flaw the step used to have. Its four options all asked whether the
-finding was *true*, and none asked what the answer to it was — so a finding whose
-right answer was "rebuild this" got accepted and quietly patched, and the owner
-was never asked the question he would have said yes to.
+This is the flaw the step once had. Its only question was about the finding
+itself, and none asked what the answer to it was — so a finding whose right
+answer was "rebuild this" got accepted and quietly patched, and the owner was
+never asked the question he would have said yes to. The same three moves apply to
+your own block, where nobody asks you at all: a decision you take alone is the
+one most likely to be the local patch.
 
 Do not rank the fixes and do not say which you would pick: that is a verdict
 wearing the clothes of a fact. If none of them is what he wants, he writes his
@@ -422,11 +544,12 @@ reveal" in the very note it was about to hand over, and whether they had been
 read before the rulings could not be established afterwards. A sibling file at
 least cannot be scrolled into.
 
-- **your predicted ruling** — he anchors on it, and then the number measures
-  whether he agrees with what you showed him. That is the Goodhart the
+- **your predicted mark of usefulness** — he anchors on it, and then the number
+  measures whether he agrees with what you showed him. That is the Goodhart the
   lens-blindness rule in §3 exists to prevent, one seat further down. Facts
   inform; verdicts anchor.
-- **your predicted choice of fix** — the same mechanism, one axis over.
+- **your predicted decision and choice of fix** — the same mechanism, one axis
+  over.
 - **which lens produced it** — the lenses carry reputations in the ledger, and a
   reputation is an anchor like any other.
 
@@ -441,48 +564,66 @@ the one that never sees the big move in the first place.
 **Where the review file lives:** the review note of §6, in the owning project, at
 its final path — the same file the wave lands in, written now in its
 before-rulings form rather than drafted somewhere and moved later. It opens with
-what ran and under what limits, then the removed block, then the numbered
-findings.
+its codes and how to fill it in, then what ran and under what limits, then the
+removed block, then his block, then yours, then the appendix.
 
-**Then one message in chat, and nothing more:** what ran and in what mode, the
-finding counts by severity and axis, the path to the file, the run's cost, and
-the two ways he can answer. Nothing step 4 hides. Do not paste the findings into
-chat as well — the file is the artifact, and a chat copy is what the per-finding
-dialog turns back into.
+**Then one message in chat, and nothing more:** what ran and in what mode, how
+many findings wait for his decision and how many you decided yourself, the counts
+by severity and axis, the path to the file, the run's cost, and the two ways he
+can answer. Nothing step 4 hides. Do not paste the findings into chat as well —
+the file is the artifact, and a chat copy is what the per-finding dialog turns
+back into.
 
 **He answers however suits him:** comments or filled slots in the file, or a list
 in chat by number. Accept both, in any mix, and never push him toward one form.
-If his answers leave gaps — a finding with no ruling, an "into a task" with no
-task, an accepted finding with no fix chosen — collect them all and ask them in
-**one** message at the end. That is the only question you put to him per wave.
+If his answers leave gaps — a finding in his block with no decision, an "into a
+task" with no task, a usefulness slot left empty, a correction that contradicts a
+requirement or another of his rulings — collect them all and ask them in **one**
+message at the end. That is the only question you put to him per wave.
+
+**A slot he leaves empty after that is recorded as empty.** Never fold a blank
+into a mark: a wave whose blank answers were all read as acceptance carried the
+main thread's judgement inside the owner's number, and the number was then quoted
+as his. **Read every correction against the object before you classify it** — it
+is his decision about your decision, and it may collide with something neither of
+you had in view.
 
 **Then wait.** No reminders, no re-summarising, no starting to land the obvious
-ones. If the session ends before he rules, that is normal: resuming enters here,
+ones — yours included: a row of your own block is landed only once he has
+returned the file, because a correction may overturn it. If the session ends
+before he rules, that is normal: resuming enters here,
 at step 3, with the lenses not re-run, the checks not re-run, the predictions not
 re-written, and the sealed file unopened — the resuming session stays as blind as
 the owner.
 
-**Step 4 — reveal, then record.** Once he has ruled on all of them, open the
-sealed file and write one table **into the review file** — finding · lens · your
-predicted ruling · his ruling · agree? · the fix he chose (yours, or his own) —
-with the three numbers under it; in chat, the table's headline and the numbers,
-not the table again. Name the disagreements plainly and do not argue them — a
-disagreement is a labelled example, which is worth more than being right. All
-three numbers go to §6.
+**Step 4 — reveal, then record.** Once he has returned the file, open the sealed
+file and write two tables **into the review file**, with the numbers of §6 under
+them; in chat, the headline and the numbers, not the tables again.
+
+- **His block:** finding · lens · predicted usefulness · his mark · agree? ·
+  predicted decision · his decision · whose fix (yours · his own · handed to you).
+- **Your block:** finding · lens · what you chose · his correction — none ·
+  **amended** (your decision stands, made more exact or wider) · **overturned** (a
+  different decision replaces yours) — and beside the table the three counts he
+  reads it by: decisions accepted · amended · overturned, plus the rows he took
+  back.
+
+Name the disagreements plainly and do not argue them — a disagreement is a
+labelled example, which is worth more than being right.
 
 **If a chosen fix changes the shape of the object rather than repairing a place
-in it, re-check the remaining accepted findings against the new shape before
-anything is landed.** A feature being cut takes its findings with it, and landing
+in it, re-check the remaining findings — his and yours — against the new shape
+before anything is landed.** A feature being cut takes its findings with it, and landing
 repairs to something that will not exist is worse than wasted. Say which findings
 the ruling voided. Nothing is landed before this point, so the order is already
 safe.
 
 **Backdated ratification** (a wave triaged before this section existed) runs the
 same way: read the findings out of that wave's review note, write them into a
-review file in the shape of step 3, and do not show the verdicts already written
-there. Both questions apply there too — a wave triaged before this section
-existed was never asked what to do about its findings either, only whether they
-were true. **Enter the skill here** — §§1–4 already happened, so do not re-run
+review file in the shape of step 3 — sorted, in the owner's terms, both
+questions — and do not show the verdicts already written there. Its record then
+names two versions that differ (§6): the charter those lenses ran under, and the
+skill that is ratifying it now. **Enter the skill here** — §§1–4 already happened, so do not re-run
 lenses; step 0b still applies, because the lab is where the result goes and it
 names which wave is waiting.
 
@@ -498,21 +639,29 @@ difference between a file and a dialog; that difference is gone.
   written again: his rulings and chosen fixes filled in where the answer slots
   were, the reveal table of step 4 appended, and the note wired into wherever the
   owning project lists its notes. What it holds by the end: what ran and under
-  what limits · what verification removed · accepted findings, `concept` before
-  `detail` and by severity within each, each with the fix he chose · accepted as
-  questions · downgraded and rejected, with reasons · findings voided by a fix
-  that changed the object's shape · inter-lens disagreement as a decision · what
-  the run said about the Critic itself. Under manual ratification the **owner's
-  ruling is the verdict of record**; yours is kept beside it as the prediction,
-  not quietly replaced by his.
+  what limits · what verification removed · his block, `concept` before `detail`
+  and by severity within each, each finding with his mark and the decision he
+  took · your block, each row with his correction or none · findings waiting for
+  the showing · findings moved into tasks · findings voided by a fix that changed
+  the object's shape · inter-lens disagreement as a decision · what the run said
+  about the Critic itself. Under manual ratification the **owner's answer is the
+  verdict of record**; yours is kept beside it as the prediction, not quietly
+  replaced by his.
 - **Carry every deferred finding into its task.** With the owner's yes, add to
   the task he named a subtask whose title is the finding's one line and whose
-  description carries the finding as the lens wrote it, the check, the
-  candidate fixes with their costs, and a link to the review note — enough for
-  the session that opens that task to act without this conversation. Record
-  `deferred → <task>` in the ledger. In the three numbers a deferred finding
-  counts as accepted for precision and stays out of the fix-hit-rate
-  denominator: no fix was chosen.
+  description carries the finding as he read it, the check, the candidate fixes
+  with their costs, and a link to the review note — enough for the session that
+  opens that task to act without this conversation. Record `deferred → <task>`
+  in the ledger. A deferred finding keeps his mark of usefulness and stays out of
+  the fix-hit-rate denominator: no fix was chosen.
+- **Carry every finding that waits for the showing to where the showing
+  happens.** "When I see it" is a promise that someone will show him. With his
+  yes, add to the task that builds the thing a subtask that says what to put in
+  front of him and which finding it answers; where there is no task to carry it,
+  the review note's block of findings waiting for the showing is the record, and
+  the closing chat message names it. The finding is open, not accepted: it stays
+  out of the fix-hit-rate denominator, and out of the usefulness count unless he
+  marked it anyway.
 - **Land the fix he chose, at the size he chose it.** If that is a rebuild or a
   removal, it is a change to the design and it lands as one. Do not substitute
   the patch you had ready because it is the cheaper thing to write — that
@@ -523,11 +672,18 @@ difference between a file and a dialog; that difference is gone.
   `${CLAUDE_PLUGIN_ROOT}/lab/wave_template.yaml`: the runs (one entry per run,
   with its lens, model, arm, **raw findings** and the **topic ids** it named), and
   the findings after the merge (topic, the runs it came `from`, severity, axis,
-  `status`, and once he has ruled — your prediction, his ruling, whose fix he
-  took). A finding you removed carries `status: removed` with the refutation that
-  removed it; a finding of your own outside the lenses carries `from: []`. Record
-  `charter_version` as the charter the lenses actually ran under — it is what
-  keeps a charter change from being averaged over.
+  `status`, the `block` it was shown in, and once he has answered — for his
+  block, your two predictions beside his mark, his decision and whose fix he
+  took; for yours, `correction`: `accepted` for every row he left alone,
+  `amended` or `overturned` for the rest). "Your choice" is `fix: delegated`,
+  never `mine`; "when I see it" is `ruling: until_shown`; a row he took back
+  moves to `block: owner` with `returned: true`. A finding you removed carries
+  `status: removed` with the refutation that removed it; a finding of your own
+  outside the lenses carries `from: []`. **Record two versions:**
+  `charter_version` — the charter the lenses actually ran under, which is the
+  snapshot taken when the session started — and `skill_version`, this text. They
+  separate two different sets of numbers (step 0c), and they can differ inside
+  one session.
   Then validate and compute, in that order:
 
   ```
@@ -536,12 +692,15 @@ difference between a file and a dialog; that difference is gone.
   ```
 
   `check` refuses a record that does not hold together — a topic attributed to a
-  run that never named it, a removal with no refutation, a lens outside the three.
-  Each of those, unvalidated, yields a plausible number rather than an error.
+  run that never named it, a removal with no refutation, a lens outside the three,
+  an owner's mark on a row of your own block, the vocabulary of one skill era in a
+  record of the other. Each of those, unvalidated, yields a plausible number
+  rather than an error.
 - **The lab** *(if there is one)*: lens ledger row **from the tool's output, not
   retyped from memory**, any new tic, any new hypothesis (never into the desk
-  until a clean run confirms it), plus one **ratification row per finding**,
-  carrying both his ruling and the fix he chose.
+  until a clean run confirms it), plus one **ratification row per finding** —
+  his mark and his decision for a finding of his block, his correction for a row
+  of yours.
 - **The yield of the uncapped lenses, per lens.** Since the cap came off, the
   ledger row carries for each lens run: raw findings, topics after its own
   wording-duplicates were merged, and topics only it gave in this wave — all three
@@ -552,32 +711,45 @@ difference between a file and a dialog; that difference is gone.
 - **The hypotheses journal** *(in the lab)*: an `enhanced` run appends its
   stability numbers (topics per run, union, share found by every run of a
   lens, pairwise overlap, cost); an `experimental` run appends one measurement
-  row to the hypothesis it served — the arms, the topic unions, the accepted
-  findings per arm, the tokens per arm. A hypothesis is confirmed or refuted
+  row to the hypothesis it served — the arms, the topic unions, the findings per
+  arm that were not noise and how many of them changed a decision, the tokens per
+  arm. A hypothesis is confirmed or refuted
   by the owner on the journal, never by the main thread on one wave.
 - **The desk** *(if the repository keeps its own)*: only techniques confirmed
   enough to teach. Never write to the bundled generic desk from a run — a plugin
   update overwrites it.
 - **Land the outcomes** by whatever convention this repository uses for session
   outcomes.
-- State the cost in tokens and **three** numbers, never one. With a lab
-  configured these come from `wave_stats.py stats`, which knows each of the three
+- State the cost in tokens and **four** numbers, never one. With a lab
+  configured these come from `wave_stats.py stats`, which knows each of the
   denominators below; without one, compute them by these definitions and say that
   you did it by hand:
-  - **precision** = his acceptances ÷ **the findings he saw** — an acceptance
-    rather than your own triage. Say the raw count beside it whenever your
-    refutations removed anything, because the two denominators are no longer the
-    same number and a precision quoted alone now hides how much you cut.
-  - **triage agreement** = the share where your predicted ruling matched his —
-    the measured size of the authorship confound, and a number about *you*, not
-    about the lenses;
+  - **usefulness** = his marks over **the findings of his block that he rated**:
+    the share that changed a decision is the headline, the share of noise stands
+    beside it, and the count he rated goes with both. This is the number about
+    the *lenses*, and the one a version of the critic is compared by. Say the raw
+    count beside it whenever your refutations removed anything — a share quoted
+    alone hides how much you cut.
+  - **triage agreement** = the share where your prediction matched him — once for
+    the mark of usefulness, once for the decision. The measured size of the
+    authorship confound, and a number about *you*, not about the lenses.
   - **fix hit rate** = the share where he took one of the fixes you offered
-    rather than writing his own — a number about your repertoire. Findings he
-    rejected are out of its denominator.
-  A low agreement with a high precision means the lenses are fine and your triage
-  is not. A low fix hit rate with a high precision means the lenses find the right
+    rather than writing his own — a number about your repertoire. **"Your choice"
+    is out of its denominator and counted beside it**: he chose nobody's fix.
+    Counted as a hit it flatters the rate by exactly the findings he declined to
+    rule on. Not fixing, a task and "when I see it" are out as well.
+  - **your own decisions** = accepted · amended · overturned, over the rows of
+    your block, with the rows he took back beside them.
+  Read them together. A low agreement with a high usefulness means the lenses are
+  fine and your triage is not. A low fix hit rate means the lenses find the right
   things and you keep reaching for the wrong instrument — usually the small one.
-  Report them that way round; they are the more useful failures.
+  Many "your choice" answers mean the line between the blocks is drawn too far
+  toward him: findings reached him that were yours. Overturned and taken-back
+  rows mean it is drawn too far toward you. Report the failures that way round;
+  they are the more useful ones.
+  **None of the four compares with a wave run under a skill before 0.9.0** —
+  those asked whether a finding was true, and reported precision. The lens-side
+  yield does compare, as long as the charter has not moved (step 0c).
 
 ## 7. Two standing cautions
 

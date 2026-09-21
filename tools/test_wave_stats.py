@@ -174,6 +174,161 @@ check("эпохи не смешиваются", len(eras), 6)
 check("медиана считается по своей эпохе", eras[("без потолка", "adversary")]["median"], 1)
 
 
+# ------------------------------------------------- the usefulness era (skill 0.9.0+)
+
+# The charter did not move, the skill did: lens-side numbers stay in their era,
+# the main thread's ratios start a new one.
+NEW = {"charter_version": "0.8.0", "skill_version": "0.9.0"}
+
+u = wave(
+    **NEW,
+    findings=[
+        # the owner's block: six findings, five of them rated
+        {"id": "N1", "topic": "T1", "from": ["ben-1"], "block": "owner",
+         "predicted_useful": "changed", "useful": "changed",
+         "predicted": "fix", "ruling": "fix", "fix": "mine"},
+        {"id": "N2", "topic": "T2", "from": ["ben-1", "adv-1"], "block": "owner",
+         "predicted_useful": "changed", "useful": "refined",
+         "predicted": "fix", "ruling": "fix", "fix": "own"},
+        # "your choice": he took nobody's repair -- out of the fix-hit denominator,
+        # counted beside it. Scored as `mine` this flattered the ratio once.
+        {"id": "N3", "topic": "T3", "from": ["adv-1"], "block": "owner",
+         "predicted_useful": "refined", "useful": "refined",
+         "predicted": "fix", "ruling": "fix", "fix": "delegated"},
+        {"id": "N4", "topic": "T4", "from": ["aud-1"], "block": "owner",
+         "predicted_useful": "refined", "useful": "noise",
+         "predicted": "fix", "ruling": "no_fix", "fix": "none"},
+        # "I will know when I see it": no mark, no repair -- unrated, never folded
+        # into a mark, and out of the fix-hit denominator
+        {"id": "N5", "topic": "T2", "from": ["adv-1"], "block": "owner",
+         "predicted_useful": "noise", "predicted": "no_fix", "ruling": "until_shown"},
+        # taken back from the main thread's block and ruled on like the rest
+        {"id": "N6", "topic": "T3", "from": ["adv-1"], "block": "owner", "returned": True,
+         "useful": "changed", "ruling": "into_task", "fix": "none"},
+        # the main thread's block: silence is assent, a correction is one of two kinds
+        {"id": "N7", "topic": "T1", "from": ["ben-1"], "block": "agent",
+         "correction": "accepted"},
+        {"id": "N8", "topic": "T4", "from": ["aud-1"], "block": "agent",
+         "correction": "amended"},
+        {"id": "N9", "topic": "T77", "from": [], "block": "agent",
+         "correction": "overturned"},
+        # he has not returned the file for this one yet
+        {"id": "N10", "topic": "T3", "from": ["adv-1"], "block": "agent"},
+        {"id": "N11", "topic": "T3", "from": ["adv-1"], "status": "removed",
+         "removed_reason": "прогнал опровержение: гард на месте"},
+    ],
+)
+check("запись эпохи пользы проходит без замечаний", ws.validate(u), [])
+su = ws.wave_stats(u)
+check("эпоха опознана по версии скилла", su["era"], "usefulness")
+check("потолок по-прежнему судится по чартеру", su["capped"], False)
+check("показано: всего", su["shown"], 10)
+check("показано: блок владельца", su["shown_owner"], 6)
+check("показано: блок главного потока", su["shown_agent"], 4)
+check("польза: оценено", su["rated_n"], "5/6")
+check("польза: по ступеням", su["marks"], {"changed": 2, "refined": 2, "noise": 1})
+check("доля изменивших решение", su["changed_n"], "2/5")
+check("доля шума", su["noise_n"], "1/5")
+# N1 changed==changed, N3 refined==refined; N2 and N4 missed; N5 has no mark, N6
+# no prediction -- both leave the denominator rather than counting as misses
+check("согласие по пользе", su["agree_useful_n"], "2/4")
+# N1, N2, N3 fix==fix; N4 fix vs no_fix, N5 no_fix vs until_shown missed
+check("согласие по решению", su["agree_decision_n"], "3/5")
+check("попадание починок: отданное агенту вне знаменателя", su["fix_hit_n"], "1/2")
+check("отдано агенту", su["delegated"], 1)
+check("ждут показа", su["until_shown"], 1)
+check("решения главного потока", su["corrections"],
+      {"accepted": 1, "amended": 1, "overturned": 1})
+check("решения главного потока: ответ получен", su["answered_n"], "3/4")
+check("возвращено владельцу", su["returned"], 1)
+check("числа эпохи «правда ли» не печатаются", "precision" in su, False)
+
+# The old era is untouched by all this: same record, same three numbers.
+check("эпоха «правда ли» опознана", s["era"], "truth")
+check("числа эпохи пользы в ней не печатаются", "marks" in s, False)
+
+# Mixing the vocabularies is the way a record gets computed by the wrong rules.
+mixed_old = wave(findings=[{"id": "F1", "topic": "T1", "from": ["ben-1"],
+                            "ruling": "accept", "useful": "changed"}])
+check("поле новой эпохи в старой записи ловится",
+      any("принадлежат эпохе" in p for p in ws.validate(mixed_old)), True)
+mixed_new = wave(**NEW, findings=[{"id": "N1", "topic": "T1", "from": ["ben-1"],
+                                   "block": "owner", "ruling": "accept"}])
+check("старый вердикт в новой записи ловится",
+      any("ruling: accept" in p for p in ws.validate(mixed_new)), True)
+
+bad_new = wave(
+    **NEW,
+    findings=[
+        {"id": "N1", "topic": "T1", "from": ["ben-1"]},
+        {"id": "N2", "topic": "T1", "from": ["ben-1"], "block": "agent", "useful": "noise"},
+        {"id": "N3", "topic": "T1", "from": ["ben-1"], "block": "owner", "ruling": "fix"},
+        {"id": "N4", "topic": "T1", "from": ["ben-1"], "block": "owner",
+         "ruling": "until_shown", "fix": "mine"},
+        {"id": "N5", "topic": "T1", "from": ["ben-1"], "block": "owner",
+         "correction": "amended"},
+    ],
+)
+problems = " | ".join(ws.validate(bad_new))
+for fragment, label in [
+    ("N1: показана, но без `block`", "показанная находка без блока"),
+    ("N2: блок agent, но несёт useful", "оценка пользы в блоке главного потока"),
+    ("N3: `ruling: fix` без `fix`", "решение «чинить» без починки"),
+    ("N4: `fix: mine` при `ruling: until_shown`", "починка при решении без починки"),
+    ("N5: блок owner, но несёт `correction`", "поправка в блоке владельца"),
+]:
+    if fragment not in problems:
+        FAILED.append(f"валидация эпохи пользы не поймала: {label}")
+
+# One session can run a snapshotted old charter under a new skill, so from 0.9.0
+# the record names both -- a missing skill version is refused, not guessed.
+unnamed = wave(charter_version="0.9.0")
+check("без версии скилла с 0.9.0 запись не проходит",
+      any("skill_version" in p for p in ws.validate(unnamed)), True)
+legacy = wave(charter_version="0.8.0")
+check("старая запись без версии скилла остаётся законной", ws.validate(legacy), [])
+check("старая запись без версии скилла — эпоха «правда ли»", legacy.usefulness_era, False)
+
+# A skill change does not move the lens-side median: topics are named by the
+# lenses, and the charter, not the skill, is their text.
+res2 = ws.median_unique([uncapped, u])
+eras2 = {(r["era"], r["lens"]): r for r in res2["rows"]}
+check("правка скилла не рвёт медиану линз", eras2[("без потолка", "adversary")]["waves"], 2)
+
+# Per arm, "accepted" follows the wave's own era.
+ab = wave(
+    **NEW,
+    runs=[
+        {"id": "adv-a", "lens": "adversary", "arm": "A", "raw_findings": 3, "topics": ["T1", "T2"]},
+        {"id": "adv-b", "lens": "adversary", "arm": "B", "raw_findings": 3, "topics": ["T2", "T3"]},
+    ],
+    findings=[
+        {"id": "N1", "topic": "T1", "from": ["adv-a"], "block": "owner", "useful": "changed"},
+        {"id": "N2", "topic": "T2", "from": ["adv-a", "adv-b"], "block": "owner",
+         "useful": "noise"},
+        {"id": "N3", "topic": "T3", "from": ["adv-b"], "block": "agent",
+         "correction": "overturned"},
+        {"id": "N4", "topic": "T3", "from": ["adv-b"], "block": "agent"},
+    ],
+)
+arms = {r["arm"]: r for r in ws.arm_stats(ab)}
+check("рука A: шум не засчитан", arms["A"]["accepted"], 1)
+check("рука B: изменённое решение — находка была, без ответа — нет", arms["B"]["accepted"], 1)
+check("рука A: изменивших решение", arms["A"]["changed"], 1)
+
+
+# ------------------------------------------------------------ the shipped template
+
+# The template is the first record anyone copies. If it does not pass the check it
+# ships a broken example, and if its era is wrong it teaches the old vocabulary.
+import yaml  # noqa: E402
+
+template_path = Path(__file__).resolve().parent.parent / "lab" / "wave_template.yaml"
+template = ws.parse(yaml.safe_load(template_path.read_text(encoding="utf-8")), template_path)
+check("шаблон записи волны проходит проверку", ws.validate(template), [])
+check("шаблон записи волны — эпохи пользы", template.usefulness_era, True)
+
+
 # ----------------------------------------------------------------------- result
 
 if FAILED:
