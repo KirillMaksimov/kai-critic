@@ -5,6 +5,28 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.9.1] — 2026-09-21
+
+Docs only. The README still described a calling threshold that 0.8.0 removed
+from the skill, so it contradicted §1 and its own "runs only when you ask"
+paragraph further down. No skill, charter or tool text changed: every number
+compares with 0.9.0 as it stood.
+
+### Fixed
+
+- **The protocol flowchart no longer opens with "Threshold met?"** and a branch
+  that refuses to run. It opens with the owner asking, as §1 of the skill does.
+- **The "Threshold" paragraph is replaced by who starts a run**: the owner, and
+  nothing else; the cost of a run stated so he can decide with it in front of
+  him; the one line the skill may say once about an object that looks small,
+  after which it runs anyway.
+- **The Layout section lists everything that ships.** `lab/` (the template, the
+  wave-record schema, its README) and `tools/` (the number layer and its guard)
+  have shipped since 0.7.0 and were missing; the manifest line named `desk_path`
+  alone while `lab_path` has existed as long. The lab paragraph now says what the
+  plugin does ship — the empty shape and the arithmetic — next to what it
+  deliberately does not.
+
 ## [0.9.0] — 2026-09-21
 
 The review file is rewritten for the person who actually reads it: an owner who

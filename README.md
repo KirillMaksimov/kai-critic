@@ -27,9 +27,8 @@ The auditor is deliberately built differently from the other two. It judges *abs
 
 ```mermaid
 flowchart TD
-    P[Proposal] --> G{Threshold met?}
-    G -->|no| STOP[Say so, do not run]
-    G -->|yes| F[Frame: OBJECT / MODE / paths / unreachable]
+    P[Proposal] --> A[The owner asks for a run]
+    A --> F[Frame: OBJECT / MODE / paths / unreachable]
     F --> L1[beneficiary]
     F --> L2[adversary]
     F --> L3[auditor]
@@ -42,7 +41,7 @@ flowchart TD
     R --> LAND[Review note + ledger + four numbers]
 ```
 
-**Threshold.** Three passes plus your triage time is not free. Run when at least one holds: the decision is hard to reverse; it is a new contour, not an edit; the cost of being wrong is above trivial. A tax on every small design is the same negative value as an uncalibrated critic, from the other side.
+**The owner starts a run, and nothing else does.** Not a session that has just produced a design, not an object that looks new or hard to reverse, not a threshold that appears to be met: a session that finishes a design says what it finished and stops there. Whether the critic gets a seat is your call, and you make it with the cost in front of you — a topic pass plus three lens passes, around a million subagent tokens on a grounded design of ordinary size, and, the expensive half, your own attention ruling on what comes back. The skill may say **once**, in one line, that the object looks small and reversible, or that another instrument fits it better; it then runs anyway if you still want the run. A second unasked opinion about your priorities is a tax of the same kind an uncalibrated critic is, from the other side.
 
 **Mode is set by whether reality exists yet**, not by object type. Nothing built → `blind`: the artifact and nothing else, because any other file the agent opens is probably the author's reasoning, which is exactly what it must not absorb. An implementation or history exists → `grounded`: an explicit path list, plus an explicit list of what is **unreachable** from the session, so claims depending on those become named checks instead of findings.
 
@@ -102,7 +101,7 @@ claude plugin install kai-critic@kai-critic --config desk_path=/abs/path/to/your
 
 Keep your copy **outside** the plugin: an update overwrites the bundled file and never touches yours.
 
-A **lab** is the other half, and the plugin deliberately does not ship one. It is your file, in your repository, holding the lens ledger, precision per lens, the tics you have noticed and the hypotheses you are currently testing. The skill will update it if your repository has one. It must **never** appear in a run's allowed paths — a lens that has read its own precision starts playing to the scoreboard, and a hypothesis handed to the agent that is supposed to test it is no longer a test.
+A **lab** is the other half, and the plugin deliberately does not ship one. It is your file, in your repository, holding the lens ledger, precision per lens, the tics you have noticed and the hypotheses you are currently testing. What the plugin does ship is the **empty shape** and the arithmetic: `lab/lab_template.md` to copy into your repository, `lab/wave_template.yaml` for the one record each wave leaves, and `tools/wave_stats.py`, which computes every number from those records so none is counted by hand (`lab/README.md` says how to wire it up). Point the `lab_path` option at your copy and the skill will update it. It must **never** appear in a run's allowed paths — a lens that has read its own precision starts playing to the scoreboard, and a hypothesis handed to the agent that is supposed to test it is no longer a test.
 
 ## When not to call it
 
@@ -114,19 +113,24 @@ A **lab** is the other half, and the plugin deliberately does not ship one. It i
 ## Layout
 
 ```
-.claude-plugin/plugin.json       manifest + the desk_path option
+.claude-plugin/plugin.json       manifest + the two options: desk_path and lab_path
 .claude-plugin/marketplace.json  so the repo installs as its own marketplace
 agents/kai-critic.md             the charter — one lens per invocation, Read/Grep/Glob only, no Agent tool
 agents/kai-topics.md             the topic pass — stage one of a two-stage run, wide and cheap, no findings
 skills/kai-critic/SKILL.md       the run protocol: who starts a run, framing, launch, merge, ratification, landing
 desk/desk_critic.md              the generic desk (override with desk_path)
+lab/lab_template.md              the empty shape of a lab — copy it into your own repository, point lab_path at the copy
+lab/wave_template.yaml           one record per wave: the source of truth for every number in a lab
+lab/README.md                    how to wire a lab up, the record's fields, what each number means
+tools/wave_stats.py              the deterministic number layer: validates a wave record, computes the rest
+tools/test_wave_stats.py         its guard — plain python, no framework
 ```
 
 The agent has no write tools. That is deliberate: it proposes desk edits in a `## Desk proposal` block and someone approves them.
 
 ## Status
 
-`0.9.0` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its newest part is the form of the review file — findings sorted by who decides and written as scenario and effect, usefulness asked instead of truth — and no wave has been measured under it yet. The line between the two blocks follows a working glossary (*requirement*: what a person observes and gets; *specification*: how the system is built so the requirement holds) that is itself still a draft; the names of the blocks may move with it.
+`0.9.1` — see [CHANGELOG.md](CHANGELOG.md). Single author, extracted from a private vault where it has run for a series of waves on real designs. The charter and the finding format are the settled parts; the ratification protocol is newer and still moving, and it exists precisely because the earlier precision numbers were the main thread triaging objects it had written itself. Its newest part is the form of the review file — findings sorted by who decides and written as scenario and effect, usefulness asked instead of truth — and no wave has been measured under it yet. The line between the two blocks follows a working glossary (*requirement*: what a person observes and gets; *specification*: how the system is built so the requirement holds) that is itself still a draft; the names of the blocks may move with it.
 
 ## License
 
