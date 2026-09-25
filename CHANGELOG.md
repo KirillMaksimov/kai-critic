@@ -5,6 +5,27 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.9.2] — 2026-09-25
+
+Charter only. Its opening line still carried the stance of the capped-findings
+era — "precision, not volume", "ten plausible observations are worse than three
+real ones" — while rule 8 (since 0.6.0) moves deduplication and the discarding of
+refuted findings to the main thread and calls a finding cut in advance work thrown
+away. Sonnet follows such a stance literally and silently drops findings below
+its own bar. Numbers from runs after this version compare with 0.9.1 with that
+in mind: the lens was told to hold back, and no longer is.
+
+### Fixed
+
+- **The opening line asks for every finding that clears §3, with its
+  confidence**, and says why: the main thread deduplicates and verifies, so a
+  real finding held back is lost, and one the lens would not defend spends the
+  owner's time.
+- **Rule 8 loses its closing comparison** ("padding costs the reader more than
+  an omission would"), which contradicted its own first half. The concrete bar
+  stays: a finding you would not defend, one whose body says nothing breaks, or
+  a restatement belongs in `## Checked and found sound` or nowhere.
+
 ## [0.9.1] — 2026-09-21
 
 Docs only. The README still described a calling threshold that 0.8.0 removed
