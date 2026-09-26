@@ -553,17 +553,25 @@ least cannot be scrolled into.
 - **which lens produced it** — the lenses carry reputations in the ledger, and a
   reputation is an anchor like any other.
 
-The sealed file goes in the lab if the repository keeps one
-(`<lab>/waves/W<NN>_sealed.md`), otherwise beside the review file; the review
+The sealed file goes in the lab if one is configured
+(`<lab>/waves/W<NN>_sealed.md`), otherwise beside the review file, so it lives
+where the review file lives and never in a code repository (below); the review
 file names its path and says it is sealed until the reveal.
 
 **Never filter by your own confidence**, on either question. "Ask what to do only
 where I can see a big move" re-introduces precisely the bias under measurement —
 the one that never sees the big move in the first place.
 
-**Where the review file lives:** the review note of §6, in the owning project, at
-its final path — the same file the wave lands in, written now in its
-before-rulings form rather than drafted somewhere and moved later. It opens with
+**Where the review file lives:** the review note of §6, in the owning project's
+folder of the owner's notes repository, beside the project's design notes, at
+its final path. **Never in a code repository**, even when the object under
+review lives in one and the run starts there: the reviews follow the design
+notes, which the owner keeps in his notes repository, and a client's code
+repository is no place for his rulings and predictions. A run started in a code
+repository writes the review file and the sealed file into the notes repository
+by the path its bridge to it names. The review file sits at that final path —
+the same file the wave lands in, written now in its before-rulings form rather
+than drafted somewhere and moved later. It opens with
 its codes and how to fill it in, then what ran and under what limits, then the
 removed block, then his block, then yours, then the appendix.
 

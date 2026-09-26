@@ -5,6 +5,22 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.9.3] — 2026-09-26
+
+Where the files of a run live. The owner keeps every design note, and so every
+review, in his notes repository; a run over a design whose object lives in a
+client's code repository must not leave its review or its sealed predictions
+there.
+
+### Changed
+
+- **The review file and the sealed file never go into a code repository**, even
+  when the object under review lives in one and the run starts there: both are
+  written into the owning project's folder of the owner's notes repository,
+  beside its design notes, by the path the session's bridge to it names. The
+  sealed file still goes into the lab when one is configured, and otherwise
+  beside the review file, which now always means the notes repository.
+
 ## [0.9.2] — 2026-09-25
 
 Charter only. Its opening line still carried the stance of the capped-findings
