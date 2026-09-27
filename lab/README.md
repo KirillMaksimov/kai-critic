@@ -61,7 +61,7 @@ computed from it, and none of them is ever counted by hand.
 | `useful_scale` | optional, `4` only: the owner rated on four ranks while an older skill still asked on three. His marks are what the record keeps; without the field the skill version decides |
 | `note`, `paths` | optional pointers for whoever reads the lab later |
 | `tokens.total`, `tokens.by_arm` | cost; per-arm only on experimental waves |
-| `topic_pass` | the topic pass that ran before the lenses: `model`, `runs`, `topics` — one entry per arm when the arms differ there. Not computed from; it says which lens-side numbers compare, since the lenses read its list |
+| `topic_pass` | the topic pass that ran before the lenses: `model`, `runs`, `topics` — one entry per arm when the arms differ there, `runs: 0` for an arm that ran without one. It says which lens-side numbers compare, since the lenses read its list: `median` splits by its model. A record without it is legal and forms a series of its own; a per-arm record that leaves out a run's arm is refused by `check` |
 | `runs[]` | one entry per **run**, not per lens — at `enhanced` a lens runs twice and the two runs are the measurement. Each carries `lens`, optional `arm` and `model`, `raw_findings` (what it returned before any merging) and `topics` (the topic ids it named, after its own restatements were merged) |
 | `findings[]` | one entry per finding **after** the merge: `topic`, `from` (the runs that named it), `severity`, `axis`, `status`, `block`, and — once the owner has answered — his answers beside the main thread's predictions (below) |
 
@@ -102,6 +102,7 @@ is read when it is invoked.
 |---|---|---|
 | charter 0.6.0 — the cap on findings per lens came off | raw findings, topics, unique topics per lens; `median` reports the two sides apart | — |
 | skill 0.9.0 — "is it true?" became "was it useful?" | precision, triage agreement, fix hit rate: `stats` computes each record by the rules of its own era, and `ledger` prints one table per era with the boundary named between them | everything lens-side, the `median` included — the charter did not move |
+| skill 0.10.0 — four ranks of usefulness; the topic pass of a `normal` run moved from Sonnet to Opus | the shares of usefulness and the agreement on usefulness (`ledger` prints three and four ranks as two tables); every lens-side number across a change of topic-pass model (`median` splits by the model in `topic_pass`) | the agreement on the decision, the fix hit rate, the main thread's own decisions; lens-side numbers between waves whose topic pass ran on the same model |
 
 **Records from before skill 0.9.0 keep their own vocabulary and stay valid as they
 are**: `predicted` / `ruling` of `accept` · `accept_with_correction` · `downgrade` ·
@@ -165,10 +166,15 @@ legitimately exceed the number of findings shown. The rule is stated here becaus
 the first wave measured without it produced a per-arm count nobody could
 reproduce, and it was out by one.
 
-**Across waves:** the median of unique topics per lens, split by charter era — and
-by nothing else: a skill change does not cut it, because topics are named by the
-lenses and the charter is their text. A wave with no topic matrix — a backfilled
-one, typically — is named and left out rather than silently thinning the median.
+**Across waves:** the median of unique topics per lens, split by charter era and
+by the model of the topic pass — the lenses read its list, so their topics compare
+only under one model. A skill change that leaves the launch alone does not cut it,
+because topics are named by the lenses and the charter is their text. On an
+experimental wave whose arms read topic passes on different models, each arm is a
+point of its own series, named `W28/A`, with uniqueness measured inside the arm; a
+wave with no `topic_pass` is a series of its own rather than a guess. A wave with
+no topic matrix — a backfilled one, typically — is named and left out rather than
+silently thinning the median.
 The main thread's ratios are **never** aggregated across waves by the tool, in
 either era.
 

@@ -5,6 +5,29 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.10.1] — 2026-09-28
+
+The number layer catches up with the launch change of 0.10.0: the lenses read the
+topic pass's list, so a median that pooled waves across two topic-pass models
+mixed two configurations into one series.
+
+### Fixed
+
+- **`median` splits by the model of the topic pass as well as by charter era.**
+  The model comes from `topic_pass` in the wave record; on an experimental wave
+  whose arms ran topic passes on different models, a run takes its arm's model,
+  each arm becomes a point of its own series (printed `W<NN>/A`) and uniqueness
+  is measured inside the arm. A record without `topic_pass` is its own series,
+  printed as unrecorded, never guessed into a model. Each point now carries the
+  wave it came from.
+
+### Added
+
+- `check` refuses a per-arm `topic_pass` that leaves out a run's arm, and an
+  entry that names no model: either would move runs into the unrecorded series
+  without a word. An arm that ran without a topic pass says `runs: 0` and forms
+  a series of its own.
+
 ## [0.10.0] — 2026-09-28
 
 Three lessons from one wave, all ratified by the owner. Two change what the owner

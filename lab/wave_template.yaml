@@ -49,8 +49,10 @@ tokens:
 
 # The topic pass that ran before the lenses (skill §3). The lenses read its list,
 # so a lens-side number compares only with waves whose topic pass ran on the same
-# model. On an experimental wave whose arms differ here, one entry per arm:
-# { A: { model: opus, runs: 1, topics: 40 }, B: { ... } }.
+# model, and `median` splits by it. On an experimental wave whose arms differ
+# here, one entry per arm, and every arm of `runs` must have one:
+# { A: { model: opus, runs: 1, topics: 40 }, B: { ... } }. An arm that ran
+# without a topic pass says `runs: 0`.
 topic_pass:
   model: opus
   runs: 1

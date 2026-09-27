@@ -10,7 +10,8 @@ Two texts decide what a wave's numbers mean, and a record names both. The
 CHARTER decides what the lenses return (raw findings, topics, unique topics). The
 SKILL decides what the main thread asks the owner and therefore what its ratios
 measure. A change to either cuts its own numbers off from every wave before it,
-and leaves the other's alone.
+and leaves the other's alone. One setting of the launch cuts the lens-side numbers
+as well: the model of the topic pass, whose list every lens reads.
 
 What stays with the agent: deciding that two differently-worded findings are the
 same topic, whether a refutation held, whether a finding is real. What comes here:
@@ -111,6 +112,15 @@ CAP_LIFTED_IN = (0, 6, 0)
 # a table, let alone an average. Lens-side numbers are untouched by it.
 USEFULNESS_FROM = (0, 9, 0)
 
+# The topic pass runs before the lenses and every lens reads its list, so a
+# lens-side number compares only between runs whose topic pass ran on the same
+# model -- skill 0.10.0 moved a `normal` run's pass from Sonnet to Opus. Two labels
+# stand where a model would: a record that never said (`topic_pass` absent -- no
+# pass, or one nobody wrote down), and an arm that ran without one (`runs: 0`).
+# Neither is guessed into a model.
+TOPIC_PASS_UNRECORDED = "не записан"
+TOPIC_PASS_NONE = "не было"
+
 
 def _version_tuple(v: str) -> tuple[int, ...]:
     try:
@@ -206,6 +216,27 @@ class Wave:
         """A backfilled wave carries rulings but no topic matrix; say so rather
         than letting it silently thin a median."""
         return any(r.topics for r in self.runs)
+
+    @property
+    def topic_pass_by_arm(self) -> bool:
+        """True when `topic_pass` holds one entry per arm rather than one for the
+        whole wave -- an experimental wave whose arms differ there."""
+        tp = self.raw.get("topic_pass")
+        return isinstance(tp, dict) and not ({"model", "runs", "topics"} & tp.keys())
+
+    def topic_pass_of(self, run: Run) -> str:
+        """The model of the topic pass whose list this run's lens read -- the
+        wave's, or on a per-arm record its arm's. A run the record does not
+        cover reads as unrecorded; `check` refuses that record."""
+        tp = self.raw.get("topic_pass")
+        if not tp or not isinstance(tp, dict):
+            return TOPIC_PASS_UNRECORDED
+        entry = tp.get(run.arm) if self.topic_pass_by_arm else tp
+        if not isinstance(entry, dict):
+            return TOPIC_PASS_UNRECORDED
+        if entry.get("runs") == 0:
+            return TOPIC_PASS_NONE
+        return str(entry["model"]) if entry.get("model") else TOPIC_PASS_UNRECORDED
 
 
 # ------------------------------------------------------------------- locating
@@ -332,6 +363,8 @@ def validate(wave: Wave) -> list[str]:
                 + " или новее — этот скилл спрашивает по четырём ступеням"
             )
 
+    problems.extend(_validate_topic_pass(wave))
+
     run_ids = [r.id for r in wave.runs]
     if len(set(run_ids)) != len(run_ids):
         problems.append("повторяющиеся id прогонов")
@@ -385,6 +418,33 @@ def validate(wave: Wave) -> list[str]:
             _validate_usefulness(f, wave.useful_vocab)
             if wave.usefulness_era
             else _validate_truth(f)
+        )
+    return problems
+
+
+def _validate_topic_pass(wave: Wave) -> list[str]:
+    """No `topic_pass` at all is legal -- the median prints such a wave as its own
+    series. A `topic_pass` that is there but does not say a model for every run
+    is not: the runs it leaves out would slip into that series without a word."""
+    tp = wave.raw.get("topic_pass")
+    if not tp:
+        return []
+    if not isinstance(tp, dict):
+        return ["`topic_pass` — ожидается {model, runs, topics} или по записи на руку"]
+    entries = tp.items() if wave.topic_pass_by_arm else [(None, tp)]
+    problems = [
+        f"`topic_pass{'.' + str(arm) if arm else ''}`: нет `model` — линзы читают "
+        "список прохода тем, и без его модели их числа не с чем сравнить "
+        "(прохода не было — `runs: 0`)"
+        for arm, entry in entries
+        if not isinstance(entry, dict) or not (entry.get("model") or entry.get("runs") == 0)
+    ]
+    if wave.topic_pass_by_arm:
+        problems.extend(
+            f"прогон {r.id}: рука {r.arm or '(не указана)'} не названа в `topic_pass` — "
+            "неизвестно, на какой модели шёл проход тем, который читала его линза"
+            for r in wave.runs
+            if r.arm not in tp
         )
     return problems
 
@@ -505,19 +565,22 @@ def run_stats(wave: Wave) -> list[dict]:
     return out
 
 
-def lens_stats(wave: Wave) -> list[dict]:
+def lens_stats(wave: Wave, pool: list[Run] | None = None) -> list[dict]:
     """Per lens: the yield the ledger row records since the cap came off.
 
     `unique` is topics this lens gave that no OTHER lens gave -- not merely the
-    ones its own second run missed.
+    ones its own second run missed. `pool` narrows the wave to some of its runs
+    -- one arm's, when the median splits a wave by topic pass -- and uniqueness
+    is then measured inside it.
     """
+    pool = wave.runs if pool is None else pool
     out = []
     for lens in LENSES:
-        runs = [r for r in wave.runs if r.lens == lens]
+        runs = [r for r in pool if r.lens == lens]
         if not runs:
             continue
         own: set[str] = set().union(*(r.topics for r in runs))
-        others: set[str] = set().union(*(r.topics for r in wave.runs if r.lens != lens)) or set()
+        others: set[str] = set().union(*(r.topics for r in pool if r.lens != lens)) or set()
         core = set.intersection(*(r.topics for r in runs)) if len(runs) > 1 else own
         pairs = [
             j for a, b in combinations(runs, 2) if (j := _jaccard(a.topics, b.topics)) is not None
@@ -725,31 +788,47 @@ def _truth_ratios(shown: list[Finding]) -> dict:
 
 
 def median_unique(waves: list[Wave]) -> dict:
-    """Median unique topics per lens, split by charter era.
+    """Median unique topics per lens, split by charter era and by the model of
+    the topic pass the lenses read.
 
-    Waves with no topic matrix are counted and named, never silently dropped: a
-    median quietly taken over three waves instead of ten is exactly the kind of
-    plausible wrong number this layer exists to prevent.
+    A wave whose arms read topic passes on different models gives one point per
+    model, its uniqueness measured inside the arm, and the point is named
+    `W28/A`; a wave whose runs all read one model stays one point, named by the
+    wave. Waves with no topic matrix are counted and named, never silently
+    dropped: a median quietly taken over three waves instead of ten is exactly
+    the kind of plausible wrong number this layer exists to prevent.
     """
-    buckets: dict[tuple[bool, str], list[int]] = {}
+    buckets: dict[tuple[bool, str, str], list[tuple[str, int]]] = {}
     skipped = [w.id for w in waves if not w.has_topics]
     for w in waves:
         if not w.has_topics:
             continue
-        for row in lens_stats(w):
-            buckets.setdefault((w.capped, row["lens"]), []).append(row["unique"])
+        by_model: dict[str, list[Run]] = {}
+        for r in w.runs:
+            by_model.setdefault(w.topic_pass_of(r), []).append(r)
+        for model, pool in by_model.items():
+            source = w.id
+            if len(pool) < len(w.runs):
+                source += "/" + ("+".join(sorted({str(r.arm) for r in pool if r.arm})) or "?")
+            for row in lens_stats(w, pool):
+                buckets.setdefault((w.capped, model, row["lens"]), []).append(
+                    (source, row["unique"])
+                )
     return {
         "skipped": skipped,
         "rows": [
             {
                 "era": "с потолком" if capped else "без потолка",
+                "topic_pass": model,
                 "lens": lens,
-                "waves": len(vals),
-                "median": statistics.median(vals) if vals else None,
+                "waves": len(points),
+                "median": statistics.median(vals) if (vals := [v for _, v in points]) else None,
                 "values": vals,
+                "sources": [s for s, _ in points],
+                "by_wave": ", ".join(f"{s}:{v}" for s, v in points),
             }
-            for (capped, lens), vals in sorted(
-                buckets.items(), key=lambda kv: (not kv[0][0], kv[0][1])
+            for (capped, model, lens), points in sorted(
+                buckets.items(), key=lambda kv: (not kv[0][0], kv[0][1], kv[0][2])
             )
         ],
     }
@@ -953,14 +1032,23 @@ def cmd_median(args, waves_dir: Path) -> int:
     print(
         _table(
             res["rows"],
-            [("era", "эпоха"), ("lens", "линза"), ("waves", "волн"), ("median", "медиана"),
-             ("values", "по волнам")],
+            [("era", "эпоха"), ("topic_pass", "проход тем"), ("lens", "линза"),
+             ("waves", "волн"), ("median", "медиана"), ("by_wave", "по волнам")],
         )
     )
     if res["skipped"]:
         print(f"\n  Без матрицы тем, в медиану не вошли: {', '.join(res['skipped'])}")
         print("  (запись волны есть, но `topics:` у прогонов пуст — обычно бэкфилл старой волны)")
-    print("\n  Эпохи здесь — по чартеру. Правка скилла эту медиану не рвёт: темы называют")
+    print("\n  Ряды делятся по чартеру (потолок) и по модели прохода тем: линзы читают его")
+    print("  список, и их темы сравнимы только при одной модели прохода. Рука, шедшая со")
+    print("  своим проходом, — своя точка ряда (W28/A), уникальность считается внутри руки.")
+    labels = {r["topic_pass"] for r in res["rows"]}
+    if TOPIC_PASS_UNRECORDED in labels:
+        print(f"  «{TOPIC_PASS_UNRECORDED}» — в записи нет `topic_pass`: прохода не было или его")
+        print("  не записали; такие волны — отдельный ряд, а не догадка.")
+    if TOPIC_PASS_NONE in labels:
+        print(f"  «{TOPIC_PASS_NONE}» — рука шла без прохода тем (`runs: 0`).")
+    print("  Правка скилла эту медиану не рвёт, пока не трогает запуск: темы называют")
     print("  линзы, а их текст задаёт чартер.")
     print()
     return 0

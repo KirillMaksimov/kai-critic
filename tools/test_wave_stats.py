@@ -317,6 +317,84 @@ check("рука B: изменённое решение — находка был
 check("рука A: изменивших решение", arms["A"]["changed"], 1)
 
 
+# ------------------------------------------------ the topic pass's model (0.10.1+)
+
+# The lenses read the topic pass's list, so their topics compare only between runs
+# whose topic pass ran on the same model. Two uncapped waves on two models are two
+# series, and a record that never said which is a third -- never a guess.
+on_sonnet = wave(topic_pass={"model": "sonnet", "runs": 1, "topics": 20})
+on_opus = wave(topic_pass={"model": "opus", "runs": 1, "topics": 40})
+res3 = ws.median_unique([on_sonnet, on_opus, uncapped])
+rows3 = {(r["era"], r.get("topic_pass"), r["lens"]): r for r in res3["rows"]}
+check("модели прохода тем не смешиваются в медиане", len(rows3), 9)
+for model in ("sonnet", "opus", "не записан"):
+    check(f"ряд прохода тем «{model}» — одна волна",
+          rows3.get(("без потолка", model, "adversary"), {}).get("waves"), 1)
+
+# On an experimental wave whose arms differ in the topic pass, a run takes its
+# arm's model, and uniqueness is measured inside the arm: pooled across the arms
+# the adversary below owns one topic, while inside arm A it owns two.
+split = wave(
+    **NEW,
+    effort="experimental",
+    topic_pass={"A": {"model": "opus", "runs": 1, "topics": 40},
+                "B": {"model": "sonnet", "runs": 1, "topics": 20}},
+    runs=[
+        {"id": "adv-A", "lens": "adversary", "arm": "A", "raw_findings": 3,
+         "topics": ["T1", "T2", "T3"]},
+        {"id": "ben-A", "lens": "beneficiary", "arm": "A", "raw_findings": 1, "topics": ["T1"]},
+        {"id": "adv-B", "lens": "adversary", "arm": "B", "raw_findings": 1, "topics": ["T2"]},
+        {"id": "ben-B", "lens": "beneficiary", "arm": "B", "raw_findings": 2,
+         "topics": ["T3", "T4"]},
+    ],
+)
+check("проход тем по рукам проходит проверку", ws.validate(split), [])
+rows4 = {(r.get("topic_pass"), r["lens"]): r for r in ws.median_unique([split])["rows"]}
+check("рука Opus: уникальные противника внутри руки",
+      rows4.get(("opus", "adversary"), {}).get("values"), [2])
+check("рука Sonnet: уникальные выгодоприобретателя внутри руки",
+      rows4.get(("sonnet", "beneficiary"), {}).get("values"), [2])
+check("точка ряда названа волной и рукой",
+      rows4.get(("opus", "adversary"), {}).get("sources"), ["W99/A"])
+# A wave whose runs all read one topic pass stays one point, named by the wave.
+check("волна одним проходом — точка без руки",
+      rows3.get(("без потолка", "opus", "adversary"), {}).get("sources"), ["W99"])
+
+# An arm that ran without a topic pass says `runs: 0`: a series of its own, not
+# the unrecorded one and not a model.
+bare = wave(
+    **NEW,
+    effort="experimental",
+    topic_pass={"A": {"model": "opus", "runs": 1, "topics": 40}, "B": {"runs": 0}},
+    runs=[
+        {"id": "adv-A", "lens": "adversary", "arm": "A", "raw_findings": 1, "topics": ["T1"]},
+        {"id": "adv-B", "lens": "adversary", "arm": "B", "raw_findings": 1, "topics": ["T2"]},
+    ],
+)
+check("рука без прохода тем проходит проверку", ws.validate(bare), [])
+rows5 = {(r.get("topic_pass"), r["lens"]) for r in ws.median_unique([bare])["rows"]}
+check("рука без прохода тем — свой ряд", ("не было", "adversary") in rows5, True)
+
+# A per-arm topic pass that does not name a run's arm would drop that run into the
+# unrecorded series without a word -- a plausible number, so an error.
+orphan = wave(
+    topic_pass={"A": {"model": "opus", "runs": 1}},
+    runs=[
+        {"id": "adv-A", "lens": "adversary", "arm": "A", "raw_findings": 1, "topics": ["T1"]},
+        {"id": "adv-B", "lens": "adversary", "arm": "B", "raw_findings": 1, "topics": ["T2"]},
+        {"id": "ben-1", "lens": "beneficiary", "raw_findings": 1, "topics": ["T3"]},
+    ],
+)
+orphan_problems = ws.validate(orphan)
+check("рука, не названная в `topic_pass`, ловится",
+      any("adv-B" in p and "topic_pass" in p for p in orphan_problems), True)
+check("прогон без руки при проходе по рукам ловится",
+      any("ben-1" in p and "topic_pass" in p for p in orphan_problems), True)
+nameless = wave(topic_pass={"runs": 1, "topics": 20})
+check("проход тем без модели ловится",
+      any("topic_pass" in p and "model" in p for p in ws.validate(nameless)), True)
+
+
 # ------------------------------------------------ four ranks of usefulness (0.10.0+)
 
 # "Extended" is a rank of its own from 0.10.0. Under three ranks it read as

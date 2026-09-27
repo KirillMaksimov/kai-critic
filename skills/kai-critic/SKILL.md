@@ -794,7 +794,8 @@ difference between a file and a dialog; that difference is gone.
   compare, as long as the charter and the launch have not moved (step 0c) — and
   0.10.0 moved the launch: the topic pass of a `normal` wave runs on Opus now,
   so a `normal` wave's lens-side numbers compare only with waves whose topic
-  pass ran on the same model. The record says which (`topic_pass`).
+  pass ran on the same model. The record says which (`topic_pass`), and
+  `median` splits its series by it.
 
 ## 7. Two standing cautions
 
