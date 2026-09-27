@@ -317,6 +317,84 @@ check("рука B: изменённое решение — находка был
 check("рука A: изменивших решение", arms["A"]["changed"], 1)
 
 
+# ------------------------------------------------ four ranks of usefulness (0.10.0+)
+
+# "Extended" is a rank of its own from 0.10.0. Under three ranks it read as
+# "changed", so the two scales never share a column.
+FOUR = {"charter_version": "0.9.2", "skill_version": "0.10.0"}
+four = wave(
+    **FOUR,
+    findings=[
+        {"id": "N1", "topic": "T1", "from": ["ben-1"], "block": "owner",
+         "predicted_useful": "changed", "useful": "changed",
+         "predicted": "fix", "ruling": "fix", "fix": "mine"},
+        {"id": "N2", "topic": "T2", "from": ["adv-1"], "block": "owner",
+         "predicted_useful": "refined", "useful": "extended",
+         "predicted": "fix", "ruling": "fix", "fix": "mine"},
+        {"id": "N3", "topic": "T3", "from": ["adv-1"], "block": "owner",
+         "predicted_useful": "extended", "useful": "extended",
+         "predicted": "fix", "ruling": "fix", "fix": "own"},
+        {"id": "N4", "topic": "T4", "from": ["aud-1"], "block": "owner",
+         "predicted_useful": "refined", "useful": "noise",
+         "predicted": "fix", "ruling": "no_fix", "fix": "none"},
+    ],
+)
+check("запись на четырёх ступенях проходит", ws.validate(four), [])
+check("четыре ступени опознаны по версии скилла", four.useful_scale, 4)
+sf = ws.wave_stats(four)
+check("четыре ступени: по ступеням", sf["marks"],
+      {"changed": 1, "extended": 2, "refined": 0, "noise": 1})
+check("доля расширивших", sf["extended_n"], "2/4")
+check("доля изменивших не вбирает расширивших", sf["changed_n"], "1/4")
+check("согласие по пользе: «уточнила» против «расширила» — промах",
+      sf["agree_useful_n"], "2/4")
+check("на трёх ступенях «расширила» не печатается нулём", "extended" in su["marks"], False)
+check("на трёх ступенях доли расширивших нет", su["extended_n"], None)
+
+# Per arm, "extended" is not noise, so it is accepted.
+ab4 = wave(
+    **FOUR,
+    runs=[{"id": "adv-a", "lens": "adversary", "arm": "A", "raw_findings": 1, "topics": ["T1"]},
+          {"id": "adv-b", "lens": "adversary", "arm": "B", "raw_findings": 1, "topics": ["T2"]}],
+    findings=[{"id": "N1", "topic": "T1", "from": ["adv-a"], "block": "owner",
+               "useful": "extended"},
+              {"id": "N2", "topic": "T2", "from": ["adv-b"], "block": "owner",
+               "useful": "noise"}],
+)
+arms4 = {r["arm"]: r for r in ws.arm_stats(ab4)}
+check("рука: «расширила» засчитана как принятая", arms4["A"]["accepted"], 1)
+
+# The vocabulary of four ranks in a three-rank record is the wrong scale.
+three_ext = wave(**NEW, findings=[{"id": "N1", "topic": "T1", "from": ["ben-1"],
+                                   "block": "owner", "useful": "extended"}])
+check("«расширила» на трёх ступенях ловится",
+      any("useful: extended" in p for p in ws.validate(three_ext)), True)
+three_pred = wave(**NEW, findings=[{"id": "N1", "topic": "T1", "from": ["ben-1"],
+                                    "block": "owner", "predicted_useful": "extended"}])
+check("предсказание «расширила» на трёх ступенях ловится",
+      any("predicted_useful: extended" in p for p in ws.validate(three_pred)), True)
+
+# The owner may rate on four ranks while the older text still asked on three; the
+# record says so, and a three-rank prediction stays legal beside a four-rank mark.
+moved = wave(charter_version="0.9.2", skill_version="0.9.3", useful_scale=4,
+             findings=[{"id": "N1", "topic": "T1", "from": ["ben-1"], "block": "owner",
+                        "predicted_useful": "refined", "useful": "extended",
+                        "predicted": "fix", "ruling": "fix", "fix": "mine"}])
+check("`useful_scale: 4` под старым скиллом законен", ws.validate(moved), [])
+check("`useful_scale: 4` под старым скиллом — четыре ступени", moved.useful_scale, 4)
+check("старый скилл без поля — три ступени", u.useful_scale, 3)
+check("эпоха «правда ли» ступеней не знает", w.useful_scale, None)
+for label, over, fragment in [
+    ("ступеней пять", {**FOUR, "useful_scale": 5}, "useful_scale: 5"),
+    ("три ступени под новым скиллом", {**FOUR, "useful_scale": 3}, "useful_scale: 3"),
+    ("ступени в эпохе «правда ли»", {"useful_scale": 4}, "эпохи «правда ли»"),
+]:
+    check(f"неверный `useful_scale` ловится: {label}",
+          any(fragment in p for p in ws.validate(wave(**over))), True)
+check("ступени в строке волны", (ws.wave_stats(moved)["scale"], su["scale"], s["scale"]),
+      (4, 3, None))
+
+
 # ------------------------------------------------------------ the shipped template
 
 # The template is the first record anyone copies. If it does not pass the check it
@@ -327,6 +405,7 @@ template_path = Path(__file__).resolve().parent.parent / "lab" / "wave_template.
 template = ws.parse(yaml.safe_load(template_path.read_text(encoding="utf-8")), template_path)
 check("шаблон записи волны проходит проверку", ws.validate(template), [])
 check("шаблон записи волны — эпохи пользы", template.usefulness_era, True)
+check("шаблон записи волны — четыре ступени пользы", template.useful_scale, 4)
 
 
 # ----------------------------------------------------------------------- result

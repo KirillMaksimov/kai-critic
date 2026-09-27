@@ -57,9 +57,11 @@ computed from it, and none of them is ever counted by hand.
 | `wave`, `date` | the wave's id and when it ran |
 | `object`, `mode`, `effort` | as given to the lenses: `design`/`strategy`/`instruction`, `blind`/`grounded`, `normal`/`enhanced`/`experimental` |
 | `charter_version` | **the charter the lenses actually ran under** — it decides what they return, and it separates the eras of the lens-side numbers |
-| `skill_version` | **the skill the main thread worked under** — it decides what the owner is asked, and it separates the eras of the main thread's ratios. Required from 0.9.0; a record without it is read as the era before |
+| `skill_version` | **the skill the main thread worked under** — it decides what the owner is asked, and it separates the eras of the main thread's ratios. Required from 0.9.0; a record without it is read as the era before. From 0.10.0 usefulness is rated on four ranks, before it on three |
+| `useful_scale` | optional, `4` only: the owner rated on four ranks while an older skill still asked on three. His marks are what the record keeps; without the field the skill version decides |
 | `note`, `paths` | optional pointers for whoever reads the lab later |
 | `tokens.total`, `tokens.by_arm` | cost; per-arm only on experimental waves |
+| `topic_pass` | the topic pass that ran before the lenses: `model`, `runs`, `topics` — one entry per arm when the arms differ there. Not computed from; it says which lens-side numbers compare, since the lenses read its list |
 | `runs[]` | one entry per **run**, not per lens — at `enhanced` a lens runs twice and the two runs are the measurement. Each carries `lens`, optional `arm` and `model`, `raw_findings` (what it returned before any merging) and `topics` (the topic ids it named, after its own restatements were merged) |
 | `findings[]` | one entry per finding **after** the merge: `topic`, `from` (the runs that named it), `severity`, `axis`, `status`, `block`, and — once the owner has answered — his answers beside the main thread's predictions (below) |
 
@@ -68,7 +70,7 @@ step 2):
 
 | `block` | Fields | Values |
 |---|---|---|
-| `owner` — ruling on it meant choosing what a person sees or gets | `predicted_useful`, `useful` | `changed` (a decision is different after it) · `refined` (the decision stands, the text got more exact) · `noise`. **His mark; a blank is left out, never guessed** |
+| `owner` — ruling on it meant choosing what a person sees or gets | `predicted_useful`, `useful` | `changed` (a decision the design had taken is different after it) · `extended` (the design stands, but a feature is added or what a person observes reaches further — from 0.10.0) · `refined` (a small precision that changes nothing a person observes) · `noise` (unimportant, does not affect the delivery). **His mark; a blank is left out, never guessed** |
 | | `predicted`, `ruling` | `fix` · `no_fix` · `into_task` · `until_shown` ("I will know when I see it" — the finding stays open) |
 | | `fix` | `mine` · `own` · `delegated` ("your choice") · `none`. Only a `ruling: fix` carries a repair |
 | | `returned: true` | he took this row back from the main thread's block |
@@ -122,10 +124,13 @@ python tools/wave_stats.py --lab <dir> median        # median unique topics per 
 raw pile. From skill 0.9.0:
 
 - **usefulness** = his marks over the findings of **his block that he rated**:
-  the share that `changed` a decision is the headline, the share of `noise` stands
-  beside it, and the count rated goes with both. It replaces precision, which an
-  owner who does not read the code answers with "you checked, so yes" — a ratio
-  that saturates and measures the main thread's verification, not the lenses.
+  the share that `changed` a decision is the headline, the shares of `extended`
+  and of `noise` stand beside it, and the count rated goes with them. It replaces
+  precision, which an owner who does not read the code answers with "you checked,
+  so yes" — a ratio that saturates and measures the main thread's verification,
+  not the lenses. **The shares and the agreement on usefulness do not cross from
+  three ranks to four**: on three, `changed` also took in what four call
+  `extended`. `ledger` prints the two scales as two tables.
 - **triage agreement**, twice: predicted usefulness against his mark, and
   predicted decision against his decision. A finding missing either half of a pair
   leaves that denominator rather than counting as a miss.

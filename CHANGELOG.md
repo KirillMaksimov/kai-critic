@@ -5,6 +5,42 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.10.0] — 2026-09-28
+
+Three lessons from one wave, all ratified by the owner. Two change what the owner
+is asked, so the main thread's usefulness numbers after this version do not
+compare with the ones before it; one changes the launch of a `normal` run, so its
+lens-side numbers compare only with waves whose topic pass ran on the same model.
+
+### Changed
+
+- **The topic pass runs on Opus at `normal` too**, not only at `enhanced`. An
+  A/B on one object — one Opus topic pass against one Sonnet, the same Sonnet
+  lenses behind each — gave the Opus arm a list twice as long and lenses that
+  found several times more from it, for barely more tokens. The owner took the
+  hypothesis as confirmed and made Opus the topic pass of every level.
+- **Usefulness has four ranks, in the owner's own definitions**: changed a
+  decision (a decision the design had taken is different) · **extended one**
+  (the design stands, but a feature is added or what a person observes reaches
+  further) · refined one (a small precision that changes nothing a person
+  observes) · noise (unimportant, does not affect the delivery). Under three
+  ranks an addition had nowhere to go and was counted as a changed decision.
+- **Every empty answer slot in the review file carries its allowed answers
+  beside it, in parentheses and in italics**, and the top of the file defines
+  the four ranks. With bare slots the owner, who does not keep the scale in his
+  head between waves, rated in his own words, and the main thread's mapping of
+  those words onto the scale ended up inside his number.
+
+### Added
+
+- `wave_stats.py`: `extended` in the usefulness vocabulary, the share of
+  extended findings beside the changed and the noise shares, and a `ledger`
+  that prints three-rank and four-rank waves as two tables. A record rated on
+  four ranks under an older skill says so with `useful_scale: 4`; `extended` in a
+  three-rank record is refused.
+- The wave template documents `topic_pass` (model, runs, topics), which records
+  already carried: it is what says which lens-side numbers compare.
+
 ## [0.9.3] — 2026-09-26
 
 Where the files of a run live. The owner keeps every design note, and so every

@@ -73,11 +73,20 @@ FIXES = ("mine", "own", "none")
 # correct).
 BLOCKS = ("owner", "agent")
 
-# The owner's first answer, best first: the finding changed a decision, refined
-# one, or he would have lost nothing without it. Truth is no longer asked -- it
-# is the main thread's verification, and a ratio built on "you checked, so yes"
-# saturates and measures the checker.
-USEFUL = ("changed", "refined", "noise")
+# The owner's first answer, best first, in his own definitions: the finding
+# changed a decision the design had taken; extended it -- the design stands, but
+# a feature is added or what a person observes reaches further; refined it -- a
+# small precision that changes nothing a person observes; or it is noise, an
+# unimportant finding that does not affect the delivery. Truth is no longer asked
+# -- it is the main thread's verification, and a ratio built on "you checked, so
+# yes" saturates and measures the checker.
+USEFUL = ("changed", "extended", "refined", "noise")
+
+# Skills 0.9.0-0.9.x asked on three ranks. There "changed a decision" also took in
+# what four ranks call "extended", so the share of changed findings, and the
+# agreement on usefulness, mean different things on either side of the change.
+USEFUL_THREE = ("changed", "refined", "noise")
+FOUR_RANKS_FROM = (0, 10, 0)
 
 # His second answer. `until_shown` is "I will know when I see it": not an
 # acceptance, not a rejection, and not a downgrade -- the finding stays open.
@@ -174,6 +183,23 @@ class Wave:
         true?" -- which decides both the vocabulary a record may use and which
         ratios can be computed from it."""
         return _version_tuple(self.skill) >= USEFULNESS_FROM
+
+    @property
+    def useful_scale(self) -> int | None:
+        """How many ranks the owner rated usefulness on: 4 from skill 0.10.0, 3
+        before it, none in the truth era. A record may say `useful_scale: 4`
+        itself -- the owner can move to the new scale on a wave the older text
+        was still asking, and his marks are what the record keeps."""
+        if not self.usefulness_era:
+            return None
+        stated = self.raw.get("useful_scale")
+        if stated is not None:
+            return stated
+        return 4 if _version_tuple(self.skill) >= FOUR_RANKS_FROM else 3
+
+    @property
+    def useful_vocab(self) -> tuple[str, ...]:
+        return USEFUL if self.useful_scale == 4 else USEFUL_THREE
 
     @property
     def has_topics(self) -> bool:
@@ -291,6 +317,20 @@ def validate(wave: Wave) -> list[str]:
             "главного потока: числа главного потока сравнимы только внутри одной "
             "версии скилла"
         )
+    stated_scale = doc.get("useful_scale")
+    if stated_scale is not None:
+        if not wave.usefulness_era:
+            problems.append(
+                "`useful_scale` в записи эпохи «правда ли» — там пользу не спрашивали"
+            )
+        elif stated_scale not in (3, 4):
+            problems.append(f"`useful_scale: {stated_scale}` — допустимо 3 или 4")
+        elif stated_scale == 3 and _version_tuple(wave.skill) >= FOUR_RANKS_FROM:
+            problems.append(
+                "`useful_scale: 3` при скилле "
+                + ".".join(map(str, FOUR_RANKS_FROM))
+                + " или новее — этот скилл спрашивает по четырём ступеням"
+            )
 
     run_ids = [r.id for r in wave.runs]
     if len(set(run_ids)) != len(run_ids):
@@ -342,7 +382,9 @@ def validate(wave: Wave) -> list[str]:
         if f.status == "removed" and (f.ruling or f.useful or f.correction):
             problems.append(f"находка {f.id}: снята до показа, но несёт вердикт владельца")
         problems.extend(
-            _validate_usefulness(f) if wave.usefulness_era else _validate_truth(f)
+            _validate_usefulness(f, wave.useful_vocab)
+            if wave.usefulness_era
+            else _validate_truth(f)
         )
     return problems
 
@@ -371,13 +413,17 @@ def _validate_truth(f: Finding) -> list[str]:
     return problems
 
 
-def _validate_usefulness(f: Finding) -> list[str]:
+def _validate_usefulness(f: Finding, useful: tuple[str, ...] = USEFUL) -> list[str]:
+    """`useful` is the scale the owner rated on, and the prediction is held to it
+    too. A prediction made on three ranks stays legal on a wave he rated on four:
+    the three are a subset, and a miss between them is a real disagreement, not a
+    vocabulary error."""
     problems = _vocab(
         f,
         (
             ("block", BLOCKS),
-            ("predicted_useful", USEFUL),
-            ("useful", USEFUL),
+            ("predicted_useful", useful),
+            ("useful", useful),
             ("predicted", DECISIONS),
             ("ruling", DECISIONS),
             ("fix", FIXES_V2),
@@ -509,7 +555,7 @@ def _counts_as_accepted(wave: Wave, f: Finding) -> bool:
         return False
     if f.block == "agent":
         return f.correction is not None
-    return f.useful in ("changed", "refined")
+    return f.useful is not None and f.useful != "noise"
 
 
 def arm_stats(wave: Wave) -> list[dict]:
@@ -585,26 +631,33 @@ def wave_stats(wave: Wave) -> dict:
         "skill": wave.skill,
         "capped": wave.capped,
         "era": "usefulness" if wave.usefulness_era else "truth",
+        "scale": wave.useful_scale,
         "raw_total": sum(r.raw_findings for r in wave.runs),
         "after_merge": len(wave.findings),
         "removed": len(removed),
         "shown": len(shown),
         "tokens": (wave.raw.get("tokens") or {}).get("total"),
     }
-    era = _usefulness_ratios(shown) if wave.usefulness_era else _truth_ratios(shown)
+    era = (
+        _usefulness_ratios(shown, wave.useful_vocab)
+        if wave.usefulness_era
+        else _truth_ratios(shown)
+    )
     return {**common, **era}
 
 
-def _usefulness_ratios(shown: list[Finding]) -> dict:
+def _usefulness_ratios(shown: list[Finding], scale: tuple[str, ...] = USEFUL) -> dict:
     """Skill 0.9.0 and later: usefulness, two agreements, fix hit rate, and what
-    became of the main thread's own decisions."""
+    became of the main thread's own decisions. `scale` is the ranks he rated on;
+    a rank he could not choose is left out rather than printed as a zero."""
     owner = [f for f in shown if f.block == "owner"]
     agent = [f for f in shown if f.block == "agent"]
 
     # A blank mark is unrated, never a mark: folding blanks into "accepted" is
     # the main thread's judgment inside the owner's number.
     rated = [f for f in owner if f.useful]
-    marks = {u: sum(1 for f in rated if f.useful == u) for u in USEFUL}
+    marks = {u: sum(1 for f in rated if f.useful == u) for u in scale}
+    four = "extended" in marks
 
     both_useful = [f for f in owner if f.predicted_useful and f.useful]
     hit_useful = sum(1 for f in both_useful if f.predicted_useful == f.useful)
@@ -626,6 +679,8 @@ def _usefulness_ratios(shown: list[Finding]) -> dict:
         "rated_n": f"{len(rated)}/{len(owner)}",
         "changed": _ratio(marks["changed"], len(rated)),
         "changed_n": f"{marks['changed']}/{len(rated)}",
+        "extended": _ratio(marks["extended"], len(rated)) if four else None,
+        "extended_n": f"{marks['extended']}/{len(rated)}" if four else None,
         "noise": _ratio(marks["noise"], len(rated)),
         "noise_n": f"{marks['noise']}/{len(rated)}",
         "agree_useful": _ratio(hit_useful, len(both_useful)),
@@ -735,6 +790,15 @@ ERA_BOUNDARY = (
     "а не скилл."
 )
 
+SCALE_NAMES = {3: "три ступени пользы", 4: "четыре ступени пользы"}
+
+SCALE_BOUNDARY = (
+    "  Доли по ступеням пользы и согласие по пользе через эту границу не "
+    "сравниваются:\n  на трёх ступенях «изменила решение» вбирала и то, что на "
+    "четырёх зовётся «расширила».\n  Согласие по решению, попадание починок и "
+    "решения главного потока границу переживают."
+)
+
 
 def _print_usefulness(s: dict) -> None:
     m, c = s["marks"], s["corrections"]
@@ -743,11 +807,14 @@ def _print_usefulness(s: dict) -> None:
         f"решено главным потоком {s['shown_agent']}"
     )
     print("\nЧисла главного потока (знаменатель — показанное, не сырое):")
+    extended = f"расширила {m['extended']} · " if "extended" in m else ""
     print(
-        f"  польза            изменила решение {m['changed']} · уточнила {m['refined']} · "
-        f"шум {m['noise']}  (оценено {s['rated_n']})"
+        f"  польза            изменила решение {m['changed']} · {extended}"
+        f"уточнила {m['refined']} · шум {m['noise']}  (оценено {s['rated_n']})"
     )
     print(f"  доля изменивших   {_fmt(s['changed'])}  ({s['changed_n']})")
+    if s["extended_n"]:
+        print(f"  доля расширивших  {_fmt(s['extended'])}  ({s['extended_n']})")
     print(f"  доля шума         {_fmt(s['noise'])}  ({s['noise_n']})")
     print(f"  согласие: польза  {_fmt(s['agree_useful'])}  ({s['agree_useful_n']})")
     print(f"  согласие: решение {_fmt(s['agree_decision'])}  ({s['agree_decision_n']})")
@@ -791,9 +858,10 @@ def cmd_stats(args, waves_dir: Path) -> int:
 
     s = wave_stats(w)
     era = "с потолком" if s["capped"] else "без потолка"
+    scale = f", {SCALE_NAMES[s['scale']]}" if s["scale"] else ""
     print(
         f"\n=== {w.id} · {s['date']} · чартер {s['charter']} ({era}) · "
-        f"скилл {s['skill']} ({ERA_NAMES[s['era']]}) ===\n"
+        f"скилл {s['skill']} ({ERA_NAMES[s['era']]}{scale}) ===\n"
     )
     print("Четыре счёта волны:")
     print(f"  сырых от всех линз : {s['raw_total']}")
@@ -860,12 +928,20 @@ def cmd_ledger(args, waves_dir: Path) -> int:
                                     ("fix_hit", "fix")]))
     if truth and useful:
         print("\n" + ERA_BOUNDARY)
-    if useful:
-        print(f"\n=== Все волны · {ERA_NAMES['usefulness']} ===\n")
-        print(_table(useful, head + [("rated_n", "оценено"), ("changed", "измен"),
-                                     ("noise", "шум"), ("agree_useful", "согл:польза"),
-                                     ("agree_decision", "согл:реш"), ("fix_hit", "fix"),
-                                     ("delegated", "отдано")]))
+    # Inside the usefulness era, one table per scale: the share of changed
+    # findings on three ranks absorbed what four ranks call "extended".
+    by_scale = [(n, [r for r in useful if r["scale"] == n]) for n in (3, 4)]
+    for i, (n, part) in enumerate(p for p in by_scale if p[1]):
+        if i:
+            print("\n" + SCALE_BOUNDARY)
+        print(f"\n=== Все волны · {ERA_NAMES['usefulness']}, {SCALE_NAMES[n]} ===\n")
+        ranks = [("changed", "измен")]
+        if n == 4:
+            ranks.append(("extended", "расш"))
+        print(_table(part, head + [("rated_n", "оценено")] + ranks
+                     + [("noise", "шум"), ("agree_useful", "согл:польза"),
+                        ("agree_decision", "согл:реш"), ("fix_hit", "fix"),
+                        ("delegated", "отдано")]))
     print()
     return 0
 

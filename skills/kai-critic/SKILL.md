@@ -118,7 +118,7 @@ Where another instrument fits better:
 | `OBJECT` | `design` (a system), `strategy` (a route to a goal), `instruction` (a skill, charter, contract — text an agent must act on) |
 | `MODE` | **by whether reality exists yet**, not by object type. Nothing built, nothing to check against → `blind`. Implementation, history or a decisions log exists → `grounded` |
 | Lenses | all three, always: `beneficiary`, `adversary`, `auditor` |
-| `EFFORT` | `normal` — the default: one topic pass on Sonnet, then one run per lens on Sonnet. `enhanced` — one topic pass on Opus, then two runs per lens on Sonnet in the same batch, and a third run offered per lens by saturation (§4). `experimental` — the configuration a hypothesis under test prescribes, run as an A/B on one object (§3). The owner picks; never escalate on your own |
+| `EFFORT` | `normal` — the default: one topic pass on Opus, then one run per lens on Sonnet. `enhanced` — one topic pass on Opus, then two runs per lens on Sonnet in the same batch, and a third run offered per lens by saturation (§4). `experimental` — the configuration a hypothesis under test prescribes, run as an A/B on one object (§3). The owner picks; never escalate on your own |
 | `SHAPE` | one sentence: how the object changes the shape of what it replaces ("a self-contained file becomes a long-lived local service"). Passed to every lens verbatim. Omit when nothing is replaced — the lens then derives it |
 | Topic pass | on in `normal` and `enhanced`: `kai-critic:kai-topics` runs first and its merged list reaches every lens as `TOPICS:`. Off only as an experimental arm — whether the pass pays is answered by an arm that runs without it, never by switching it off quietly |
 
@@ -160,7 +160,7 @@ so they run in parallel and blind to each other. Sequential runs let the second
 anchor on the first and three seats collapse into one with an echo. How many
 calls is set by `EFFORT`:
 
-- **`normal`** — one topic-pass call on Sonnet, then three lens calls, one per
+- **`normal`** — one topic-pass call on Opus, then three lens calls, one per
   lens, on Sonnet. About a million subagent tokens on a grounded design of
   ordinary size. Subagent cost barely moves with the cap gone — a lens pays for
   reading, not for writing — but **your own** cost does: more findings to merge,
@@ -180,9 +180,15 @@ calls is set by `EFFORT`:
   the lab names the factor and the measure; the run record names the arm each
   agent belonged to. One factor, or the result cannot be attributed.
 
-**Models.** Both charters default to Sonnet. `enhanced` lifts the topic pass
-to Opus through the `Agent` tool's `model` parameter, and an experimental arm
-may override either agent the same way. The auditor never goes below Sonnet —
+**Models.** Both charters default to Sonnet. `normal` and `enhanced` alike lift
+the topic pass to Opus through the `Agent` tool's `model` parameter. That was
+measured, not assumed: on one object, one Opus topic pass against one Sonnet
+topic pass, with the same Sonnet lenses behind each, the Sonnet list was half as
+long and the lenses working from it came back with a small fraction of what the
+same lenses found from the Opus list — for barely fewer tokens. The list does not
+only widen the floor; it pulls the lenses further. The owner took Opus as the
+topic pass of every level on that evidence. An experimental arm may still
+override either agent the same way. The auditor never goes below Sonnet —
 it is an existential check, the class where a cheap tier has produced false
 negatives before.
 
@@ -371,7 +377,8 @@ and that finding had to be dropped from the measurement rather than "predicted"
 after the fact. Predictions first, note second, always. They are made only for
 the findings that go to **his** block:
 
-- **how useful he will find it** — it changed a decision / it refined one / noise;
+- **how useful he will find it** — it changed a decision / it extended one / it
+  refined one / noise, on the four definitions of step 3;
 - **what he will do** — take one of your proposed fixes, write his own, hand the
   choice to you, not fix, move it into a task, or wait until he can see the thing.
 
@@ -456,22 +463,40 @@ changed a decision, fix b"). Each entry carries, in this order:
    in parentheses if at all. "b) the button asks every collector to start now;
    the separate night sequence goes away (half a day)" — not "b) drop phases A
    and C of the chain".
-8. **Two empty answer slots**, one per question below, for him to fill in place.
+8. **Two empty answer slots**, one per question below, for him to fill in place —
+   **each with its allowed answers right beside it, in parentheses and in
+   italics**, in the file's language: `**Was it useful?** *(changed a decision ·
+   extended one · refined one · noise)*` and `**What do we do?** *(a · b · c ·
+   don't fix · into a task: which · when I see it · your choice · your own, in
+   words)*`, listing the letters this entry actually offers. He does not carry
+   the scale in his head from one wave to the next, and should not have to.
+   Seen twice running: with bare slots, he rated usefulness in his own words
+   ("very useful", "medium", "low"), the main thread mapped them onto the scale,
+   and on two waves the usefulness number held the main thread's judgement
+   rather than his mark.
 9. Nothing else.
 
 | Question | Options |
 |---|---|
-| **Was it useful?** | it changed a decision · it refined one · noise |
+| **Was it useful?** | it changed a decision · it extended one · it refined one · noise |
 | **What do we do?** | your proposed fixes, one to three · don't fix · **into a task** · **when I see it** · **your choice** · his own, in free text |
 
 **Was it useful — not "is it true".** An owner who does not read the code answers
 "is it true" with "you checked, so yes", and leaves the slot empty; the ratio
 built on those answers saturates and measures your verification, not the lenses.
 Usefulness is the question only he can answer, and the one that tells one version
-of the critic from another. **It changed a decision** — after this finding
-something is different: what the system does, a requirement, the plan. **It
-refined one** — the decision stands; the text or the details got more exact.
-**Noise** — he would have lost nothing without it.
+of the critic from another. The four ranks are the owner's own definitions:
+
+- **It changed a decision** — a decision the design had taken is different
+  after this finding.
+- **It extended one** — the design stands as it was, but something is added: a
+  new feature, or what a person sees and gets now reaches further.
+- **It refined one** — a small precision that changes nothing a person observes.
+- **Noise** — an unimportant finding that does not affect the delivery.
+
+The second rank is the newest. Under three ranks a finding that added to a design
+without reversing anything had nowhere to go, so it read as "changed a decision"
+— and the headline share counted additions as reversals.
 
 **Into a task.** A finding can be real, useful, and belong to work the owner
 has already planned or will plan — a backup, a delivery channel, a security
@@ -500,7 +525,9 @@ the same sequence:
   a person, and what stays as it was;
 - **what you chose and why**, in one sentence;
 - the address, in parentheses;
-- an **empty slot for his correction**.
+- an **empty slot for his correction**, with its allowed answers beside it in
+  italics as in his block: *(empty — agreed · amend: how · replace: with what ·
+  take it back)*.
 
 No usefulness question here and no menu of fixes: he is not being asked, he is
 being shown. **Silence is assent** — once he has returned the file, a row without
@@ -513,7 +540,9 @@ the end of the file, so the evidence is kept without being put in his way.
 **The file is written in the owner's language.** The codes it coins (`N1`, `T4`)
 are listed at its top with their meaning, one per line, and a term is explained
 where it first appears — the same duty, one level down, as keeping the mechanism
-in parentheses.
+in parentheses. Its "how to fill it in" carries the four ranks of usefulness with
+their definitions, one line each: the hint beside a slot names the ranks, and
+the top of the file says what they mean.
 
 **The removed block goes at the top of the same file** — what your refutations
 killed, one line each: the finding's title and what refuted it. He scans it in a
@@ -733,8 +762,9 @@ difference between a file and a dialog; that difference is gone.
   denominators below; without one, compute them by these definitions and say that
   you did it by hand:
   - **usefulness** = his marks over **the findings of his block that he rated**:
-    the share that changed a decision is the headline, the share of noise stands
-    beside it, and the count he rated goes with both. This is the number about
+    the share that changed a decision is the headline, the shares that extended
+    one and that were noise stand beside it, and the count he rated goes with
+    them. This is the number about
     the *lenses*, and the one a version of the critic is compared by. Say the raw
     count beside it whenever your refutations removed anything — a share quoted
     alone hides how much you cut.
@@ -756,8 +786,15 @@ difference between a file and a dialog; that difference is gone.
   rows mean it is drawn too far toward you. Report the failures that way round;
   they are the more useful ones.
   **None of the four compares with a wave run under a skill before 0.9.0** —
-  those asked whether a finding was true, and reported precision. The lens-side
-  yield does compare, as long as the charter has not moved (step 0c).
+  those asked whether a finding was true, and reported precision. **The shares
+  of usefulness and the agreement on usefulness do not compare across 0.10.0
+  either**: three ranks counted an addition as a changed decision, and the tool
+  keeps the two scales in separate tables. The agreement on the decision, the fix
+  hit rate and your own decisions cross that line. The lens-side yield does
+  compare, as long as the charter and the launch have not moved (step 0c) — and
+  0.10.0 moved the launch: the topic pass of a `normal` wave runs on Opus now,
+  so a `normal` wave's lens-side numbers compare only with waves whose topic
+  pass ran on the same model. The record says which (`topic_pass`).
 
 ## 7. Two standing cautions
 

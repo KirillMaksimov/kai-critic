@@ -24,13 +24,20 @@ effort: normal # normal | enhanced | experimental
 #
 # `skill_version` — the skill the MAIN THREAD worked under. It decides what the
 # owner is asked and so what the ratios measure. Before 0.9.0 he was asked "is it
-# true?"; from 0.9.0 "was it useful?". The tool computes each record by the rules
-# of its own skill era and never puts the two eras in one table.
+# true?"; from 0.9.0 "was it useful?" on three ranks; from 0.10.0 on four, with
+# "extended" between "changed" and "refined". The tool computes each record by
+# the rules of its own skill era and never puts two eras, or two scales, in one
+# table.
 #
 # A change to either text cuts ITS numbers off from every wave before it and
 # leaves the other's alone.
-charter_version: '0.8.0'
-skill_version: '0.9.0'
+charter_version: '0.9.2'
+skill_version: '0.10.0'
+
+# Only when the owner rated on four ranks while an older skill still asked on
+# three — his marks are what the record keeps. Leave it out otherwise: the skill
+# version decides.
+# useful_scale: 4
 
 # Optional pointers, for the human reading the lab later.
 note: path/to/review-note.md
@@ -39,6 +46,15 @@ paths: 40 # how many paths the run was granted
 tokens:
   total: 2100000
   by_arm: { A: 924337, B: 1173089 } # experimental waves only
+
+# The topic pass that ran before the lenses (skill §3). The lenses read its list,
+# so a lens-side number compares only with waves whose topic pass ran on the same
+# model. On an experimental wave whose arms differ here, one entry per arm:
+# { A: { model: opus, runs: 1, topics: 40 }, B: { ... } }.
+topic_pass:
+  model: opus
+  runs: 1
+  topics: 38
 
 # ---------------------------------------------------------------------------
 # One entry per RUN, not per lens: at `enhanced` a lens runs twice, and the two
@@ -88,7 +104,7 @@ findings:
     status: shown # shown | removed
     block: owner # owner | agent
     predicted_useful: refined
-    useful: changed # changed | refined | noise — HIS mark; leave out if he left it blank
+    useful: changed # changed | extended | refined | noise — HIS mark; leave out if he left it blank
     predicted: fix
     ruling: fix # fix | no_fix | into_task | until_shown
     fix: own # mine | own | delegated | none
@@ -104,7 +120,7 @@ findings:
     status: shown
     block: owner
     predicted_useful: refined
-    useful: refined
+    useful: extended # the design stands, but what a person gets reaches further
     predicted: fix
     ruling: fix
     fix: delegated
