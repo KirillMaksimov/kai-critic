@@ -91,6 +91,15 @@ from it — `tools/wave_stats.py` accepts the lab file or its directory for exac
 this reason. `claude plugin validate .` does not catch this: it checks the
 marketplace manifest, not the option schema.
 
+**A run's scratch has one fixed home in the host repository: `.kai/.critic/W<NN>/`**
+(skill §2). That is not a third mechanism: the skill names the path exactly,
+creates it, and asks nothing of the host. `.kai/` is where every kai plugin keeps
+its working folder (`.kai/.waves/`, `.kai/.research/`), and the name is known
+outside this repository — kai-readable-prose excludes the substring
+`.kai/.critic/` from its judge (`vocabulary/excluded-paths.txt`), whose hook
+otherwise reads the scratch as prose written for a person and cost one run about
+eight of its fifty-two minutes. Rename the folder only together with that list.
+
 ## Abbreviations in design & research output
 
 Any design or research deliverable — a note written in this repo **or** the same content sent to the user as a chat message — opens with a legend of its short codes, above the body, in the language of the text (`CODE — expansion`, one per line). Covers coined indices (`D1`, `W11`), domain acronyms (`FN`, `SP`) and anything not spelled out at its first use; leaves out the universally known (API, JSON, git). An edit that introduces a new code extends the legend in the same edit. Prefer a speaking name over a coined index — the legend is a fallback, not a licence. The same duty for terms rather than codes: a term, anglicism or coined name gets its expansion in parentheses at its first use, after which it may be used bare.

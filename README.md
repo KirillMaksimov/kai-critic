@@ -103,6 +103,8 @@ Keep your copy **outside** the plugin: an update overwrites the bundled file and
 
 A **lab** is the other half, and the plugin deliberately does not ship one. It is your file, in your repository, holding the lens ledger, precision per lens, the tics you have noticed and the hypotheses you are currently testing. What the plugin does ship is the **empty shape** and the arithmetic: `lab/lab_template.md` to copy into your repository, `lab/wave_template.yaml` for the one record each wave leaves, and `tools/wave_stats.py`, which computes every number from those records so none is counted by hand (`lab/README.md` says how to wire it up). Point the `lab_path` option at your copy and the skill will update it. It must **never** appear in a run's allowed paths — a lens that has read its own precision starts playing to the scoreboard, and a hypothesis handed to the agent that is supposed to test it is no longer a test.
 
+A run also leaves a **scratch folder** in the repository it runs in: `.kai/.critic/W<NN>/`, one per wave, holding the snapshot of the input, the lens prompt, the main thread's worksheet and its throwaway check scripts. It stays after the run, because the verdict on a proposal arrives when reality does and the input must still be readable then, and it is never committed: the first run writes `.kai/.critic/.gitignore` and one line in the shared `.kai/README.md`, and leaves your own `.gitignore` alone. The review file is not kept there — it goes beside your design notes.
+
 ## When not to call it
 
 - **A finished deliverable with a real recipient who has already reacted.** Reality arrived; the question is "did it work", not "will it".

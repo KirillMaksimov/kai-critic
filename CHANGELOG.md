@@ -5,6 +5,41 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.11.1] — 2026-09-29
+
+Where a run's scratch lives. §2 said "copy it to a scratch directory" and named
+none, so one run put its snapshot, its lens prompt, its worksheet and its check
+scripts in the machine's temp folder — which a cleanup empties, while the
+snapshot has to stay readable until reality delivers the verdict.
+
+### Changed
+
+- **The scratch folder is `.kai/.critic/W<NN>/`** at the root of the repository
+  the session runs in (a vault run: the vault root), beside the working folders
+  the other kai plugins keep in `.kai/`. Every scratch file of the run goes
+  there: the input snapshot, the common lens prompt, `topics.txt`, the
+  worksheet and the throwaway check scripts. The review file and the sealed file
+  keep their places from §5 step 3. Without a lab, the wave number is one past
+  the highest folder already there.
+- **The first write lays `.kai/.critic/.gitignore`** holding `*`, so the scratch
+  is never committed and the repository's own `.gitignore` is left alone, and
+  adds this plugin's line to the shared `.kai/README.md` by the convention the
+  other kai plugins follow: the shared header when the file is absent, the line
+  appended when it is missing, another plugin's line never touched.
+- **Two guards the persistence calls for.** No lens is pointed at the folder as a
+  whole, at a worksheet, or into another wave's folder — an old worksheet is a
+  summary of previous runs. And nothing under `.kai/` is ever an instructions
+  file, because the blind rule of §2 decides by what attaches to a named path.
+- README says what a run leaves in the repository; CLAUDE.md records that the
+  folder name is known to kai-readable-prose, whose judge excludes it.
+
+### Note
+
+The edit sits in §§2–3, but it moves only where the files live: a lens receives
+the same content, and `topics.txt` reaches it by a different path. Lens numbers
+are expected to compare across this version. That is an expectation, not a
+measurement.
+
 ## [0.11.0] — 2026-09-29
 
 The machinery for one experiment the owner agreed to: does grouping a lens's

@@ -149,9 +149,46 @@ being judged. What is not right is a record that says ten paths when the lens re
 twelve. The wave cannot be reproduced, and the next run cannot be framed the same
 way on purpose. List them, and the record matches what happened.
 
-Before launching: **snapshot the input** (copy it to a scratch directory, record
-the commit). The calibration is prospective — the verdict arrives when reality
-does, and the input must still be readable then.
+Before launching: **snapshot the input** (copy it into the wave's scratch folder,
+record the commit). The calibration is prospective — the verdict arrives when
+reality does, and the input must still be readable then.
+
+**The scratch folder is `.kai/.critic/W<NN>/`**, at the root of the repository
+the session runs in (`git rev-parse --show-toplevel`; a vault run: the vault
+root). `<NN>` is this wave's number — the lab's next one when a lab is
+configured, otherwise one past the highest `W<NN>` already in `.kai/.critic/`;
+a resumed wave reuses its own folder. Every scratch file of the run goes there
+and nowhere else: the input snapshot, the common lens prompt you draft,
+`topics.txt` (§3), your worksheet, and every throwaway script you check a
+finding with. Never the machine's temp folder — a cleanup empties it, and the
+snapshot has to outlive the run for as long as reality takes. Two files of the
+run never go there: the review file and the sealed file keep the places §5
+step 3 gives them (the owner's notes repository; the sealed file in
+`<lab>/waves/` when a lab is configured).
+
+On the first write, lay two things if they are missing:
+
+- `.kai/.critic/.gitignore`, holding the single line `*` — the scratch is never
+  committed, and the repository's own `.gitignore` stays untouched;
+- this plugin's line in `.kai/README.md`, which every kai plugin shares and
+  which is committed. No file ⇒ write it with the shared header below. A file
+  whose list has no line for `.critic/` ⇒ append the last line of the block.
+  Never touch another plugin's line.
+
+  ```
+  # .kai
+
+  Working folders of the kai plugins for Claude Code, one folder per purpose. Each line below is added by the plugin that owns the folder, the first time it creates it; no plugin rewrites another plugin's line.
+
+  - `.critic/` — kai-critic: scratch of critic runs, one folder per wave (input snapshot, lens prompt, worksheet, check scripts); never committed (`.critic/.gitignore`).
+  ```
+
+The folder outlives its wave, so earlier waves' worksheets sit beside this one,
+findings and all. Never point a lens at `.kai/.critic/` as a whole, at a
+worksheet, or into another wave's folder: a lens that reads an old worksheet has
+been handed a summary of previous runs (§3). And write no instructions file —
+a `CLAUDE.md` or its equivalent — anywhere under `.kai/`: the blind rule above
+decides by what attaches to a named path.
 
 ## 3. Launch
 
@@ -199,7 +236,7 @@ negatives before.
 unreachable list, `SHAPE:` and desk path as a lens would get; one call, two
 only when a hypothesis says so. Merge its list yourself: drop duplicates, keep
 every seat tag, cap at forty, number them `T1…`. **Write the merged list once**,
-to `topics.txt` in the scratch directory the input was snapshotted to (§2), and
+to `topics.txt` in the wave's scratch folder (`.kai/.critic/W<NN>/`, §2), and
 end the otherwise identical prompt with `TOPICS: <that path>`. Do not retype
 the list into each call: the lenses start only when the message that launches
 them is complete, and on one run three inline copies of a forty-topic list held
