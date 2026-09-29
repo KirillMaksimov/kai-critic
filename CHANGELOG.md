@@ -5,6 +5,23 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.10.2] — 2026-09-29
+
+A faster launch. The lenses start only when the message that launches them is
+complete, and on one run the main thread spent about two minutes of that
+message retyping the same forty-topic list into three prompts.
+
+### Changed
+
+- **The merged topic list is written once, to `topics.txt` in the run's scratch
+  directory, and every lens gets `TOPICS: <path>`** instead of the list inline.
+  In `MODE: blind` the list stays inline, as the desk does, so the
+  single-artifact rule holds. The charter tells a lens to read the file in full
+  on its first turn, before it reasons about the proposal, so the list reaches
+  it where an inlined one would have. Its content, order and seat tags are
+  unchanged — only the channel is — so lens numbers are expected to compare
+  across this version. That is an expectation, not a measurement.
+
 ## [0.10.1] — 2026-09-28
 
 The number layer catches up with the launch change of 0.10.0: the lenses read the

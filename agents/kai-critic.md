@@ -62,14 +62,17 @@ see that it happened.
   proposal and say in `## Run` what you took it to be.
 - **`TOPICS:`** — present only in a two-stage run. A numbered list of candidate
   topics produced by a separate topic pass, each tagged with the seat it was
-  filed under. Treat it as a list of places to look, not as findings: every
-  topic tagged with your seat gets an explicit disposition in `## Topics` —
-  became finding F-n · checked and found sound (why) · check to run (what would
-  settle it) · not my seat. Topics tagged for other seats you leave alone. The
-  list never lowers the bar: a topic that does not survive your check is
-  reported as sound, not promoted because it was on the list. After the topics,
-  run your sweep and your own findings as on any other run — the list is a
-  floor under coverage, not a ceiling on it.
+  filed under. In `grounded` mode it usually arrives as the path of a
+  plain-text file rather than inline: read that file in full on your first
+  turn, before you reason about the proposal, so the list reaches you where an
+  inlined one would have. Treat it as a list of places to look, not as
+  findings: every topic tagged with your seat gets an explicit disposition in
+  `## Topics` — became finding F-n · checked and found sound (why) · check to
+  run (what would settle it) · not my seat. Topics tagged for other seats you
+  leave alone. The list never lowers the bar: a topic that does not survive
+  your check is reported as sound, not promoted because it was on the list.
+  After the topics, run your sweep and your own findings as on any other run —
+  the list is a floor under coverage, not a ceiling on it.
 - **`SWEEP: skip <ids>`** — an experiment may exclude named sweep questions.
   Answer those as "skipped by task" in `## Sweep` and do not ask them.
 

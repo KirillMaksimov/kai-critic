@@ -196,17 +196,23 @@ negatives before.
 "kai-critic:kai-topics"`, the same problem statement, proposal, paths,
 unreachable list, `SHAPE:` and desk path as a lens would get; one call, two
 only when a hypothesis says so. Merge its list yourself: drop duplicates, keep
-every seat tag, cap at forty, number them `T1…`. Then launch the lenses with
-that list as a `TOPICS:` block appended to the otherwise identical prompt.
-Record the topic pass's model and call count with the wave: the lenses are not
+every seat tag, cap at forty, number them `T1…`. **Write the merged list once**,
+to `topics.txt` in the scratch directory the input was snapshotted to (§2), and
+end the otherwise identical prompt with `TOPICS: <that path>`. Do not retype
+the list into each call: the lenses start only when the message that launches
+them is complete, and on one run three inline copies of a forty-topic list held
+all three back by about two minutes of your own generation. Plain text, not
+markdown — it is data for the lenses, not a document anyone reads. Record the
+topic pass's model and call count with the wave: the lenses are not
 blind to the topic pass, by design, and a ledger row that hides how the pass
 was run cannot be compared with one that ran without it.
 
 Identical prompts except `LENS:`. Each carries: `LENS` / `MODE` / `OBJECT`, the
 problem the proposal must solve (written from the beneficiary's world, not the
-author's), the proposal, the readable paths, the unreachable list, and the desk
-path from step 0 — inlined instead of named when `MODE: blind`, so the
-single-artifact rule still holds.
+author's), the proposal, the readable paths, the unreachable list, the desk
+path from step 0, and in a two-stage run the topics file — the desk and the
+topics inlined instead of named when `MODE: blind`, so the single-artifact rule
+still holds.
 
 **Never hint at what they should find.** No hypothesis, no "check whether X", no
 summary of previous runs' findings. That is the whole reason the lab is separate.
