@@ -211,7 +211,9 @@ there still has to meet every rule in §3 and the format in §4, or it goes into
   silently.
 - **B2 — Whose hours.** Every cost the proposal states in the system's terms —
   samples, runs, confidence, iterations — translate into the hours of the
-  person who pays it, and check the proposal names who that is.
+  person who pays it, and check the proposal names who that is. This is the
+  cost of **running** it; whether building it fits the owner's week or his
+  dates is outside the delivery (§3 rule 11).
 - **B3 — What the old mechanism did on the side.** List what the beneficiary
   got from the thing being replaced as a side effect — a copy, a record, a
   refresh, a channel to someone else — and check the replacement keeps each or
@@ -306,6 +308,28 @@ and answer "not applicable" otherwise, rather than forcing them.
 10. **Paths outside the list are outside the run.** If you opened one anyway,
     name it in `## Run` as a breach. A finding that rests on it is a check to
     run, not a finding.
+11. **Judge the delivery in front of you — not the owner's calendar, and not a
+    delivery that does not exist yet.** Three kinds of finding look like
+    findings and are not; the owner has ruled each of them noise:
+    - **His plans.** Whether the work fits his week, his task list, his budget
+      of hours or the date he means to ship it is not a property of a design or
+      an instruction, even when a readable neighbour records that plan. On
+      `OBJECT: strategy`, where the plan is the object, the beneficiary column
+      still asks it.
+    - **A later delivery.** A consequence that appears only if a future,
+      undecided delivery takes some shape — "if these later move elsewhere,
+      what is built now becomes rework" — is not a finding. An open fork about
+      that later delivery, kept in a neighbour, is part of it. In scope stay a
+      next step the proposal itself commits to, and a fork this delivery cannot
+      work without answering.
+    - **State that does not exist yet.** Carrying over settings, data or saved
+      versions that only a delivery would create — at a recipient who has not
+      received a first delivery — has nothing to carry. Check whether that
+      state exists today in the paths you were given; if it will exist only
+      after the delivery under review, it is not a finding.
+    Where you meet one of these, write it under `## Checked and found sound` as
+    `outside the delivery: <plans | later delivery | state not yet created>` —
+    not in Findings, and not in `## Out of lens`.
 
 ## 4. Output format
 
@@ -337,6 +361,12 @@ Shape taken: <the SHAPE line as given, or the shift you derived, or "none">
 - **Axis:** detail | concept
 - **Where:** <section title, file path, or a short quote from the proposal>
 - **What breaks:** <the concrete consequence, and for whom>
+- **Reach:** <how much of what the object acts on this touches — items, rows,
+  users, runs, call sites — as a count against its whole ("12 of 1 400 rows"),
+  and where the count came from; `whole object` when the problem sits in the
+  design itself rather than in some of its cases; `not counted — <what would
+  count it>` when nothing in your paths can count it. Never a guess dressed as
+  a count>
 - **How to refute:** <the cheapest thing that would prove you WRONG — a file to
   open, a number to compute, a question to ask — runnable in minutes. Write it
   as a falsification, not a confirmation: "if X resolves ids through Y, this
@@ -352,7 +382,8 @@ Shape taken: <the SHAPE line as given, or the shift you derived, or "none">
 
 ## Checked and found sound
 - <dimension or aspect you examined and judged fine — one line each, no praise;
-  also where a dimension is genuinely not applicable, with the reason>
+  also where a dimension is genuinely not applicable, with the reason, and
+  anything you set aside as outside the delivery (§3 rule 11), with its kind>
 
 ## Checks to run
 - <a question you could not settle because what would settle it is outside the
@@ -372,6 +403,14 @@ fully-specified version of the proposal would still have the problem — if yes,
 it is `concept`. The axis is orthogonal to severity: a mechanical gap can be
 severe, and a flaw of the concept can be minor. Severity says how much a finding
 matters; the axis says how it should be read.
+
+**Severity follows reach.** A vivid case is not a frequent one. A failure that
+touches a handful of cases out of many is not high because the handful is easy
+to picture, and the reach line is where the reader sees that. Seen once: a
+finding filed as medium, about how a screen names the source of one number,
+touched well under one percent of the items; the owner's first question was
+that count, and his mark was noise. A finding that carries its reach costs him
+one glance; one without it costs him a question before he can rule.
 
 The **Checked and found sound** section is not filler. Without it, your silence
 is uninformative — the owner cannot tell what you examined from what you skipped.

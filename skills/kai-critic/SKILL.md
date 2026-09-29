@@ -357,6 +357,44 @@ Where the finding is about **absence** — a dimension the proposal never addres
 There the check is the fact as it stands: what the search returned, what the file
 says at that line, which section does not exist.
 
+**Measure the reach, and keep the count with the finding.** For every finding
+about behaviour over a population — items, rows, cards, users, runs — count how
+many of them the problem touches today, against the whole, read-only against the
+live data wherever the session can reach it. The lens's `Reach` line is where to
+start, not the answer: a lens counts from documents, you can count from the
+data. The count goes beside the scenario in step 3, in his units, and it is the
+first thing he weighs: one wave showed a medium finding without it, his first
+question was how many items it touched, the answer was nine of about thirteen
+hundred, and he rated it noise with the lesson in his own words — measure the
+volume a finding affects. When the count does not carry the lens's severity, lower the severity
+and say from what. A finding that sits in the design itself rather than in some
+of its cases says so instead of a count; one you could not count says what would
+count it. A count of zero today is a fact too, and often the third class below.
+
+**Three classes are outside the delivery, by the owner's standing ruling.** The
+charter keeps the lenses off them (rule 11), and the topic pass too; one that
+reaches you anyway is handled here, and only these three:
+
+- **his plans** — whether the work fits his week, his tasks, his hours or his
+  dates. **Never written into the review file**, not even into the removed
+  block: a check of his plans does not belong in a design's notes, and at most
+  it is one line in the closing chat message (step 3). On `OBJECT: strategy`
+  the plan is the object, and this class does not exist.
+- **a later delivery** — a consequence that appears only if a future, undecided
+  delivery takes some shape, or an open fork about that delivery kept in a
+  neighbour. He is making the first delivery; whether there is a second and
+  what it holds is not known yet.
+- **state not yet created** — carrying over settings, data or saved versions
+  that only a delivery would create, at a recipient who has not had a first
+  one. Nothing has been delivered, so there is nothing to carry over: the
+  change goes into the first delivery.
+
+The last two go to the **removed block** of step 3, one line each, with the class
+as the reason — `outside the delivery: later delivery` — so he can pull any of
+them back like any other removal. The rule is narrow on purpose: these are his
+answers, given once in advance, and nothing that merely looks out of scope joins
+them — that stays the guess the next rule forbids.
+
 **Only a refutation removes a finding, and the removal is shown.** With no cap on
 the lenses, discarding what verification kills is your job and it is the reason
 the cap could be lifted at all. It is also the one place where you can quietly
@@ -366,11 +404,13 @@ delete the measurement, so the rule is narrow:
   the file says otherwise, the search returned what would void it, the mechanism
   it names is already there. That is a fact you can put on a line, and the line
   is what justifies the removal.
-- **Nothing else takes one out.** Not low confidence, not "this is small", not
-  "he will reject it", not "this is out of scope for the object". Those are
-  rulings, and rulings are his — cutting by your own guess at his answer
-  re-introduces exactly the bias manual ratification exists to measure, one step
-  earlier than step 3, where nobody can see it.
+- **Nothing else takes one out** — apart from the three classes above, which
+  are his rulings already made. Not low confidence, not "this is small" (a
+  small reach is shown, not cut), not "he will reject it", not "this is out of
+  scope for the object". Those are rulings, and rulings are his — cutting by
+  your own guess at his answer re-introduces exactly the bias manual
+  ratification exists to measure, one step earlier than step 3, where nobody
+  can see it.
 - **Everything you removed goes to him in one block at the top of the review
   file** — one line each: the finding's own title, and what refuted it. A list he
   can scan in a minute and pull any row back from; a pulled-back row is
@@ -384,7 +424,9 @@ forbids.
 
 **Keep the four counts** — raw findings from the lenses, what survived
 deduplication, what your refutations removed, what he actually saw. They are the
-only record of what the removed cap bought and what it cost (§6).
+only record of what the removed cap bought and what it cost (§6). What you set
+aside as outside the delivery is counted with the removed and told apart by its
+reason (§6), so a wave that set many aside says so.
 
 **Step 2 — sort by who decides, then form both predictions and keep them to
 yourself.**
@@ -438,6 +480,12 @@ whether your decision stood.
 The second is the more uncomfortable one. It measures whether you offer the moves
 he actually wants, and the failure it catches is a standing one: an agent proposes
 the repair it can write, which is almost always the local one.
+
+**Predict usefulness by the reach first.** A finding whose count from step 1 is
+a small share of its population is predicted noise, unless the few cases it
+touches are the ones the object exists for — the one real recipient, the entry
+everybody takes. The miss this catches is the vivid case: a finding that reads
+as a story is predicted useful, and he rates it by how often it happens.
 
 **A finding about a channel outside the object — diagnostics, backup,
 delivery, monitoring, security — is predicted as "into a task", not as one of
@@ -499,8 +547,13 @@ changed a decision, fix b"). Each entry carries, in this order:
    kind.** A priority class called "explicit" reads as "explicitly set", and the
    reader then doubts a finding that was verified. Describe the thing instead of
    naming it; if the name must appear, quote it and say once what it is.
-5. **Severity and axis.** The axis is shown — it is the lens's claim about where
-   the problem lives, the same kind of fact as severity, not a verdict.
+5. **Reach, severity and axis.** The reach first — the count from step 1 in
+   his units, with its share: "12 of 1 400 items in the pool (0.9%)", or that
+   the problem sits in the design as a whole, or `not counted — <what would
+   count it>`. He asks for it before anything else, and a severity he reads
+   without it is a severity he cannot check. The axis is shown — it is the
+   lens's claim about where the problem lives, the same kind of fact as
+   severity, not a verdict.
 6. **Verified — stated as a fact, never asked.** One sentence in his terms saying
    what you checked and what came back, then the trace from step 1 under it as
    the address for whoever wants it. Whether a finding is true was your job and
@@ -595,9 +648,11 @@ their definitions, one line each: the hint beside a slot names the ranks, and
 the top of the file says what they mean.
 
 **The removed block goes at the top of the same file** — what your refutations
-killed, one line each: the finding's title and what refuted it. He scans it in a
-minute and pulls any row back; a pulled-back row is renumbered into the body as
-a normal finding.
+killed, one line each: the finding's title and what refuted it, and after them
+what step 1 set aside as a later delivery or as state not yet created, one line
+each with its class. He scans it in a minute and pulls any row back; a
+pulled-back row is renumbered into the body as a normal finding. A finding
+about his plans is not in it (step 1).
 
 **Before writing the first fix, put three moves on the table for yourself: patch
 the place · rebuild the contour · cut the feature.** Then propose whichever are
@@ -657,7 +712,9 @@ removed block, then his block, then yours, then the appendix.
 **Then one message in chat, and nothing more:** what ran and in what mode, how
 many findings wait for his decision and how many you decided yourself, the counts
 by severity and axis, the path to the file, the run's cost, and the two ways he
-can answer. Nothing step 4 hides. Do not paste the findings into chat as well —
+can answer. If a lens checked the work against his plans, that is at most one
+line here, and only if it tells him something he would want before he plans —
+never a finding, never a question. Nothing step 4 hides. Do not paste the findings into chat as well —
 the file is the artifact, and a chat copy is what the per-finding dialog turns
 back into.
 
@@ -761,13 +818,17 @@ difference between a file and a dialog; that difference is gone.
   `duration_ms` and `tool_uses` copied as they stand from the usage line of the
   agent's result, and `reads: batch` on a run launched with that line), and
   the findings after the merge (topic, the runs it came `from`, severity, axis,
-  `status`, the `block` it was shown in, and once he has answered — for his
+  the `reach` as step 3 showed it, `status`, the `block` it was shown in, and
+  once he has answered — for his
   block, your two predictions beside his mark, his decision and whose fix he
   took; for yours, `correction`: `accepted` for every row he left alone,
   `amended` or `overturned` for the rest). "Your choice" is `fix: delegated`,
   never `mine`; "when I see it" is `ruling: until_shown`; a row he took back
   moves to `block: owner` with `returned: true`. A finding you removed carries
-  `status: removed` with the refutation that removed it; a finding of your own
+  `status: removed` with the refutation that removed it; one set aside in step 1
+  carries `removed_reason: "outside the delivery — <plans | later delivery |
+  state not yet created>"`, the plans kind included although the file never
+  showed it; a finding of your own
   outside the lenses carries `from: []`. **Record two versions:**
   `charter_version` — the charter the lenses actually ran under, which is the
   snapshot taken when the session started — and `skill_version`, this text. They

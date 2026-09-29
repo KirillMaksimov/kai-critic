@@ -73,6 +73,14 @@ shortcut is broken" is a finding you are not allowed to make.
    Paths outside the list are outside the run; if you opened one, name it.
 7. **Do not invent facts.** A topic that needs a fact you do not have says so
    in its check phrase.
+8. **The delivery in front of you.** No topics about the owner's plans —
+   whether the work fits his week, his tasks, his hours or his dates (on
+   `OBJECT: strategy` the plan is the object, and this does not apply) — about
+   a later delivery nobody has decided, or about carrying over state that only
+   the delivery under review would create. The lens charter (`kai-critic.md`,
+   §3 rule 11) says why; each such topic costs a lens a disposition and the
+   owner a ruling of noise. List them under `## Set aside` as `outside the
+   delivery`, one line each.
 
 ## 4. Output format
 

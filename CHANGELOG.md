@@ -5,6 +5,61 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.12.0] — 2026-09-30
+
+Two lessons from one wave, both the owner's. Four of the eleven findings he
+ruled on came back as noise, and every one had been predicted useful: one
+touched nine items of about thirteen hundred and was shown without that count;
+the other three were about his plans, about a second delivery nobody has
+decided, and about carrying settings over to a recipient who has not had a
+first delivery. The topic pass listed all four; the lenses filed them.
+
+### Added
+
+- **A `Reach` line in every finding** (charter §4): how much of what the object
+  acts on the finding touches, as a count against its whole and where the count
+  came from — or `whole object`, or `not counted — <what would count it>`.
+  **Severity follows reach**, and the charter says why with the case above.
+- **Charter §3 rule 11 — judge the delivery in front of you.** Three kinds of
+  finding are not findings on a design or an instruction: the owner's plans
+  (his week, tasks, hours, dates — still asked on a `strategy`, where the plan
+  is the object), a later delivery nobody has decided (an open fork about it in
+  a neighbour included), and state that only the delivery under review would
+  create. A lens writes them under `Checked and found sound` as `outside the
+  delivery: <kind>`. The topic pass gets the same rule (its rule 8) and lists
+  them under `Set aside`. B2 now says it asks about the cost of running the
+  thing, not about whether building it fits the owner's schedule.
+- **The main thread measures the reach** (skill §5 step 1): against the live
+  data, read-only, wherever the session can reach it — the lens's line is where
+  to start, not the answer. The count goes into the entry beside severity and
+  axis in the owner's units with its share, and a severity it does not carry is
+  lowered with the reason given. Usefulness is **predicted by the reach first**:
+  a small share predicts noise unless the few cases are the ones the object
+  exists for.
+- **The three classes are handled by the owner's standing ruling**, the one
+  narrow exception to "only a refutation removes a finding". A finding about
+  his plans is never written into the review file — at most one line in the
+  closing chat message. A later delivery or state not yet created goes into the
+  removed block with its class as the reason, where he can pull it back. The
+  record carries `removed_reason: "outside the delivery — <kind>"`, so these
+  removals can be counted apart from refutations.
+- **`reach` in the wave record**, optional, beside severity. `wave_stats.py` does
+  not read it yet; it is kept so the ledger can later ask whether reach predicts
+  the owner's mark. The template shows it and a set-aside finding.
+- Both desks — this generic one and the owner's own — carry the two lessons as
+  craft: count the reach before you rate, and the calendar and undelivered
+  deliveries are not the critic's.
+
+### Note
+
+This is a charter change: the lenses and the topic pass read the new rule and
+the new line. By step 0c the lens-side numbers after it do not compare with
+the waves before it — fewer raw findings are expected, and that expectation is
+the point, not a measurement. `wave_stats.py median` splits by the removal of
+the cap, not by every charter version, so the owner's lab records the
+boundary. The skill's side moves as well: removals now include standing-ruling
+set-asides, told apart by their reason.
+
 ## [0.11.2] — 2026-09-30
 
 ### Changed

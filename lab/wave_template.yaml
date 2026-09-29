@@ -70,7 +70,7 @@ runs:
     arm: A # experimental waves only; omit otherwise
     model: sonnet
     raw_findings: 9 # what it returned, before any merging
-    topics: [T1, T4, T9]
+    topics: [T1, T4, T9, T14]
     # Optional, copied from the usage line of the agent's result as they stand:
     # no rounding, no conversion. `stats` prints the run's minutes and, per arm,
     # the slowest run — an arm's lenses run in parallel. Leave both out rather
@@ -115,6 +115,10 @@ findings:
     from: [ben-1, adv-1] # two seats from different sides — severity goes up
     severity: high # high | medium | low
     axis: concept # concept | detail
+    # Optional, from 0.12.0: the reach as the review file showed it — a count
+    # against its whole, `whole object`, or `not counted`. The tool does not read
+    # it yet; it is kept so the ledger can later ask whether reach predicts noise.
+    reach: "12 of 1 400 items"
     status: shown # shown | removed
     block: owner # owner | agent
     predicted_useful: refined
@@ -201,6 +205,18 @@ findings:
     removed_reason: >-
       ran the refutation: the guard it says is missing is at db.py:212 and every
       writer goes through it.
+
+  # Set aside in step 1 as outside the delivery (charter §3 rule 11) — the
+  # owner's standing ruling, not a refutation, so the reason names the class and
+  # the kind can be counted apart. `plans` is recorded too, although the review
+  # file never shows it.
+  - id: N9
+    topic: T14
+    from: [ben-1]
+    severity: medium
+    axis: concept
+    status: removed
+    removed_reason: "outside the delivery — later delivery"
 
   # A finding of the main thread's own, outside the lenses: `from` stays empty.
   - id: N8

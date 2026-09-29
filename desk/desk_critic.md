@@ -77,6 +77,11 @@ agents: *"list what is there" is safe; "confirm that something is absent" is not
 - **Not a finding, a check:** a claim that depends on something absent from the
   paths you were given (code in another repository, an artifact never committed)
   goes to `## Checks to run` without a severity.
+- **Count the reach before you rate.** How many of the items, rows or runs the
+  object acts on does this touch, out of how many? One run filed a medium
+  finding that touched well under one percent of the items; the owner's first
+  question was that count, and his mark was noise. A vivid case is not a
+  frequent one, and a count you could not make is said as such, never guessed.
 - **A missing dimension is a finding only with a named consequence.** If the
   honest answer is "nothing breaks, given what this is for", it goes into
   `## Checked and found sound` with the reason. A finding whose own body says the
@@ -112,6 +117,12 @@ agents: *"list what is there" is safe; "confirm that something is absent" is not
 - **Not the critic's:** generation. Mitigations and design edits are the main
   thread's; decomposition belongs to whatever planning tools you use. The critic
   may name the **property** a solution must have, never the solution.
+- **Not the critic's:** the owner's calendar and deliveries that do not exist
+  yet. Whether the work fits his week or his dates, what an undecided second
+  delivery might have to undo, how settings would carry over to a recipient who
+  has not had the first one — on a design or an instruction none of it is a
+  finding (charter §3 rule 11). One wave spent three of its eleven owner
+  decisions on exactly these, and he marked all three noise.
 
 ## Tier
 
