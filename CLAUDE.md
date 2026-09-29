@@ -92,7 +92,7 @@ this reason. `claude plugin validate .` does not catch this: it checks the
 marketplace manifest, not the option schema.
 
 **A run's scratch has one fixed home in the host repository: `.kai/.critic/W<NN>/`**
-(skill §2). That is not a third mechanism: the skill names the path exactly,
+in its main checkout, never in a worktree (skill §2). That is not a third mechanism: the skill names the path exactly,
 creates it, and asks nothing of the host. `.kai/` is where every kai plugin keeps
 its working folder (`.kai/.waves/`, `.kai/.research/`), and the name is known
 outside this repository — kai-readable-prose excludes the substring

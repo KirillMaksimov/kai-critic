@@ -153,9 +153,14 @@ Before launching: **snapshot the input** (copy it into the wave's scratch folder
 record the commit). The calibration is prospective — the verdict arrives when
 reality does, and the input must still be readable then.
 
-**The scratch folder is `.kai/.critic/W<NN>/`**, at the root of the repository
-the session runs in (`git rev-parse --show-toplevel`; a vault run: the vault
-root). `<NN>` is this wave's number — the lab's next one when a lab is
+**The scratch folder is `.kai/.critic/W<NN>/`**, at the root of the **main
+checkout** of the repository the session runs in — the first `worktree` line of
+`git worktree list --porcelain`; a vault run: the vault root. From a worktree
+session that is not the session's own folder, on purpose: a worktree is deleted
+with its session, and the git-ignored scratch would go with it. The same holds
+for the `.kai/README.md` line below — it lands in the main checkout, outside the
+session's branch, so leave it uncommitted and name it in the run's closing
+message. `<NN>` is this wave's number — the lab's next one when a lab is
 configured, otherwise one past the highest `W<NN>` already in `.kai/.critic/`;
 a resumed wave reuses its own folder. Every scratch file of the run goes there
 and nowhere else: the input snapshot, the common lens prompt you draft,

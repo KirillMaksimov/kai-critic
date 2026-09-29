@@ -5,6 +5,19 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.11.2] — 2026-09-30
+
+### Changed
+
+- **The scratch folder sits in the main checkout, never in a worktree.** 0.11.1
+  put it at the root of the repository the session runs in, which for a
+  worktree session is the worktree's own folder — deleted with the session, and
+  the git-ignored scratch with it, which is the temp-folder problem again. The
+  root is now the first `worktree` line of `git worktree list --porcelain`,
+  which is the repository root itself when the session is not in a worktree.
+  The `.kai/README.md` line lands there too, outside the session's branch: it is
+  left uncommitted and named in the run's closing message.
+
 ## [0.11.1] — 2026-09-29
 
 Where a run's scratch lives. §2 said "copy it to a scratch directory" and named
