@@ -175,7 +175,9 @@ calls is set by `EFFORT`:
   saturated and is not offered. The third run is never launched unasked.
 - **`experimental`** — an A/B on one object: two configurations that differ in
   **exactly one factor** — the model of a lens, the model of the topic pass,
-  the presence of the topic pass, one sweep question switched off — same
+  the presence of the topic pass, one sweep question switched off, grouped
+  reading (`READS: batch` in one arm's lens prompts, both arms fed from one
+  topic pass) — same
   object, same paths, same day, compared at topic level (§4). The hypothesis in
   the lab names the factor and the measure; the run record names the arm each
   agent belonged to. One factor, or the result cannot be attributed.
@@ -713,7 +715,9 @@ difference between a file and a dialog; that difference is gone.
 - **The wave record — write this first, because everything else reads it.** One
   YAML file at `<lab>/waves/W<NN>.yaml`, from the template at
   `${CLAUDE_PLUGIN_ROOT}/lab/wave_template.yaml`: the runs (one entry per run,
-  with its lens, model, arm, **raw findings** and the **topic ids** it named), and
+  with its lens, model, arm, **raw findings**, the **topic ids** it named, and
+  `duration_ms` and `tool_uses` copied as they stand from the usage line of the
+  agent's result, and `reads: batch` on a run launched with that line), and
   the findings after the merge (topic, the runs it came `from`, severity, axis,
   `status`, the `block` it was shown in, and once he has answered — for his
   block, your two predictions beside his mark, his decision and whose fix he
@@ -756,7 +760,8 @@ difference between a file and a dialog; that difference is gone.
   lens, pairwise overlap, cost); an `experimental` run appends one measurement
   row to the hypothesis it served — the arms, the topic unions, the findings per
   arm that were not noise and how many of them changed a decision, the tokens per
-  arm. A hypothesis is confirmed or refuted
+  arm, and each arm's minutes when time is what the hypothesis is about. A
+  hypothesis is confirmed or refuted
   by the owner on the journal, never by the main thread on one wave.
 - **The desk** *(if the repository keeps its own)*: only techniques confirmed
   enough to teach. Never write to the bundled generic desk from a run — a plugin

@@ -71,18 +71,30 @@ runs:
     model: sonnet
     raw_findings: 9 # what it returned, before any merging
     topics: [T1, T4, T9]
+    # Optional, copied from the usage line of the agent's result as they stand:
+    # no rounding, no conversion. `stats` prints the run's minutes and, per arm,
+    # the slowest run — an arm's lenses run in parallel. Leave both out rather
+    # than guess: a missing value prints blank, a guessed one reads as measured.
+    duration_ms: 780000
+    tool_uses: 84
+    # reads: batch — only on a run launched with the `READS: batch` line; omit
+    # otherwise. Such runs are a series of their own in `median`.
   - id: adv-1
     lens: adversary
     arm: A
     model: sonnet
     raw_findings: 12
     topics: [T2, T3, T4, T11]
+    duration_ms: 912000
+    tool_uses: 89
   - id: aud-1
     lens: auditor
     arm: A
     model: sonnet
     raw_findings: 7
     topics: [T5, T6]
+    duration_ms: 1050000
+    tool_uses: 83
 
 # ---------------------------------------------------------------------------
 # One entry per finding AFTER the merge.

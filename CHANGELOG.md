@@ -5,6 +5,41 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.11.0] — 2026-09-29
+
+The machinery for one experiment the owner agreed to: does grouping a lens's
+reads into fewer turns make it faster without making it shallower? Each turn of
+a lens costs a fixed few seconds before any thinking starts, and on one run more
+than half of the bottleneck lens's turns issued a single read. Grouping could
+also change how the lens follows a thread, which is why it is tested as an arm
+and not landed.
+
+### Added
+
+- **`READS: batch`, a fourth optional task line in the charter.** Present, it
+  asks the lens to issue the reads it already knows it needs in one turn; the
+  charter says in the same place that nothing else changes — what it looks for,
+  how far it follows a thread, when it stops. Absent, the lens runs as before.
+  The skill lists it among the single factors an `experimental` wave may vary,
+  with both arms fed from one topic pass so the list is not a second factor.
+- **Time per run in the wave record**: `duration_ms` and `tool_uses`, copied as
+  they stand from the usage line of the agent's result. Both optional. `stats`
+  prints a run's minutes and calls, and per arm the slowest run — an arm's
+  lenses run in parallel, so its time is a maximum, not a sum — and the calls
+  summed. One unrecorded run blanks its arm's time rather than shrinking it.
+  `check` refuses a negative or non-integer value.
+- **`reads: batch` on a run, and a `median` split by it.** The median divided a
+  wave into arms only when their topic passes ran on different models, so the
+  batched arm of this A/B — which shares its topic pass with the plain arm by
+  design — would have been pooled into the plain series without a word. Now a
+  run's reading mode is a series key beside the topic pass's model; on the
+  existing records every series and every value is unchanged.
+
+### Note
+
+The new paragraph is read by every lens, set or not. By step 0c that is a
+charter change, and so was 0.10.2; the owner's lab records the boundary.
+
 ## [0.10.2] — 2026-09-29
 
 A faster launch. The lenses start only when the message that launches them is

@@ -121,6 +121,13 @@ USEFULNESS_FROM = (0, 9, 0)
 TOPIC_PASS_UNRECORDED = "не записан"
 TOPIC_PASS_NONE = "не было"
 
+# A run's `reads` mirrors the charter's optional `READS:` line (charter 0.11.0).
+# Grouped reading may change how deep a lens goes, so its runs are a series of
+# their own in the median -- and an A/B arm that shares its topic pass with the
+# plain arm would otherwise be pooled into the plain series without a word.
+READS_MODES = ("batch",)
+READS_LABELS = {None: "по одному", "batch": "пакетом"}
+
 
 def _version_tuple(v: str) -> tuple[int, ...]:
     try:
@@ -141,6 +148,11 @@ class Run:
     raw_findings: int
     arm: str | None = None
     model: str | None = None
+    # Copied from the usage line the agent's result carries; optional, and blank
+    # in every table when a record left them out rather than read as zero.
+    duration_ms: int | None = None
+    tool_uses: int | None = None
+    reads: str | None = None
 
 
 @dataclass
@@ -278,6 +290,9 @@ def parse(doc: dict, path: Path | None = None) -> Wave:
                 raw_findings=int(r.get("raw_findings") or 0),
                 arm=r.get("arm"),
                 model=r.get("model"),
+                duration_ms=r.get("duration_ms"),
+                tool_uses=r.get("tool_uses"),
+                reads=r.get("reads"),
             )
         )
     for f in doc.get("findings") or []:
@@ -380,6 +395,18 @@ def validate(wave: Wave) -> list[str]:
             problems.append(
                 f"прогон {r.id}: сырых находок {r.raw_findings} меньше, чем тем "
                 f"{len(r.topics)} — темы получаются из находок, меньше быть не может"
+            )
+        for key in ("duration_ms", "tool_uses"):
+            val = getattr(r, key)
+            if val is not None and (isinstance(val, bool) or not isinstance(val, int) or val < 0):
+                problems.append(
+                    f"прогон {r.id}: `{key}: {val}` — целое неотрицательное число, "
+                    "как в строке usage результата агента"
+                )
+        if r.reads is not None and r.reads not in READS_MODES:
+            problems.append(
+                f"прогон {r.id}: `reads: {r.reads}` — допустимо только "
+                f"{'/'.join(READS_MODES)}, или поле опускается"
             )
 
     known_runs = set(run_ids)
@@ -560,9 +587,32 @@ def run_stats(wave: Wave) -> list[dict]:
                 "raw": r.raw_findings,
                 "topics": len(r.topics),
                 "unique": len(r.topics - others),
+                "minutes": _minutes(r.duration_ms),
+                "tools": r.tool_uses,
+                "reads": r.reads,
             }
         )
     return out
+
+
+def _minutes(ms: int | None) -> float | None:
+    return round(ms / 60_000, 1) if ms is not None else None
+
+
+def _arm_time(runs: list[Run]) -> tuple[float | None, int | None]:
+    """An arm's wall time and its tool calls. The lenses of an arm run in
+    parallel, so the arm takes as long as its slowest run, not the sum. One run
+    without a duration blanks the arm: a maximum over the runs that happen to be
+    recorded is a smaller number that reads as a measurement."""
+    if not runs or any(r.duration_ms is None for r in runs):
+        wall = None
+    else:
+        wall = _minutes(max(r.duration_ms for r in runs))
+    if not runs or any(r.tool_uses is None for r in runs):
+        tools = None
+    else:
+        tools = sum(r.tool_uses for r in runs)
+    return wall, tools
 
 
 def lens_stats(wave: Wave, pool: list[Run] | None = None) -> list[dict]:
@@ -640,6 +690,7 @@ def arm_stats(wave: Wave) -> list[dict]:
         tokens = ((wave.raw.get("tokens") or {}).get("by_arm") or {}).get(arm)
         mine = [f for f in wave.findings if by_arm[arm] & set(f.frm)]
         accepted = sum(1 for f in mine if _counts_as_accepted(wave, f))
+        wall, tools = _arm_time([r for r in wave.runs if r.arm == arm])
         out.append(
             {
                 "arm": arm,
@@ -654,6 +705,8 @@ def arm_stats(wave: Wave) -> list[dict]:
                 ),
                 "tokens": tokens,
                 "per_mtok": round(accepted / (tokens / 1_000_000), 1) if tokens else None,
+                "minutes": wall,
+                "tools": tools,
                 "jaccard": None,
             }
         )
@@ -788,30 +841,32 @@ def _truth_ratios(shown: list[Finding]) -> dict:
 
 
 def median_unique(waves: list[Wave]) -> dict:
-    """Median unique topics per lens, split by charter era and by the model of
-    the topic pass the lenses read.
+    """Median unique topics per lens, split by charter era, by the model of
+    the topic pass the lenses read, and by how the lenses read (`reads`).
 
-    A wave whose arms read topic passes on different models gives one point per
-    model, its uniqueness measured inside the arm, and the point is named
-    `W28/A`; a wave whose runs all read one model stays one point, named by the
-    wave. Waves with no topic matrix are counted and named, never silently
-    dropped: a median quietly taken over three waves instead of ten is exactly
-    the kind of plausible wrong number this layer exists to prevent.
+    A wave whose runs differ in either -- arms on topic passes of different
+    models, or one arm reading in batches -- gives one point per group, its
+    uniqueness measured inside the group, and the point is named `W28/A`; a
+    wave whose runs all agree stays one point, named by the wave. Waves with no
+    topic matrix are counted and named, never silently dropped: a median quietly
+    taken over three waves instead of ten is exactly the kind of plausible wrong
+    number this layer exists to prevent.
     """
-    buckets: dict[tuple[bool, str, str], list[tuple[str, int]]] = {}
+    buckets: dict[tuple[bool, str, str, str], list[tuple[str, int]]] = {}
     skipped = [w.id for w in waves if not w.has_topics]
     for w in waves:
         if not w.has_topics:
             continue
-        by_model: dict[str, list[Run]] = {}
+        groups: dict[tuple[str, str], list[Run]] = {}
         for r in w.runs:
-            by_model.setdefault(w.topic_pass_of(r), []).append(r)
-        for model, pool in by_model.items():
+            key = (w.topic_pass_of(r), READS_LABELS.get(r.reads, str(r.reads)))
+            groups.setdefault(key, []).append(r)
+        for (model, reads), pool in groups.items():
             source = w.id
             if len(pool) < len(w.runs):
                 source += "/" + ("+".join(sorted({str(r.arm) for r in pool if r.arm})) or "?")
             for row in lens_stats(w, pool):
-                buckets.setdefault((w.capped, model, row["lens"]), []).append(
+                buckets.setdefault((w.capped, model, reads, row["lens"]), []).append(
                     (source, row["unique"])
                 )
     return {
@@ -820,6 +875,7 @@ def median_unique(waves: list[Wave]) -> dict:
             {
                 "era": "с потолком" if capped else "без потолка",
                 "topic_pass": model,
+                "reads": reads,
                 "lens": lens,
                 "waves": len(points),
                 "median": statistics.median(vals) if (vals := [v for _, v in points]) else None,
@@ -827,8 +883,8 @@ def median_unique(waves: list[Wave]) -> dict:
                 "sources": [s for s, _ in points],
                 "by_wave": ", ".join(f"{s}:{v}" for s, v in points),
             }
-            for (capped, model, lens), points in sorted(
-                buckets.items(), key=lambda kv: (not kv[0][0], kv[0][1], kv[0][2])
+            for (capped, model, reads, lens), points in sorted(
+                buckets.items(), key=lambda kv: (not kv[0][0], kv[0][1], kv[0][2], kv[0][3])
             )
         ],
     }
@@ -962,7 +1018,8 @@ def cmd_stats(args, waves_dir: Path) -> int:
         _table(
             run_stats(w),
             [("run", "прогон"), ("lens", "линза"), ("arm", "рука"), ("model", "модель"),
-             ("raw", "сырых"), ("topics", "тем"), ("unique", "уник")],
+             ("raw", "сырых"), ("topics", "тем"), ("unique", "уник"), ("minutes", "мин"),
+             ("tools", "вызовов"), ("reads", "чтение")],
         )
     )
     print("\nПо линзам (столбец «уник» — чем судится снятый потолок):")
@@ -982,9 +1039,12 @@ def cmd_stats(args, waves_dir: Path) -> int:
                 arms,
                 [("arm", "рука"), ("topics", "тем"), ("unique", "уник"),
                  ("accepted", "принято"), ("changed", "измен"), ("tokens", "токенов"),
-                 ("per_mtok", "на млн"), ("jaccard", "жаккар")],
+                 ("per_mtok", "на млн"), ("minutes", "мин"), ("tools", "вызовов"),
+                 ("jaccard", "жаккар")],
             )
         )
+        if any(a.get("minutes") is not None for a in arms):
+            print("  «мин» руки — её самый долгий прогон: линзы руки идут параллельно.")
     print()
     return 0
 
@@ -1032,8 +1092,9 @@ def cmd_median(args, waves_dir: Path) -> int:
     print(
         _table(
             res["rows"],
-            [("era", "эпоха"), ("topic_pass", "проход тем"), ("lens", "линза"),
-             ("waves", "волн"), ("median", "медиана"), ("by_wave", "по волнам")],
+            [("era", "эпоха"), ("topic_pass", "проход тем"), ("reads", "чтение"),
+             ("lens", "линза"), ("waves", "волн"), ("median", "медиана"),
+             ("by_wave", "по волнам")],
         )
     )
     if res["skipped"]:
@@ -1042,6 +1103,7 @@ def cmd_median(args, waves_dir: Path) -> int:
     print("\n  Ряды делятся по чартеру (потолок) и по модели прохода тем: линзы читают его")
     print("  список, и их темы сравнимы только при одной модели прохода. Рука, шедшая со")
     print("  своим проходом, — своя точка ряда (W28/A), уникальность считается внутри руки.")
+    print("  Так же делится и по чтению: рука с `reads: batch` — свой ряд «пакетом».")
     labels = {r["topic_pass"] for r in res["rows"]}
     if TOPIC_PASS_UNRECORDED in labels:
         print(f"  «{TOPIC_PASS_UNRECORDED}» — в записи нет `topic_pass`: прохода не было или его")

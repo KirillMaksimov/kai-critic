@@ -473,6 +473,70 @@ check("ступени в строке волны", (ws.wave_stats(moved)["scale"
       (4, 3, None))
 
 
+# ------------------------------------------------ time per run and per arm (0.11.0+)
+
+# The lenses of an arm run in parallel, so an arm takes as long as its slowest run.
+# Summing would triple it; a maximum over only the recorded runs would shrink it.
+def timed(arm: str, lens: str, ms, tools) -> dict:
+    r = {"id": f"{lens[:3]}-{arm}", "lens": lens, "arm": arm, "raw_findings": 1,
+         "topics": [f"T{arm}{lens[:1]}"]}
+    if ms is not None:
+        r["duration_ms"] = ms
+    if tools is not None:
+        r["tool_uses"] = tools
+    return r
+
+
+tw = wave(effort="experimental", runs=[
+    timed("A", "beneficiary", 780_000, 84), timed("A", "adversary", 912_000, 89),
+    timed("A", "auditor", 1_086_000, 83),
+    timed("B", "beneficiary", 600_000, 80), timed("B", "adversary", 660_000, 85),
+    timed("B", "auditor", None, 82),
+])
+tarms = {r["arm"]: r for r in ws.arm_stats(tw)}
+check("время руки — самый долгий прогон", tarms["A"]["minutes"], 18.1)
+check("вызовы руки — сумма", tarms["A"]["tools"], 256)
+check("прогон без времени гасит время руки", tarms["B"]["minutes"], None)
+check("вызовы руки B при полной записи", tarms["B"]["tools"], 247)
+check("время прогона в минутах", {r["run"]: r["minutes"] for r in ws.run_stats(tw)}["aud-A"], 18.1)
+check("запись со временем проходит проверку", ws.validate(tw), [])
+bad_time = wave(runs=[timed("A", "auditor", -5, "83")])
+check("отрицательное время и строка вместо числа отвергнуты",
+      len([p for p in ws.validate(bad_time) if "duration_ms" in p or "tool_uses" in p]), 2)
+check("запись без времени — пусто, не ноль",
+      {r["run"]: r["minutes"] for r in ws.run_stats(w)}["ben-1"], None)
+
+# Grouped reading may change what a lens finds, so an arm that read in batches is
+# its own series in the median -- even when it shares its topic pass with the
+# plain arm, which is the whole design of that A/B.
+def arm_run(arm: str, lens: str, topics: list[str], reads=None) -> dict:
+    r = {"id": f"{lens[:3]}-{arm}", "lens": lens, "arm": arm,
+         "raw_findings": len(topics), "topics": topics}
+    if reads:
+        r["reads"] = reads
+    return r
+
+
+rb = wave(effort="experimental", charter_version="0.11.0", skill_version="0.11.0",
+          topic_pass={"model": "opus", "runs": 1, "topics": 40}, runs=[
+    arm_run("A", "beneficiary", ["T1"]), arm_run("A", "adversary", ["T2", "T3"]),
+    arm_run("A", "auditor", ["T4"]),
+    arm_run("B", "beneficiary", ["T1", "T5"], "batch"),
+    arm_run("B", "adversary", ["T3"], "batch"), arm_run("B", "auditor", ["T6"], "batch"),
+])
+check("запись с пакетной рукой проходит проверку", ws.validate(rb), [])
+med = {(r["reads"], r["lens"]): r for r in ws.median_unique([rb])["rows"]}
+check("обычная рука — свой ряд, уникальность внутри руки",
+      (med[("по одному", "adversary")]["values"], med[("по одному", "adversary")]["sources"]),
+      ([2], ["W99/A"]))
+check("пакетная рука — свой ряд",
+      (med[("пакетом", "beneficiary")]["values"], med[("пакетом", "beneficiary")]["sources"]),
+      ([2], ["W99/B"]))
+check("неизвестный режим чтения отвергнут",
+      len([p for p in ws.validate(wave(runs=[arm_run("A", "auditor", ["T1"], "fast")]))
+           if "reads" in p]), 1)
+
+
 # ------------------------------------------------------------ the shipped template
 
 # The template is the first record anyone copies. If it does not pass the check it

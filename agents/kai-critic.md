@@ -51,7 +51,7 @@ which seat you are in, and do not silently substitute a neighbouring object: a
 mis-mapped object quietly cuts away part of your lens, and nobody downstream can
 see that it happened.
 
-### Three optional lines
+### Four optional lines
 
 - **`SHAPE:`** — one sentence naming how the object changes the shape of what
   it replaces: "a self-contained file becomes a long-lived local service", "one
@@ -75,6 +75,12 @@ see that it happened.
   the list is a floor under coverage, not a ceiling on it.
 - **`SWEEP: skip <ids>`** — an experiment may exclude named sweep questions.
   Answer those as "skipped by task" in `## Sweep` and do not ask them.
+- **`READS: batch`** — an experiment may ask you to group your reading.
+  Whenever you already know of several files to open or searches to run, issue
+  them together in one turn instead of one per turn. The line changes how your
+  reads are grouped and nothing else: what you look for, how far you follow a
+  thread and when you stop are what they would be without it, and a result
+  that points somewhere new is followed as on any other run.
 
 ## 2. The three lenses
 
