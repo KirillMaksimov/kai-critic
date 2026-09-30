@@ -5,6 +5,72 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.15.0] — 2026-10-01
+
+The review file is written to be read one entry at a time, by someone who was
+not in the session. The first wave under 0.12.0–0.14.0 came back half unread:
+the owner could not follow two entries of his block and the first two rows of
+the main thread's, and read no further. The five waves before it had no entry
+he did not understand. Measured against them, the entries of that wave carried
+more than twice the numbers and twice the list items, the object's own
+vocabulary unexplained (about four words per entry, against at most about
+one), almost no screen label quoted as it appears, and an effect line in two
+entries of nine; its body rows opened with the decision and ran to two and a
+half times the average row before. Three of the causes were this skill's own
+text: 0.14.0 dropped "the row is short on purpose" and chose for the body
+exactly the rows that lean on his earlier rulings; 0.12.0 asked every finding
+for a count, which on a design without a population to count filled with
+counts of the design's own parts; and the parenthesis test for internal names,
+kept since 0.9.0, is passed by translating a name rather than explaining it.
+The object mattered too — a background scheduler has no buttons and no actors
+for a scenario to hold on to — which is why the rules below are written for an
+object like that.
+
+### Changed
+
+- **Every entry is read alone, and cold** (skill §5 step 3): it leans on no
+  other entry, on no legend, on no design and on nothing said earlier in the
+  session; a word of the object is explained in each entry that uses it. The
+  legend lists only the file's own codes.
+- **An entry opens with where he stands** — what he sees or gets today — then
+  the scenario, then the effect and the stake as labelled sentences of their
+  own. Steps are kept for sequences with actors; an argument is prose with its
+  connectives, its arithmetic goes under *verified*, and every number is said
+  with what it counts.
+- **Internal names, translated, are still internal names**, and what he looks
+  at is quoted as it appears — the label as printed and where it stands —
+  never retold in the design's words.
+- **Reach counts what a person meets**; parts of the design (requirement
+  lines, numbers on a screen, tests, files) are not a reach.
+- **The main thread's row is short on purpose again** — three sentences at
+  most, opening with the effect for a person, never with a title that names
+  the decision; its check and alternatives wait in the appendix, for body rows
+  too. A body row names the earlier ruling it touches before saying what
+  changes, and never says why it stands in the body.
+
+### Added
+
+- **A look for the marks of an unreadable file** before the review file is
+  written: an entry with no effect line, an argument laid out as numbered
+  steps with nobody acting, numbers beyond the one or two needed or not said
+  with what they count, a screen named in other words than its own, a reach
+  that counts parts of the design, a row that opens with the decision, carries
+  its check or runs past three sentences. Each is a mark the unreadable wave
+  carried far more often than the waves before it.
+
+### Note
+
+A reader subagent that had never seen the design was tried first, on two past
+review files — one the owner read whole, one he gave up on. It lost the thread
+in every entry of both, because it did not know what the owner knows about his
+own product, so it could not tell the two apart and is not shipped; the check
+stays with the main thread, as a list of marks it can see on the page.
+
+A skill change in §5 step 3: lens-side numbers are untouched. The owner's marks
+may move now that he can follow every entry, so by step 0c the main thread's
+ratios are compared only with waves under 0.15.0 or later. No change to the
+number layer.
+
 ## [0.14.0] — 2026-09-30
 
 The main thread's block of the review file shrinks to what the owner needs to

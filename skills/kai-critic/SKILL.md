@@ -539,6 +539,20 @@ part of this — they write in the language of the object, with addresses in the
 code, and they should. The translation is yours, and this step is where it
 happens.
 
+**Every entry is read alone, and cold.** He reads the entries one at a time, in
+any order, often a day after the session that wrote the design, and he stops at
+the first ones he cannot follow — one wave lost everything after them that way.
+So each entry of his block and each row of yours carries what it needs: it
+leans on nothing said in another entry, in the legend, in the design, or
+earlier in this session. The design's own words are the trap. A session that
+has spent hours on a design speaks its vocabulary — the lane, the pass, the
+debt, the look-ahead — and by the end those words feel shared; to him they
+name parts he never sees. Each one is explained in the entry that uses it — a
+clause is enough — or replaced by what the thing does for the person. Seen
+once: the owner asked what a "forecast" and an "estimate" of traffic even were;
+the entry had never said that both were megabytes a week — what the chosen
+terms would cost, and what had gone out in the last seven days.
+
 **His block — "your decisions".** The axis sets the order inside it — `concept`
 findings first, by severity, because the owner's thinking is what they exist to
 buy; `detail` findings after them, because the tail should cost him minutes
@@ -546,13 +560,28 @@ rather than attention. Each finding is **numbered** (`N1`, `N2`, … — a real 
 one sequence through both blocks, so a whole ruling fits in a line: "N7 —
 changed a decision, fix b"). Each entry carries, in this order:
 
-1. **The title — the effect, in one line a person would say**: "after the
-   rebuild, the Refresh-all button does nothing for hours" — not the name of the
-   component that causes it.
-2. **Scenario → effect → stake**: who does what → what they see or get that is
-   wrong → what it threatens. When the finding is a sequence, write it as steps
-   with actors — who sent what to whom and what came back — because a conclusion
-   shown without its path can be believed but not judged.
+1. **The title — the effect, in one line a person would say**, in words that
+   need neither the design nor another entry: "after the rebuild, the
+   Refresh-all button does nothing for hours" — not the name of the component
+   that causes it.
+2. **Where he stands, then scenario → effect → stake.** Open with a sentence
+   or two on what he sees or gets today — the screen and the number on it, the
+   report, the step he takes — so he knows what the entry is about before it
+   argues. Then who does what → what they see or get that is wrong → what it
+   threatens, the effect and the stake each in a labelled sentence of its own:
+   a scenario that stops at its last step leaves him to derive the effect, and
+   he may derive another one. When the finding is a sequence — someone acts,
+   something comes back — write it as steps with actors: who sent what to whom
+   and what came back, because a conclusion shown without its path can be
+   believed but not judged. **An argument is not a sequence.** Why a number is
+   wrong, why a condition never opens, why two checks cannot disagree — that is
+   prose with its connectives (because, so, which means), not a numbered list
+   of premises. Its arithmetic goes under *verified*; the scenario keeps the
+   one or two numbers he needs to weigh it, each said with what it counts —
+   "about 68 hours of collection a week", never a bare "68". Seen once: a wave
+   wrote nearly every entry as numbered steps, six to an entry and almost none
+   with a person acting in them, and kept an effect line in two entries of
+   nine.
 3. **Internal names only as an address** — in parentheses, after the phrase that
    has already said it in plain words: "the job that refreshes the prices
    (`price_sync.py`)". Never as the subject of a sentence. The check is
@@ -562,6 +591,16 @@ changed a decision, fix b"). Each entry carries, in this order:
    under the names of two phases of a script and three mechanisms to choose
    from. He understood none of it, said so, and answered with a requirement for
    the button instead; the finding was useful and its form nearly killed it.
+   The test is on meaning, not on the alphabet: a word in his language that the
+   design gave to a part of the machine is still an internal name, and it
+   passes the strike-through test only because it was translated. **What he
+   looks at is quoted, not retold**: a screen, a report or a message he sees is
+   named by what it shows — the label as printed, in its own language, and
+   where it stands — never by your paraphrase or by the design's name for it.
+   Seen once: an entry spoke of the screen's "forecast", the design's word for a
+   number the screen labels "assigned by the ladders"; the owner asked what the
+   screen's indicators even were, and could rule only after they were listed
+   for him as they appear.
 4. **A name the object coined that is also an ordinary word is the dangerous
    kind.** A priority class called "explicit" reads as "explicitly set", and the
    reader then doubts a finding that was verified. Describe the thing instead of
@@ -570,9 +609,14 @@ changed a decision, fix b"). Each entry carries, in this order:
    his units, with its share: "12 of 1 400 items in the pool (0.9%)", or that
    the problem sits in the design as a whole, or `not counted — <what would
    count it>`. He asks for it before anything else, and a severity he reads
-   without it is a severity he cannot check. The axis is shown — it is the
-   lens's claim about where the problem lives, the same kind of fact as
-   severity, not a verdict.
+   without it is a severity he cannot check. His units are things a person
+   meets — items, rows, games, runs, days, openings of a screen. Parts of the
+   design are not a reach: "2 of 8 requirement lines", "1 of 3 new numbers on
+   the screen" or "3 of 4 tests" read as codes and weigh nothing, and a finding
+   about them sits in the design as a whole and says so. Seen once: twelve of a
+   wave's twenty-three reach lines counted parts of the design. The axis is
+   shown — it is the lens's claim about where the problem lives, the same kind
+   of fact as severity, not a verdict.
 6. **Verified — stated as a fact, never asked.** One sentence in his terms saying
    what you checked and what came back, then the trace from step 1 under it as
    the address for whoever wants it. Whether a finding is true was your job and
@@ -641,17 +685,23 @@ sorting — the finding belonged in your block — and never a hit for whichever
 you then pick (§6).
 
 **Your block — "decided by the main thread" — in two places.** One row per
-finding, numbered in the same sequence:
+finding, numbered in the same sequence, and **short on purpose** — three
+sentences at most above its slot, read as alone and as cold as an entry of his
+block:
 
-- the effect for a person, in one phrase — or, plainly, that nothing changes for
-  a person, and what stays as it was;
+- **it opens with the effect for a person**, in one sentence in his words — or,
+  plainly, that nothing changes for a person, and what stays as it was. Never
+  with a title that names your decision or the mechanism: the row is about
+  what he will notice, and your decision comes second;
 - **what you chose and why**, in one sentence;
-- the address, in parentheses;
+- the address, in parentheses, at the end;
 - an **empty slot for his correction**, with its allowed answers beside it in
   italics as in his block: *(empty — agreed · amend: how · replace: with what ·
   take it back)*.
 
-No usefulness question here and no menu of fixes: he is not being asked, he is
+The check, the numbers behind it and the alternatives you weighed are not part
+of a row, wherever it stands; they wait under its number in the appendix. No
+usefulness question here and no menu of fixes: he is not being asked, he is
 being shown. Each row goes to one of two places:
 
 - **In the body — only the rows that need him.** A row stays in front of him
@@ -660,7 +710,17 @@ being shown. Each row goes to one of two places:
   changes something he has already ruled by: a measurement he decided on is
   re-run, a figure he relied on is corrected. On one wave that was four rows of
   twenty. Before putting a row here, ask whether it belongs in his block at all:
-  a permission only he can give is his decision, not yours.
+  a permission only he can give is his decision, not yours. Such a row leans on
+  an earlier ruling, so it names that ruling first, in his words — "you chose
+  how much to refresh each week by two numbers: 28% of facts refreshed late at
+  40 hours a week, 1.2% at 60" — and only then what changes: "they came from a
+  simulation that left out a rule the scheduler really applies; I will re-run
+  it with the rule and put the new numbers in the design". Never the reason the
+  row stands in the body: that is this skill's rule, not something he needs.
+  Seen once: the first two rows kept in front of the owner each opened with the
+  decision, carried its check and its reason for being there, and ran to two
+  and a half times the average row of the waves before; he could follow
+  neither and read no further.
 - **In the appendix — everything else**: rows where nothing changes for a
   person, or where what changes is mechanism only. The body carries one line in
   their place — "N more decisions — in the appendix" — and the appendix keeps
@@ -682,11 +742,13 @@ take a row back from either place: it is then written out in full in his block,
 renumbered, and ruled on like the rest.
 
 **The file is written in the owner's language.** The codes it coins (`N1`, `T4`)
-are listed at its top with their meaning, one per line, and a term is explained
-where it first appears — the same duty, one level down, as keeping the mechanism
-in parentheses. Its "how to fill it in" carries the four ranks of usefulness with
-their definitions, one line each: the hint beside a slot names the ranks, and
-the top of the file says what they mean.
+are listed at its top with their meaning, one per line — and only they: the
+legend is not a glossary of the design. A word of the object is explained in
+each entry that uses it (above), because the entries are read one at a time and
+nobody goes back to the top in the middle of one — the same duty, one level
+down, as keeping the mechanism in parentheses. Its "how to fill it in" carries
+the four ranks of usefulness with their definitions, one line each: the hint
+beside a slot names the ranks, and the top of the file says what they mean.
 
 **The removed block goes at the top of the same file** — what your refutations
 killed, one line each: the finding's title and what refuted it, and after them
@@ -749,6 +811,27 @@ the same file the wave lands in, written now in its before-rulings form rather
 than drafted somewhere and moved later. It opens with
 its codes and how to fill it in, then what ran and under what limits, then the
 removed block, then his block, then yours, then the appendix.
+
+**Before the file goes to him, look for the marks of a file he cannot read.**
+You have spent the session inside the design, so asking yourself whether an
+entry is clear tells you nothing — it is clear to you. Look instead for what
+you can see on the page, entry by entry and row by row. The one wave he could
+not read carried each of these far more often than the waves before it:
+
+- an entry of his block with no effect line;
+- an argument laid out as numbered steps, with nobody acting in them;
+- numbers in the scenario beyond the one or two he needs, or one not said
+  with what it counts;
+- a screen or a report named in your words or the design's rather than its
+  own;
+- a reach that counts parts of the design;
+- a row that opens with your decision, carries its check, or runs past three
+  sentences.
+
+Rewrite each one you find before the file is written. A reader who has never
+seen the design is no substitute for this list: tried on two past files, one
+the owner read whole and one he gave up on, it lost the thread in every entry
+of both — it did not know what he knows about his own product.
 
 **Then one message in chat, and nothing more:** what ran and in what mode, how
 many findings wait for his decision and how many you decided yourself — and of
