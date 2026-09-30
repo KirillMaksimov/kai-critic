@@ -5,6 +5,63 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.13.0] — 2026-09-30
+
+Two proposals of a retrospective over the first thirty-one waves, both picked by
+the owner: the number layer stops making the main thread bend a record to fit
+it, and the merge gains the job its strongest own findings have always come
+from.
+
+### Added
+
+- **Merge job 5 — run it and look at what comes out** (skill §4). The lenses
+  only read; what the object actually produces never reaches them. Wherever a
+  lens took a behaviour on trust, the main thread runs the object's own tool,
+  query or report against live data, read-only, and looks at the top of what
+  it returns. The strongest findings the main thread ever added came from
+  here — in about ten waves — and the lab had asked for it as a step since an
+  early wave. A finding born here carries `from: []` and goes through
+  verification like any other. Not a fourth lens, and nothing that writes,
+  sends or spends. The README's merge paragraph now names all five jobs.
+- **`extra_topics` on a run.** A lens finding that carried two topics used to
+  be recorded by splitting the lens's raw count, so the record held a number
+  the lens never returned (three waves had to). `raw_findings` now stays what
+  the lens returned, and `extra_topics` says how many topics beyond one per
+  finding its findings carried.
+- **`median` splits by the text the lenses read.** `LENS_TEXT_CHANGES` lists the
+  versions that changed the charter or the topic pass (0.5.0, 0.6.0, 0.9.2,
+  0.10.2, 0.11.0, 0.12.0); a record's lens text is the latest of them at or
+  below its `charter_version`. Skill step 0c always said lens-side numbers
+  compare only under one text; the tool split by the cap alone. On an existing
+  lab this moves waves run under 0.9.2 with a Sonnet topic pass into a series
+  of their own, apart from those run under 0.6.0–0.8.0.
+- **Set-asides counted apart from refutations.** A removal whose reason opens
+  with `outside the delivery` (the owner's standing ruling, 0.12.0) is printed
+  by `stats` on its own line and in a `ledger` column; the total removed is
+  unchanged.
+- **The main thread's half of the cost**: `main_thread.duration_ms` (launch of
+  the topic pass to the review file on disk, from two timestamps) and
+  `main_thread.tokens` (only when the host reports the session's usage). Until
+  now only subagent tokens were recorded, although the skill asks which half
+  grew.
+- **`authored_in_session`** — whether the session that ran the wave also wrote
+  the object, the authorship confound every agreement number has carried as a
+  footnote. `stats` prints it, `ledger` shows it per wave.
+- **`reach` is read.** `check` refuses a reach it cannot parse — "N of M …",
+  «N из M …», whole object, or not counted — and a count larger than its
+  whole. A new command, `reach`, groups the owner's marks by the reach they
+  were shown with, in descriptive buckets that no rule reads as a threshold.
+- The guard covers each of these; the template and `lab/README.md` document
+  the new fields.
+
+### Note
+
+The merge job is a skill change inside §4, but it adds findings of the main
+thread's own (`from: []`), which belong to no run: lens-side numbers are
+untouched. The main thread's ratios count what it shows, so more findings may
+reach the owner. The `median` split changes how existing numbers are grouped,
+not the numbers.
+
 ## [0.12.0] — 2026-09-30
 
 Two lessons from one wave, both the owner's. Four of the eleven findings he

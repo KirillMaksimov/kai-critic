@@ -81,7 +81,9 @@ journal quotes those baselines by name, and a later session reading them has no
 way to see that the text moved. When it applies, say so in the ledger row and in
 the journal entry that owns the baseline. The wave record names both versions
 (§6) for exactly this reason, and the tool keeps the two sides of a skill change
-in separate tables rather than in one column.
+in separate tables rather than in one column; on the lens side, `median` splits
+its series by the text the lenses read, from the list of lens-text changes the
+tool carries.
 
 ## 1. Who starts a run
 
@@ -269,7 +271,7 @@ not part of the proposal. Without that line the charter's rule on instructions
 inside the reviewed text has to fire on a file nobody handed over, and a lens
 that starts obeying the repository's operating manual has stopped being a critic.
 
-## 4. Merge — four jobs, not one
+## 4. Merge — five jobs, not one
 
 **The lenses run without a cap** (charter §8). Each returns everything that
 cleared its bar, and the cut that used to happen inside a lens, invisibly and by
@@ -317,6 +319,23 @@ that produces chains produces this hole.
    wants to see the divergence picture before ruling, show it with the runs
    numbered and the lenses hidden: a topic without a seat is exactly what the
    merge produces, and the seat is one of the three anchors §5 keeps back.
+5. **Run it and look at what comes out.** The lenses only read: they judge the
+   object by its rules, its code and its documents, and what the object actually
+   produces never reaches them. So wherever a lens took a behaviour on trust —
+   a rule that "resolves each company once", a report that "shows every item
+   once", a queue that "drains" — run the object's own tool, query or report
+   against the live data, read-only, and look at the top of what it returns.
+   The strongest findings the main thread has added came from here, and no lens
+   could have made them: a filter that cut thousands of items on a zero nobody
+   had measured, a delivered report whose top band carried a placeholder
+   record, an escalation tier fifteen times as costly as all the others
+   together. A finding born here carries `from: []`, gets a topic like any
+   other, and goes through §5 step 1 and into the file like any other. It is
+   not a fourth lens: a handful of read-only runs aimed at what the lenses
+   believed, not a sweep of the object. Nothing that writes, sends or spends
+   runs here — where the only way to see the output would, name the check
+   instead of running it. Step 1's reach measurement often runs the same
+   query; do it once and use it twice.
 
 Then check whether an apparent **disagreement between lenses is real**. Twice out
 of three it was not: the adversary's fixes were subtractive (name a population,
@@ -816,7 +835,9 @@ difference between a file and a dialog; that difference is gone.
   `${CLAUDE_PLUGIN_ROOT}/lab/wave_template.yaml`: the runs (one entry per run,
   with its lens, model, arm, **raw findings**, the **topic ids** it named, and
   `duration_ms` and `tool_uses` copied as they stand from the usage line of the
-  agent's result, and `reads: batch` on a run launched with that line), and
+  agent's result, `reads: batch` on a run launched with that line, and
+  `extra_topics` when a finding it returned carried more than one topic — the
+  raw count stays what the lens returned, never split to fit), and
   the findings after the merge (topic, the runs it came `from`, severity, axis,
   the `reach` as step 3 showed it, `status`, the `block` it was shown in, and
   once he has answered — for his
@@ -833,7 +854,12 @@ difference between a file and a dialog; that difference is gone.
   `charter_version` — the charter the lenses actually ran under, which is the
   snapshot taken when the session started — and `skill_version`, this text. They
   separate two different sets of numbers (step 0c), and they can differ inside
-  one session.
+  one session. **Record your own half of the cost:** `main_thread.duration_ms`
+  from two timestamps you take — when you launch the topic pass and when the
+  review file is on disk — and `main_thread.tokens` only when the host reports
+  this session's usage; and `authored_in_session: true` when this session also
+  wrote the object, which is the authorship confound every agreement number
+  carries. A value you do not have is left out, never estimated.
   Then validate and compute, in that order:
 
   ```
@@ -844,8 +870,10 @@ difference between a file and a dialog; that difference is gone.
   `check` refuses a record that does not hold together — a topic attributed to a
   run that never named it, a removal with no refutation, a lens outside the three,
   an owner's mark on a row of your own block, the vocabulary of one skill era in a
-  record of the other. Each of those, unvalidated, yields a plausible number
-  rather than an error.
+  record of the other, a reach it cannot read. Each of those, unvalidated, yields
+  a plausible number rather than an error. `stats` prints refutations and
+  set-asides apart, and `reach` groups his marks by the reach they were shown
+  with — the question the reach line exists to answer.
 - **The lab** *(if there is one)*: lens ledger row **from the tool's output, not
   retyped from memory**, any new tic, any new hypothesis (never into the desk
   until a clean run confirms it), plus one **ratification row per finding** —

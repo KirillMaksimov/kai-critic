@@ -47,6 +47,19 @@ tokens:
   total: 2100000
   by_arm: { A: 924337, B: 1173089 } # experimental waves only
 
+# The main thread's own half of the cost, from 0.13.0: merge, checks, sorting,
+# the review file. `duration_ms` is the wall time from launching the topic pass
+# to the review file on disk, from two timestamps the main thread takes; `tokens`
+# only when the host reports the session's usage. Leave either out rather than
+# guess — a guess prints as a measurement.
+main_thread:
+  duration_ms: 3120000
+  tokens: 410000
+
+# true when this session also wrote the object under review — the authorship
+# confound: the same context verifies, sorts and predicts. Optional.
+authored_in_session: true
+
 # The topic pass that ran before the lenses (skill §3). The lenses read its list,
 # so a lens-side number compares only with waves whose topic pass ran on the same
 # model, and `median` splits by it. On an experimental wave whose arms differ
@@ -79,6 +92,8 @@ runs:
     tool_uses: 84
     # reads: batch — only on a run launched with the `READS: batch` line; omit
     # otherwise. Such runs are a series of their own in `median`.
+    # extra_topics: 1 — when one finding the lens returned carried two topics;
+    # `raw_findings` stays what the lens returned. Omit when every finding had one.
   - id: adv-1
     lens: adversary
     arm: A
@@ -115,9 +130,10 @@ findings:
     from: [ben-1, adv-1] # two seats from different sides — severity goes up
     severity: high # high | medium | low
     axis: concept # concept | detail
-    # Optional, from 0.12.0: the reach as the review file showed it — a count
-    # against its whole, `whole object`, or `not counted`. The tool does not read
-    # it yet; it is kept so the ledger can later ask whether reach predicts noise.
+    # Optional, from 0.12.0: the reach as the review file showed it — "N of M …"
+    # or "N из M …", `whole object` / «весь объект», `not counted …` /
+    # «не посчитан …». `check` refuses anything else; `reach` groups the owner's
+    # marks by it, to ask whether a narrow finding reads as noise.
     reach: "12 of 1 400 items"
     status: shown # shown | removed
     block: owner # owner | agent

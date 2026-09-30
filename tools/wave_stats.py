@@ -29,6 +29,7 @@ Usage::
     python tools/wave_stats.py --lab <dir> stats W22     # one wave, ledger-row shaped
     python tools/wave_stats.py --lab <dir> ledger        # every wave, one table
     python tools/wave_stats.py --lab <dir> median        # median unique topics per lens
+    python tools/wave_stats.py --lab <dir> reach         # the owner's marks by reach
 
 Exit codes: 0 fine, 1 a record failed validation, 2 usage or missing lab.
 """
@@ -37,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import statistics
 import sys
 from dataclasses import dataclass, field
@@ -128,6 +130,72 @@ TOPIC_PASS_NONE = "не было"
 READS_MODES = ("batch",)
 READS_LABELS = {None: "по одному", "batch": "пакетом"}
 
+# Plugin versions that changed a text the lenses read -- the charter or the topic
+# pass. A lens-side number compares only between runs under one such text (skill
+# step 0c), so the median splits its series by the latest change at or below a
+# record's `charter_version`. The plugin has one version number for everything;
+# most releases moved the skill or this tool and left the lenses' text alone, and
+# splitting on every version would cut series that nothing cut.
+#   0.5.0  sweep, SHAPE / TOPICS / SWEEP lines     0.6.0  no cap on findings
+#   0.9.2  the opening no longer says hold back    0.10.2 the topic list as a file
+#   0.11.0 the READS paragraph                     0.12.0 Reach line, rule 11
+LENS_TEXT_CHANGES = ((0, 5, 0), (0, 6, 0), (0, 9, 2), (0, 10, 2), (0, 11, 0), (0, 12, 0))
+
+# The owner's standing ruling (charter rule 11, skill 0.12.0): findings about his
+# plans, a later delivery or state not yet created are set aside rather than
+# refuted. The record says so by the opening words of `removed_reason`.
+SET_ASIDE_PREFIX = "outside the delivery"
+
+
+def lens_text(charter: str) -> str:
+    """The lens-text version a record ran under: the latest entry of
+    LENS_TEXT_CHANGES at or below its charter version."""
+    v = _version_tuple(charter)
+    hits = [c for c in LENS_TEXT_CHANGES if c <= v]
+    return ".".join(map(str, hits[-1])) if hits else "до " + ".".join(map(str, LENS_TEXT_CHANGES[0]))
+
+
+# A finding's reach, as the review file showed it: a count against its whole
+# ("9 of 1 314 games", "9 из 1 314 игр"), the whole object, or not counted. The
+# words after the numbers are the owner's units and are kept, not parsed.
+_REACH_COUNT = re.compile(r"^\s*(\d[\d\s  ]*?)\s+(?:of|из)\s+(\d[\d\s  ]*)")
+_REACH_WHOLE = ("whole object", "весь объект")
+_REACH_UNCOUNTED = ("not counted", "не посчитан")
+
+# Buckets the `reach` command groups the owner's marks by. They describe, they do
+# not decide: no rule anywhere reads a bucket edge as a threshold.
+REACH_BUCKETS = ("< 1%", "1–10%", "≥ 10%", "весь объект", "не посчитан", "не записан")
+
+
+def parse_reach(text) -> tuple[str, int | None, int | None] | None:
+    """`("count", n, m)`, `("whole", …)`, `("uncounted", …)`, or None when the
+    text says none of these -- which `check` refuses."""
+    if text is None:
+        return ("absent", None, None)
+    s = str(text).strip()
+    low = s.lower()
+    if low.startswith(_REACH_WHOLE):
+        return ("whole", None, None)
+    if low.startswith(_REACH_UNCOUNTED):
+        return ("uncounted", None, None)
+    m = _REACH_COUNT.match(s)
+    if not m:
+        return None
+    n, total = (int(re.sub(r"\D", "", g)) for g in m.groups())
+    return ("count", n, total)
+
+
+def reach_bucket(text) -> str:
+    kind, n, total = parse_reach(text) or ("absent", None, None)
+    if kind == "whole":
+        return "весь объект"
+    if kind == "uncounted":
+        return "не посчитан"
+    if kind == "absent" or not total:
+        return "не записан"
+    share = n / total
+    return "< 1%" if share < 0.01 else "1–10%" if share < 0.10 else "≥ 10%"
+
 
 def _version_tuple(v: str) -> tuple[int, ...]:
     try:
@@ -153,6 +221,10 @@ class Run:
     duration_ms: int | None = None
     tool_uses: int | None = None
     reads: str | None = None
+    # Topics beyond one per finding: a finding the lens returned as one that
+    # carried two topics adds one here. Before 0.13.0 such a finding had to be
+    # split by hand, which inflated `raw_findings` past what the lens returned.
+    extra_topics: int = 0
 
 
 @dataclass
@@ -173,6 +245,15 @@ class Finding:
     useful: str | None = None
     correction: str | None = None
     returned: bool = False
+    # the reach as the review file showed it (0.12.0+); read by `reach`
+    reach: str | None = None
+
+    @property
+    def set_aside(self) -> bool:
+        """Removed by the owner's standing ruling, not by a refutation."""
+        return self.status == "removed" and str(self.removed_reason or "").lower().startswith(
+            SET_ASIDE_PREFIX
+        )
 
 
 @dataclass
@@ -191,6 +272,25 @@ class Wave:
     def capped(self) -> bool:
         """True when this wave ran under a charter that still capped findings."""
         return _version_tuple(self.charter) < CAP_LIFTED_IN
+
+    @property
+    def lens_text(self) -> str:
+        """The text the lenses read, as the latest lens-side change it includes."""
+        return lens_text(self.charter)
+
+    @property
+    def authored_in_session(self) -> bool | None:
+        """True when the session that ran the wave had also written the object --
+        the authorship confound: the same context checks, sorts and predicts. None
+        when the record does not say."""
+        return self.raw.get("authored_in_session")
+
+    @property
+    def main_thread(self) -> dict:
+        """The main thread's own half of the cost: `tokens` and `duration_ms`,
+        each optional. Subagent tokens live in `tokens.total`."""
+        mt = self.raw.get("main_thread")
+        return mt if isinstance(mt, dict) else {}
 
     @property
     def skill(self) -> str:
@@ -293,6 +393,7 @@ def parse(doc: dict, path: Path | None = None) -> Wave:
                 duration_ms=r.get("duration_ms"),
                 tool_uses=r.get("tool_uses"),
                 reads=r.get("reads"),
+                extra_topics=r.get("extra_topics") or 0,
             )
         )
     for f in doc.get("findings") or []:
@@ -313,6 +414,7 @@ def parse(doc: dict, path: Path | None = None) -> Wave:
                 useful=f.get("useful"),
                 correction=f.get("correction"),
                 returned=bool(f.get("returned")),
+                reach=f.get("reach"),
             )
         )
     return wave
@@ -378,6 +480,25 @@ def validate(wave: Wave) -> list[str]:
                 + " или новее — этот скилл спрашивает по четырём ступеням"
             )
 
+    authored = doc.get("authored_in_session")
+    if authored is not None and not isinstance(authored, bool):
+        problems.append(
+            f"`authored_in_session: {authored}` — true (объект писала эта же сессия) или false"
+        )
+    mt = doc.get("main_thread")
+    if mt is not None:
+        if not isinstance(mt, dict):
+            problems.append("`main_thread` — ожидается {tokens, duration_ms}, оба необязательны")
+        else:
+            for key, val in mt.items():
+                if key not in ("tokens", "duration_ms"):
+                    problems.append(f"`main_thread.{key}` — известны только tokens и duration_ms")
+                elif isinstance(val, bool) or not isinstance(val, int) or val < 0:
+                    problems.append(
+                        f"`main_thread.{key}: {val}` — целое неотрицательное; не знаешь — "
+                        "опусти поле, догадка читается как замер"
+                    )
+
     problems.extend(_validate_topic_pass(wave))
 
     run_ids = [r.id for r in wave.runs]
@@ -391,10 +512,20 @@ def validate(wave: Wave) -> list[str]:
             problems.append(
                 f"прогон {r.id}: `lens: {r.lens}` — допустимо только {'/'.join(LENSES)}"
             )
-        if r.raw_findings < len(r.topics):
+        extra_ok = isinstance(r.extra_topics, int) and not isinstance(r.extra_topics, bool) \
+            and r.extra_topics >= 0
+        if not extra_ok:
             problems.append(
-                f"прогон {r.id}: сырых находок {r.raw_findings} меньше, чем тем "
-                f"{len(r.topics)} — темы получаются из находок, меньше быть не может"
+                f"прогон {r.id}: `extra_topics: {r.extra_topics}` — целое неотрицательное: "
+                "сколько тем сверх одной на находку принесли находки с несколькими темами"
+            )
+        elif r.raw_findings + r.extra_topics < len(r.topics):
+            problems.append(
+                f"прогон {r.id}: сырых находок {r.raw_findings}"
+                + (f" и лишних тем {r.extra_topics}" if r.extra_topics else "")
+                + f" меньше, чем тем {len(r.topics)} — темы получаются из находок; "
+                "находка, несущая две темы, записывается `extra_topics: 1`, а не "
+                "раздроблением сырых"
             )
         for key in ("duration_ms", "tool_uses"):
             val = getattr(r, key)
@@ -441,6 +572,19 @@ def validate(wave: Wave) -> list[str]:
             )
         if f.status == "removed" and (f.ruling or f.useful or f.correction):
             problems.append(f"находка {f.id}: снята до показа, но несёт вердикт владельца")
+        if f.reach is not None:
+            parsed = parse_reach(f.reach)
+            if parsed is None:
+                problems.append(
+                    f"находка {f.id}: `reach: {f.reach}` — не разобрать; ожидается "
+                    "«N из M …» / «N of M …», «весь объект» / «whole object» или "
+                    "«не посчитан …» / «not counted …»"
+                )
+            elif parsed[0] == "count" and (parsed[2] == 0 or parsed[1] > parsed[2]):
+                problems.append(
+                    f"находка {f.id}: `reach: {f.reach}` — задето больше, чем всего, или "
+                    "целое равно нулю"
+                )
         problems.extend(
             _validate_usefulness(f, wave.useful_vocab)
             if wave.usefulness_era
@@ -751,8 +895,16 @@ def wave_stats(wave: Wave) -> dict:
         "raw_total": sum(r.raw_findings for r in wave.runs),
         "after_merge": len(wave.findings),
         "removed": len(removed),
+        # of the removed: what a run refutation took out, and what the owner's
+        # standing ruling set aside -- one count hid how much of each there was
+        "refuted": sum(1 for f in removed if not f.set_aside),
+        "set_aside": sum(1 for f in removed if f.set_aside),
         "shown": len(shown),
         "tokens": (wave.raw.get("tokens") or {}).get("total"),
+        "mt_tokens": wave.main_thread.get("tokens"),
+        "mt_minutes": _minutes(wave.main_thread.get("duration_ms")),
+        "authored": wave.authored_in_session,
+        "lens_text": wave.lens_text,
     }
     era = (
         _usefulness_ratios(shown, wave.useful_vocab)
@@ -841,8 +993,9 @@ def _truth_ratios(shown: list[Finding]) -> dict:
 
 
 def median_unique(waves: list[Wave]) -> dict:
-    """Median unique topics per lens, split by charter era, by the model of
-    the topic pass the lenses read, and by how the lenses read (`reads`).
+    """Median unique topics per lens, split by charter era, by the text the
+    lenses read (LENS_TEXT_CHANGES), by the model of the topic pass the lenses
+    read, and by how the lenses read (`reads`).
 
     A wave whose runs differ in either -- arms on topic passes of different
     models, or one arm reading in batches -- gives one point per group, its
@@ -852,7 +1005,7 @@ def median_unique(waves: list[Wave]) -> dict:
     taken over three waves instead of ten is exactly the kind of plausible wrong
     number this layer exists to prevent.
     """
-    buckets: dict[tuple[bool, str, str, str], list[tuple[str, int]]] = {}
+    buckets: dict[tuple[bool, str, str, str, str], list[tuple[str, int]]] = {}
     skipped = [w.id for w in waves if not w.has_topics]
     for w in waves:
         if not w.has_topics:
@@ -866,14 +1019,15 @@ def median_unique(waves: list[Wave]) -> dict:
             if len(pool) < len(w.runs):
                 source += "/" + ("+".join(sorted({str(r.arm) for r in pool if r.arm})) or "?")
             for row in lens_stats(w, pool):
-                buckets.setdefault((w.capped, model, reads, row["lens"]), []).append(
-                    (source, row["unique"])
-                )
+                buckets.setdefault(
+                    (w.capped, w.lens_text, model, reads, row["lens"]), []
+                ).append((source, row["unique"]))
     return {
         "skipped": skipped,
         "rows": [
             {
                 "era": "с потолком" if capped else "без потолка",
+                "lens_text": text,
                 "topic_pass": model,
                 "reads": reads,
                 "lens": lens,
@@ -883,11 +1037,48 @@ def median_unique(waves: list[Wave]) -> dict:
                 "sources": [s for s, _ in points],
                 "by_wave": ", ".join(f"{s}:{v}" for s, v in points),
             }
-            for (capped, model, reads, lens), points in sorted(
-                buckets.items(), key=lambda kv: (not kv[0][0], kv[0][1], kv[0][2], kv[0][3])
+            for (capped, text, model, reads, lens), points in sorted(
+                buckets.items(),
+                key=lambda kv: (
+                    not kv[0][0], _version_tuple(kv[0][1].split()[-1]), kv[0][2], kv[0][3], kv[0][4]
+                ),
             )
         ],
     }
+
+
+def reach_marks(waves: list[Wave]) -> dict:
+    """The owner's marks grouped by the reach each finding was shown with.
+
+    The question it serves is the lesson of the wave that introduced `reach`:
+    does a narrow finding read as noise? Only findings of his block that he rated
+    count; a finding shown before `reach` existed lands in "не записан" and is
+    counted there, so the table says how much of it is history rather than data.
+    """
+    rows = {b: {"bucket": b, "rated": 0, "noise": 0, "changed": 0, "extended": 0, "waves": set()}
+            for b in REACH_BUCKETS}
+    for w in waves:
+        if not w.usefulness_era:
+            continue
+        for f in w.findings:
+            if f.status != "shown" or f.block != "owner" or not f.useful:
+                continue
+            row = rows[reach_bucket(f.reach)]
+            row["rated"] += 1
+            row["waves"].add(w.id)
+            if f.useful in ("noise", "changed", "extended"):
+                row[f.useful] += 1
+    out = []
+    for b in REACH_BUCKETS:
+        r = rows[b]
+        out.append(
+            {
+                **r,
+                "noise_share": _ratio(r["noise"], r["rated"]),
+                "waves": ", ".join(sorted(r["waves"], key=lambda x: int(re.sub(r"\D", "", x) or 0))),
+            }
+        )
+    return {"rows": out}
 
 
 # ---------------------------------------------------------------- presentation
@@ -995,13 +1186,17 @@ def cmd_stats(args, waves_dir: Path) -> int:
     era = "с потолком" if s["capped"] else "без потолка"
     scale = f", {SCALE_NAMES[s['scale']]}" if s["scale"] else ""
     print(
-        f"\n=== {w.id} · {s['date']} · чартер {s['charter']} ({era}) · "
-        f"скилл {s['skill']} ({ERA_NAMES[s['era']]}{scale}) ===\n"
+        f"\n=== {w.id} · {s['date']} · чартер {s['charter']} ({era}, текст линз "
+        f"{s['lens_text']}) · скилл {s['skill']} ({ERA_NAMES[s['era']]}{scale}) ===\n"
     )
+    if s["authored"] is not None:
+        print(f"Объект писала эта же сессия: {_fmt(s['authored'])}\n")
     print("Четыре счёта волны:")
     print(f"  сырых от всех линз : {s['raw_total']}")
     print(f"  после сведения     : {s['after_merge']}")
-    print(f"  снято опровержением: {s['removed']}")
+    print(f"  снято опровержением: {s['refuted']}")
+    if s["set_aside"]:
+        print(f"  отложено вне поставки (постоянное решение владельца): {s['set_aside']}")
     print(f"  показано владельцу : {s['shown']}")
     if s["era"] == "usefulness":
         _print_usefulness(s)
@@ -1011,7 +1206,11 @@ def cmd_stats(args, waves_dir: Path) -> int:
         print(f"  согласие триажа {_fmt(s['agreement'])}  ({s['agreement_n']})")
         print(f"  fix hit rate    {_fmt(s['fix_hit'])}  ({s['fix_hit_n']})")
     if s["tokens"]:
-        print("  токенов         " + f"{s['tokens']:,}".replace(",", " "))
+        print("  токенов субагентов      " + f"{s['tokens']:,}".replace(",", " "))
+    if s["mt_tokens"] is not None:
+        print("  токенов главного потока " + f"{s['mt_tokens']:,}".replace(",", " "))
+    if s["mt_minutes"] is not None:
+        print(f"  минут главного потока   {s['mt_minutes']}")
 
     print("\nПо прогонам:")
     print(
@@ -1056,7 +1255,8 @@ def cmd_ledger(args, waves_dir: Path) -> int:
         return 0
     rows = [wave_stats(w) for w in waves]
     head = [("wave", "волна"), ("date", "дата"), ("charter", "чартер"), ("skill", "скилл"),
-            ("capped", "потолок"), ("raw_total", "сырых"), ("shown", "показ")]
+            ("capped", "потолок"), ("authored", "автор"), ("raw_total", "сырых"),
+            ("set_aside", "отлож"), ("shown", "показ")]
     # One table per skill era, never one column through both: a precision and a
     # usefulness share side by side read as one series, and they are not.
     truth = [r for r in rows if r["era"] == "truth"]
@@ -1080,7 +1280,10 @@ def cmd_ledger(args, waves_dir: Path) -> int:
         print(_table(part, head + [("rated_n", "оценено")] + ranks
                      + [("noise", "шум"), ("agree_useful", "согл:польза"),
                         ("agree_decision", "согл:реш"), ("fix_hit", "fix"),
-                        ("delegated", "отдано")]))
+                        ("delegated", "отдано"), ("tokens", "токены суб"),
+                        ("mt_tokens", "токены гл")]))
+    print("\n  «автор» — объект писала та же сессия, что вела волну (`authored_in_session`);")
+    print("  «—» — запись этого не говорит. «отлож» — отложено вне поставки, не опровергнуто.")
     print()
     return 0
 
@@ -1092,16 +1295,20 @@ def cmd_median(args, waves_dir: Path) -> int:
     print(
         _table(
             res["rows"],
-            [("era", "эпоха"), ("topic_pass", "проход тем"), ("reads", "чтение"),
-             ("lens", "линза"), ("waves", "волн"), ("median", "медиана"),
-             ("by_wave", "по волнам")],
+            [("era", "эпоха"), ("lens_text", "текст линз"), ("topic_pass", "проход тем"),
+             ("reads", "чтение"), ("lens", "линза"), ("waves", "волн"),
+             ("median", "медиана"), ("by_wave", "по волнам")],
         )
     )
     if res["skipped"]:
         print(f"\n  Без матрицы тем, в медиану не вошли: {', '.join(res['skipped'])}")
         print("  (запись волны есть, но `topics:` у прогонов пуст — обычно бэкфилл старой волны)")
-    print("\n  Ряды делятся по чартеру (потолок) и по модели прохода тем: линзы читают его")
-    print("  список, и их темы сравнимы только при одной модели прохода. Рука, шедшая со")
+    print("\n  Ряды делятся по чартеру (потолок), по тексту линз и по модели прохода тем.")
+    print("  «Текст линз» — последняя правка чартера или прохода тем, вошедшая в версию")
+    print("  записи (" + ", ".join(".".join(map(str, c)) for c in LENS_TEXT_CHANGES) + "):")
+    print("  после правки текста линзовые числа сравнимы только с волнами под тем же")
+    print("  текстом (скилл, шаг 0c). Линзы читают список прохода тем, поэтому их темы")
+    print("  сравнимы и только при одной модели прохода. Рука, шедшая со")
     print("  своим проходом, — своя точка ряда (W28/A), уникальность считается внутри руки.")
     print("  Так же делится и по чтению: рука с `reads: batch` — свой ряд «пакетом».")
     labels = {r["topic_pass"] for r in res["rows"]}
@@ -1112,6 +1319,29 @@ def cmd_median(args, waves_dir: Path) -> int:
         print(f"  «{TOPIC_PASS_NONE}» — рука шла без прохода тем (`runs: 0`).")
     print("  Правка скилла эту медиану не рвёт, пока не трогает запуск: темы называют")
     print("  линзы, а их текст задаёт чартер.")
+    print()
+    return 0
+
+
+def cmd_reach(args, waves_dir: Path) -> int:
+    waves = load_all(waves_dir)
+    bad = [w.id for w in waves if validate(w)]
+    if bad:
+        print(f"не проходят проверку, числам верить нельзя: {', '.join(bad)} — сначала `check`")
+        return 1
+    res = reach_marks(waves)
+    print("\n=== Оценки владельца по охвату находки (эпоха «полезна ли», его блок) ===\n")
+    print(
+        _table(
+            res["rows"],
+            [("bucket", "охват"), ("rated", "оценено"), ("noise", "шум"),
+             ("noise_share", "доля шума"), ("changed", "изменила"),
+             ("extended", "расширила"), ("waves", "волны")],
+        )
+    )
+    print("\n  Охват — строка `reach` находки: сколько задето из скольких. Корзины описывают,")
+    print("  а не решают: ни одно правило не читает их границы как порог. «не записан» —")
+    print("  находки волн до 0.12.0 и те, где охват не записали.")
     print()
     return 0
 
@@ -1135,6 +1365,7 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("ledger", help="все волны одной таблицей").set_defaults(func=cmd_ledger)
     sub.add_parser("median", help="медиана уникальных тем на линзу").set_defaults(func=cmd_median)
+    sub.add_parser("reach", help="оценки владельца по охвату находки").set_defaults(func=cmd_reach)
 
     args = ap.parse_args(argv)
     try:

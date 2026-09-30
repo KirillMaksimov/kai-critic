@@ -60,10 +60,12 @@ computed from it, and none of them is ever counted by hand.
 | `skill_version` | **the skill the main thread worked under** — it decides what the owner is asked, and it separates the eras of the main thread's ratios. Required from 0.9.0; a record without it is read as the era before. From 0.10.0 usefulness is rated on four ranks, before it on three |
 | `useful_scale` | optional, `4` only: the owner rated on four ranks while an older skill still asked on three. His marks are what the record keeps; without the field the skill version decides |
 | `note`, `paths` | optional pointers for whoever reads the lab later |
-| `tokens.total`, `tokens.by_arm` | cost; per-arm only on experimental waves |
+| `tokens.total`, `tokens.by_arm` | subagent cost; per-arm only on experimental waves |
+| `main_thread` | optional, from 0.13.0: the main thread's own half — `duration_ms` (launch of the topic pass to the review file on disk, from two timestamps) and `tokens` (only when the host reports the session's usage). Either is left out rather than guessed |
+| `authored_in_session` | optional, from 0.13.0: `true` when the session that ran the wave also wrote the object — the authorship confound. `ledger` shows it beside the wave |
 | `topic_pass` | the topic pass that ran before the lenses: `model`, `runs`, `topics` — one entry per arm when the arms differ there, `runs: 0` for an arm that ran without one. It says which lens-side numbers compare, since the lenses read its list: `median` splits by its model. A record without it is legal and forms a series of its own; a per-arm record that leaves out a run's arm is refused by `check` |
-| `runs[]` | one entry per **run**, not per lens — at `enhanced` a lens runs twice and the two runs are the measurement. Each carries `lens`, optional `arm` and `model`, `raw_findings` (what it returned before any merging) and `topics` (the topic ids it named, after its own restatements were merged) |
-| `findings[]` | one entry per finding **after** the merge: `topic`, `from` (the runs that named it), `severity`, `axis`, `status`, `block`, and — once the owner has answered — his answers beside the main thread's predictions (below) |
+| `runs[]` | one entry per **run**, not per lens — at `enhanced` a lens runs twice and the two runs are the measurement. Each carries `lens`, optional `arm` and `model`, `raw_findings` (what it returned before any merging) and `topics` (the topic ids it named, after its own restatements were merged); `extra_topics` when a finding it returned carried more than one topic — never a split of `raw_findings` |
+| `findings[]` | one entry per finding **after** the merge: `topic`, `from` (the runs that named it), `severity`, `axis`, `reach` (from 0.12.0: "N of M …" / «N из M …», whole object, or not counted), `status`, `block`, and — once the owner has answered — his answers beside the main thread's predictions (below) |
 
 What a shown finding carries depends on its `block` — who decided it (skill §5,
 step 2):
@@ -80,7 +82,10 @@ Two fields carry protection rather than data:
 
 - **`status: removed` with `removed_reason`.** A finding the main thread refuted
   before showing it leaves every denominator but stays visible. Without this the
-  removal would silently flatter the numbers it is measured against.
+  removal would silently flatter the numbers it is measured against. A reason
+  that opens with `outside the delivery` marks a set-aside by the owner's
+  standing ruling (skill 0.12.0) rather than a refutation, and `stats` counts the
+  two apart.
 - **`from`.** It ties a finding to the runs that named it, which is what makes a
   topic's uniqueness computable. A run id that does not exist is a validation
   error, not a smaller number.
@@ -102,6 +107,7 @@ is read when it is invoked.
 |---|---|---|
 | charter 0.6.0 — the cap on findings per lens came off | raw findings, topics, unique topics per lens; `median` reports the two sides apart | — |
 | skill 0.9.0 — "is it true?" became "was it useful?" | precision, triage agreement, fix hit rate: `stats` computes each record by the rules of its own era, and `ledger` prints one table per era with the boundary named between them | everything lens-side, the `median` included — the charter did not move |
+| every later change of the text the lenses read — 0.9.2, 0.10.2, 0.11.0, 0.12.0 (`LENS_TEXT_CHANGES` in the tool) | lens-side numbers across it: from 0.13.0 `median` splits its series by the lens text a record ran under, as skill step 0c always said it should | the main thread's ratios |
 | skill 0.10.0 — four ranks of usefulness; the topic pass of a `normal` run moved from Sonnet to Opus | the shares of usefulness and the agreement on usefulness (`ledger` prints three and four ranks as two tables); every lens-side number across a change of topic-pass model (`median` splits by the model in `topic_pass`) | the agreement on the decision, the fix hit rate, the main thread's own decisions; lens-side numbers between waves whose topic pass ran on the same model |
 
 **Records from before skill 0.9.0 keep their own vocabulary and stay valid as they

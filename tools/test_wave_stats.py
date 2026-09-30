@@ -537,6 +537,115 @@ check("неизвестный режим чтения отвергнут",
            if "reads" in p]), 1)
 
 
+# ------------------------------------------ a finding with two topics (0.13.0+)
+
+# A lens that returned one finding carrying two topics used to be recorded by
+# splitting its raw count, which put a number in the record the lens never returned.
+two = wave(runs=[
+    {"id": "aud-1", "lens": "auditor", "raw_findings": 1, "topics": ["T1", "T2"]},
+])
+check("две темы у одной находки без extra_topics — отказ",
+      len([p for p in ws.validate(two) if "extra_topics" in p]), 1)
+two_ok = wave(runs=[
+    {"id": "aud-1", "lens": "auditor", "raw_findings": 1, "extra_topics": 1,
+     "topics": ["T1", "T2"]},
+])
+check("две темы у одной находки с extra_topics: 1 — проходит", ws.validate(two_ok), [])
+check("сырые остаются тем, что вернула линза", ws.wave_stats(two_ok)["raw_total"], 1)
+check("отрицательные лишние темы отвергнуты",
+      len([p for p in ws.validate(wave(runs=[
+          {"id": "aud-1", "lens": "auditor", "raw_findings": 3, "extra_topics": -1,
+           "topics": ["T1"]}])) if "extra_topics" in p]), 1)
+
+
+# -------------------------------------------- the lens text splits the median
+
+# 0.7.0 and 0.8.0 moved the skill and the tool, not what the lenses read; 0.9.2
+# changed the charter's opening. So the first two share a series, the third does not.
+def uncapped_at(version: str, wid: str) -> ws.Wave:
+    return wave(wave=wid, charter_version=version, skill_version=version,
+                topic_pass={"model": "sonnet", "runs": 1, "topics": 20})
+
+
+check("текст линз 0.7.0 — это 0.6.0", ws.lens_text("0.7.0"), "0.6.0")
+check("текст линз 0.9.3 — это 0.9.2", ws.lens_text("0.9.3"), "0.9.2")
+check("текст линз 0.12.0", ws.lens_text("0.12.0"), "0.12.0")
+series = {(r["lens_text"], r["lens"]): r["sources"]
+          for r in ws.median_unique([uncapped_at("0.7.0", "W50"), uncapped_at("0.8.0", "W51"),
+                                     uncapped_at("0.9.2", "W52")])["rows"]}
+check("0.7.0 и 0.8.0 — один ряд", series[("0.6.0", "adversary")], ["W50", "W51"])
+check("0.9.2 — свой ряд", series[("0.9.2", "adversary")], ["W52"])
+
+
+# ----------------------------------- set aside vs refuted, main thread, author
+
+sa = wave(charter_version="0.12.0", skill_version="0.12.0", authored_in_session=True,
+          main_thread={"tokens": 410000, "duration_ms": 3_600_000},
+          findings=[
+    {"id": "F1", "topic": "T1", "from": ["ben-1"], "status": "removed",
+     "removed_reason": "outside the delivery — later delivery"},
+    {"id": "F2", "topic": "T3", "from": ["adv-1"], "status": "removed",
+     "removed_reason": "ran the refutation: the guard is at db.py:212"},
+    {"id": "F3", "topic": "T4", "from": ["aud-1"], "status": "shown", "block": "agent",
+     "correction": "accepted"},
+])
+check("запись с отложенным, автором и главным потоком проходит", ws.validate(sa), [])
+s_sa = ws.wave_stats(sa)
+check("снято всего", s_sa["removed"], 2)
+check("из них опровергнуто", s_sa["refuted"], 1)
+check("из них отложено вне поставки", s_sa["set_aside"], 1)
+check("токены главного потока", s_sa["mt_tokens"], 410000)
+check("минуты главного потока", s_sa["mt_minutes"], 60.0)
+check("объект писала эта сессия", s_sa["authored"], True)
+check("догадка вместо числа у главного потока отвергнута",
+      len([p for p in ws.validate(wave(main_thread={"tokens": "около 400k"}))
+           if "main_thread" in p]), 1)
+check("authored_in_session — только да или нет",
+      len([p for p in ws.validate(wave(authored_in_session="yes"))
+           if "authored_in_session" in p]), 1)
+
+
+# ------------------------------------------------------------------ reach
+
+check("охват: русская форма", ws.parse_reach("9 из 1 314 игр"), ("count", 9, 1314))
+check("охват: английская форма", ws.parse_reach("12 of 1 400 items (0.9%)"), ("count", 12, 1400))
+check("охват: весь объект", ws.parse_reach("весь объект")[0], "whole")
+check("охват: не посчитан", ws.parse_reach("not counted — needs the live base")[0], "uncounted")
+check("охват: мусор не разбирается", ws.parse_reach("примерно немного"), None)
+check("корзина < 1%", ws.reach_bucket("9 из 1 314 игр"), "< 1%")
+check("корзина ≥ 10%", ws.reach_bucket("247 из 305 игр"), "≥ 10%")
+check("корзина без записи", ws.reach_bucket(None), "не записан")
+
+
+def rated(fid: str, reach, useful: str) -> dict:
+    f = {"id": fid, "topic": "T1", "from": ["ben-1"], "status": "shown", "block": "owner",
+         "useful": useful, "predicted_useful": "refined", "predicted": "fix",
+         "ruling": "no_fix", "fix": "none"}
+    if reach is not None:
+        f["reach"] = reach
+    return f
+
+
+rw = wave(charter_version="0.12.0", skill_version="0.12.0", findings=[
+    rated("N1", "9 из 1 314 игр", "noise"),
+    rated("N2", "весь объект", "changed"),
+    rated("N3", None, "refined"),
+])
+check("запись с охватом проходит", ws.validate(rw), [])
+rows = {r["bucket"]: r for r in ws.reach_marks([rw])["rows"]}
+check("узкая находка — шум", (rows["< 1%"]["rated"], rows["< 1%"]["noise"]), (1, 1))
+check("весь объект — изменила", rows["весь объект"]["changed"], 1)
+check("без охвата — в «не записан»", rows["не записан"]["rated"], 1)
+check("неразборчивый охват отвергнут",
+      len([p for p in ws.validate(wave(charter_version="0.12.0", skill_version="0.12.0",
+                                       findings=[rated("N1", "немного", "noise")]))
+           if "reach" in p]), 1)
+check("задето больше, чем всего, — отвергнуто",
+      len([p for p in ws.validate(wave(charter_version="0.12.0", skill_version="0.12.0",
+                                       findings=[rated("N1", "20 из 10", "noise")]))
+           if "reach" in p]), 1)
+
+
 # ------------------------------------------------------------ the shipped template
 
 # The template is the first record anyone copies. If it does not pass the check it
