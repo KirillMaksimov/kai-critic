@@ -100,9 +100,19 @@ DECISIONS = ("fix", "no_fix", "into_task", "until_shown")
 # flattered that ratio on the wave that prompted the split.
 FIXES_V2 = ("mine", "own", "delegated", "none")
 
-# What became of a main-thread decision once he had returned the file. Silence is
-# assent, so `accepted` is written by the main thread for every uncorrected row.
+# What became of a main-thread decision once he had returned the file. `accepted`
+# is written for an uncorrected row in the BODY of the review file only.
 CORRECTIONS = ("accepted", "amended", "overturned")
+
+# From skill 0.14.0 a main-thread row stands in the body only when it needs the
+# owner; the rest go to the appendix. Silence is assent in the body and nothing
+# in the appendix: an appendix row he left alone carries no `correction` and is
+# counted as unread. Before 0.14.0 every row stood in the body, and the owner
+# said afterwards that with twenty rows in front of him silence had meant he had
+# not read them -- so those waves' uncorrected rows print as "без поправки", not
+# as agreement.
+PLACES = ("body", "appendix")
+PLACEMENT_FROM = (0, 14, 0)
 
 # The charter version that removed the seven-finding cap. Waves under an earlier
 # charter are a different population and are reported apart: comparing across a
@@ -247,6 +257,8 @@ class Finding:
     returned: bool = False
     # the reach as the review file showed it (0.12.0+); read by `reach`
     reach: str | None = None
+    # where a main-thread row stood (0.14.0+): body, or appendix
+    placed: str | None = None
 
     @property
     def set_aside(self) -> bool:
@@ -415,6 +427,7 @@ def parse(doc: dict, path: Path | None = None) -> Wave:
                 correction=f.get("correction"),
                 returned=bool(f.get("returned")),
                 reach=f.get("reach"),
+                placed=f.get("placed"),
             )
         )
     return wave
@@ -659,6 +672,7 @@ def _validate_usefulness(f: Finding, useful: tuple[str, ...] = USEFUL) -> list[s
             ("ruling", DECISIONS),
             ("fix", FIXES_V2),
             ("correction", CORRECTIONS),
+            ("placed", PLACES),
         ),
     )
     if f.status != "shown":
@@ -686,6 +700,17 @@ def _validate_usefulness(f: Finding, useful: tuple[str, ...] = USEFUL) -> list[s
                 f"находка {f.id}: `returned: true` ставится на находке, которая уже "
                 "переехала в блок owner"
             )
+        if f.placed == "appendix" and f.correction == "accepted":
+            problems.append(
+                f"находка {f.id}: строка из приложения с `correction: accepted` — в "
+                "приложении молчание значит «не прочитано», а не согласие; оставь "
+                "`correction` пустым, если поправки нет"
+            )
+    if f.block == "owner" and f.placed:
+        problems.append(
+            f"находка {f.id}: `placed` у находки блока owner — тело и приложение "
+            "бывают только у строк главного потока"
+        )
     if f.block == "owner":
         if f.correction:
             problems.append(
@@ -905,6 +930,7 @@ def wave_stats(wave: Wave) -> dict:
         "mt_minutes": _minutes(wave.main_thread.get("duration_ms")),
         "authored": wave.authored_in_session,
         "lens_text": wave.lens_text,
+        "placement": _version_tuple(wave.skill) >= PLACEMENT_FROM,
     }
     era = (
         _usefulness_ratios(shown, wave.useful_vocab)
@@ -937,8 +963,13 @@ def _usefulness_ratios(shown: list[Finding], scale: tuple[str, ...] = USEFUL) ->
     chose = [f for f in owner if f.ruling == "fix" and f.fix in ("mine", "own")]
     took_mine = [f for f in chose if f.fix == "mine"]
 
-    answered = [f for f in agent if f.correction]
+    # The body is what he reads; the appendix is what he may not. A decision
+    # counts as accepted only where silence could mean assent.
+    body = [f for f in agent if f.placed != "appendix"]
+    appendix = [f for f in agent if f.placed == "appendix"]
+    answered = [f for f in body if f.correction]
     corrections = {c: sum(1 for f in answered if f.correction == c) for c in CORRECTIONS}
+    appendix_corrected = sum(1 for f in appendix if f.correction in ("amended", "overturned"))
 
     return {
         "shown_owner": len(owner),
@@ -960,7 +991,11 @@ def _usefulness_ratios(shown: list[Finding], scale: tuple[str, ...] = USEFUL) ->
         "delegated": sum(1 for f in owner if f.fix == "delegated"),
         "until_shown": sum(1 for f in owner if f.ruling == "until_shown"),
         "corrections": corrections,
-        "answered_n": f"{len(answered)}/{len(agent)}",
+        "answered_n": f"{len(answered)}/{len(body)}",
+        "body": len(body),
+        "appendix": len(appendix),
+        "appendix_corrected": appendix_corrected,
+        "appendix_unread": len(appendix) - appendix_corrected,
         "returned": sum(1 for f in owner if f.returned),
     }
 
@@ -1148,11 +1183,27 @@ def _print_usefulness(s: dict) -> None:
         f"  попадание починок {_fmt(s['fix_hit'])}  ({s['fix_hit_n']}) · "
         f"отдано агенту {s['delegated']} · ждут показа {s['until_shown']}"
     )
-    print(
-        f"  решения главного потока: принято {c['accepted']} · уточнено {c['amended']} · "
-        f"изменено {c['overturned']} · возвращено владельцу {s['returned']}  "
-        f"(ответ получен по {s['answered_n']})"
-    )
+    if s["placement"]:
+        print(
+            f"  решения главного потока в теле: принято {c['accepted']} · уточнено "
+            f"{c['amended']} · изменено {c['overturned']} · возвращено владельцу "
+            f"{s['returned']}  (ответ получен по {s['answered_n']})"
+        )
+        print(
+            f"  в приложении: {s['appendix']} строк · поправлено {s['appendix_corrected']} · "
+            f"не прочитано {s['appendix_unread']}"
+        )
+    else:
+        print(
+            f"  решения главного потока: без поправки {c['accepted']} · уточнено "
+            f"{c['amended']} · изменено {c['overturned']} · возвращено владельцу "
+            f"{s['returned']}  (ответ получен по {s['answered_n']})"
+        )
+        print(
+            "  до скилла " + ".".join(map(str, PLACEMENT_FROM)) + " весь блок стоял в теле "
+            "файла, и молчание, по словам владельца,\n  значило «не читал»: «без поправки» "
+            "здесь — не согласие."
+        )
 
 
 def cmd_check(args, waves_dir: Path) -> int:

@@ -32,7 +32,7 @@ effort: normal # normal | enhanced | experimental
 # A change to either text cuts ITS numbers off from every wave before it and
 # leaves the other's alone.
 charter_version: '0.9.2'
-skill_version: '0.10.0'
+skill_version: '0.14.0'
 
 # Only when the owner rated on four ranks while an older skill still asked on
 # three — his marks are what the record keeps. Leave it out otherwise: the skill
@@ -243,6 +243,18 @@ findings:
     status: shown
     block: agent
     correction: accepted
+
+  # From skill 0.14.0 a main-thread row that does not need the owner stands in
+  # the appendix. Silence there means unread, not assent: leave `correction`
+  # out unless he corrected it. `check` refuses `accepted` on such a row.
+  - id: N10
+    topic: T6
+    from: [aud-1]
+    severity: low
+    axis: detail
+    status: shown
+    block: agent
+    placed: appendix
 
 # ---------------------------------------------------------------------------
 # Records written under a skill before 0.9.0 keep their own vocabulary and stay

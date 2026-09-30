@@ -646,6 +646,45 @@ check("задето больше, чем всего, — отвергнуто",
            if "reach" in p]), 1)
 
 
+# ------------------------------- body and appendix of the main thread's block (0.14.0+)
+
+def agent_row(fid: str, topic: str, placed=None, correction=None) -> dict:
+    f = {"id": fid, "topic": topic, "from": ["adv-1"], "status": "shown", "block": "agent"}
+    if placed:
+        f["placed"] = placed
+    if correction:
+        f["correction"] = correction
+    return f
+
+
+pl = wave(charter_version="0.14.0", skill_version="0.14.0", findings=[
+    agent_row("N1", "T2", correction="accepted"),
+    agent_row("N2", "T3", correction="amended"),
+    agent_row("N3", "T2", placed="appendix"),
+    agent_row("N4", "T3", placed="appendix"),
+    agent_row("N5", "T2", placed="appendix", correction="overturned"),
+])
+check("запись с телом и приложением проходит", ws.validate(pl), [])
+s_pl = ws.wave_stats(pl)
+check("в теле — только строки тела", s_pl["body"], 2)
+check("принято — только в теле", s_pl["corrections"]["accepted"], 1)
+check("ответ по строкам тела", s_pl["answered_n"], "2/2")
+check("в приложении строк", s_pl["appendix"], 3)
+check("в приложении поправлено", s_pl["appendix_corrected"], 1)
+check("в приложении не прочитано", s_pl["appendix_unread"], 2)
+check("эпоха тела и приложения", s_pl["placement"], True)
+check("молчание в приложении не согласие — accepted отвергнут",
+      len([p for p in ws.validate(wave(charter_version="0.14.0", skill_version="0.14.0",
+                                       findings=[agent_row("N1", "T2", "appendix", "accepted")]))
+           if "приложени" in p]), 1)
+check("placed у находки блока owner отвергнут",
+      len([p for p in ws.validate(wave(charter_version="0.14.0", skill_version="0.14.0",
+                                       findings=[{**rated("N1", None, "noise"), "placed": "body"}]))
+           if "placed" in p]), 1)
+check("до 0.14.0 — не эпоха тела и приложения",
+      ws.wave_stats(wave(charter_version="0.10.1", skill_version="0.10.1"))["placement"], False)
+
+
 # ------------------------------------------------------------ the shipped template
 
 # The template is the first record anyone copies. If it does not pass the check it

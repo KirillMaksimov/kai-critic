@@ -640,8 +640,8 @@ the showing will happen.
 sorting — the finding belonged in your block — and never a hit for whichever fix
 you then pick (§6).
 
-**Your block — "decided by the main thread".** One row per finding, numbered in
-the same sequence:
+**Your block — "decided by the main thread" — in two places.** One row per
+finding, numbered in the same sequence:
 
 - the effect for a person, in one phrase — or, plainly, that nothing changes for
   a person, and what stays as it was;
@@ -652,12 +652,34 @@ the same sequence:
   take it back)*.
 
 No usefulness question here and no menu of fixes: he is not being asked, he is
-being shown. **Silence is assent** — once he has returned the file, a row without
-a correction stands. A correction either amends your decision or overturns it
-(step 4). He may also take a row back: it is then written out in full in his
-block, renumbered, and ruled on like the rest. The row is short on purpose; the
-full finding, its check and the alternatives you weighed go into an appendix at
-the end of the file, so the evidence is kept without being put in his way.
+being shown. Each row goes to one of two places:
+
+- **In the body — only the rows that need him.** A row stays in front of him
+  when it asks something of him — a permission, his word on a condition, a
+  number or a limit you will come back to him with — or when your decision
+  changes something he has already ruled by: a measurement he decided on is
+  re-run, a figure he relied on is corrected. On one wave that was four rows of
+  twenty. Before putting a row here, ask whether it belongs in his block at all:
+  a permission only he can give is his decision, not yours.
+- **In the appendix — everything else**: rows where nothing changes for a
+  person, or where what changes is mechanism only. The body carries one line in
+  their place — "N more decisions — in the appendix" — and the appendix keeps
+  each row in the same form, with its slot, beside the full finding, its check
+  and the alternatives you weighed.
+
+When unsure, the body: a row too many costs him a line, a row hidden costs a
+decision taken without him.
+
+**Silence is assent in the body, and nothing in the appendix.** The owner said
+it plainly after five waves in which every row sat in front of him: with twenty
+rows, silence meant he had not read them — all ninety-eight rows of those waves
+had been counted as accepted, and the number measured nothing. A short list of
+what matters he reads. So in the body, once he has returned the file, a row
+without a correction stands. An appendix row he left alone is recorded as
+**unread**, never as accepted; one he corrected counts like any correction. A
+correction either amends your decision or overturns it (step 4). He may also
+take a row back from either place: it is then written out in full in his block,
+renumbered, and ruled on like the rest.
 
 **The file is written in the owner's language.** The codes it coins (`N1`, `T4`)
 are listed at its top with their meaning, one per line, and a term is explained
@@ -729,7 +751,8 @@ its codes and how to fill it in, then what ran and under what limits, then the
 removed block, then his block, then yours, then the appendix.
 
 **Then one message in chat, and nothing more:** what ran and in what mode, how
-many findings wait for his decision and how many you decided yourself, the counts
+many findings wait for his decision and how many you decided yourself — and of
+those, how many stand in the body because they need him — the counts
 by severity and axis, the path to the file, the run's cost, and the two ways he
 can answer. If a lens checked the work against his plans, that is at most one
 line here, and only if it tells him something he would want before he plans —
@@ -765,11 +788,12 @@ them; in chat, the headline and the numbers, not the tables again.
 
 - **His block:** finding · lens · predicted usefulness · his mark · agree? ·
   predicted decision · his decision · whose fix (yours · his own · handed to you).
-- **Your block:** finding · lens · what you chose · his correction — none ·
-  **amended** (your decision stands, made more exact or wider) · **overturned** (a
-  different decision replaces yours) — and beside the table the three counts he
-  reads it by: decisions accepted · amended · overturned, plus the rows he took
-  back.
+- **Your block:** finding · lens · where it stood (body · appendix) · what you
+  chose · his correction — none · **amended** (your decision stands, made more
+  exact or wider) · **overturned** (a different decision replaces yours) — and
+  beside the table the counts he reads it by: for the body, decisions accepted ·
+  amended · overturned; for the appendix, how many rows it held, how many he
+  corrected, and how many stayed unread; plus the rows he took back.
 
 Name the disagreements plainly and do not argue them — a disagreement is a
 labelled example, which is worth more than being right.
@@ -842,8 +866,10 @@ difference between a file and a dialog; that difference is gone.
   the `reach` as step 3 showed it, `status`, the `block` it was shown in, and
   once he has answered — for his
   block, your two predictions beside his mark, his decision and whose fix he
-  took; for yours, `correction`: `accepted` for every row he left alone,
-  `amended` or `overturned` for the rest). "Your choice" is `fix: delegated`,
+  took; for yours, `placed: appendix` on every row that stood in the appendix,
+  and `correction`: `accepted` for every **body** row he left alone, `amended` or
+  `overturned` for a row he corrected wherever it stood — an appendix row he
+  left alone carries no `correction` at all, because it was not read). "Your choice" is `fix: delegated`,
   never `mine`; "when I see it" is `ruling: until_shown`; a row he took back
   moves to `block: owner` with `returned: true`. A finding you removed carries
   `status: removed` with the refutation that removed it; one set aside in step 1
@@ -919,7 +945,9 @@ difference between a file and a dialog; that difference is gone.
     Counted as a hit it flatters the rate by exactly the findings he declined to
     rule on. Not fixing, a task and "when I see it" are out as well.
   - **your own decisions** = accepted · amended · overturned, over the rows of
-    your block, with the rows he took back beside them.
+    your block that stood in the body, with the rows he took back beside them;
+    and beside that, the appendix — rows, corrections, unread. An unread row is
+    never an accepted one.
   Read them together. A low agreement with a high usefulness means the lenses are
   fine and your triage is not. A low fix hit rate means the lenses find the right
   things and you keep reaching for the wrong instrument — usually the small one.
@@ -937,7 +965,10 @@ difference between a file and a dialog; that difference is gone.
   0.10.0 moved the launch: the topic pass of a `normal` wave runs on Opus now,
   so a `normal` wave's lens-side numbers compare only with waves whose topic
   pass ran on the same model. The record says which (`topic_pass`), and
-  `median` splits its series by it.
+  `median` splits its series by it. **Your own decisions do not compare across
+  0.14.0**: before it every row stood in the body and his silence was counted as
+  assent, which he has since said meant he had not read them. The tool prints
+  those waves' counts as rows without a correction, not as agreement.
 
 ## 7. Two standing cautions
 

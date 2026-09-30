@@ -5,6 +5,45 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.14.0] — 2026-09-30
+
+The main thread's block of the review file shrinks to what the owner needs to
+see, and its number stops counting what nobody read. Over five waves all
+ninety-eight of its rows came back without a correction, and the retrospective
+read that as a number that had saturated. The owner corrected the reading:
+with twenty rows in front of him, silence meant he had not read them. A short
+list of what matters he reads.
+
+### Changed
+
+- **Two places for the main thread's rows** (skill §5 step 3). In the body stay
+  only the rows that need him — a permission, his word on a condition, a limit
+  the main thread will come back to him with, or a change to something he has
+  already ruled by (a measurement he decided on re-run, a figure he relied on
+  corrected). Everything else goes to the appendix in the same form, with one
+  line in the body saying how many. When unsure, the body. On the wave that
+  prompted it, that is four rows of twenty.
+- **Silence is assent in the body, and nothing in the appendix.** An appendix
+  row he left alone is recorded as unread — no `correction` — never as
+  accepted; one he corrected counts like any correction. The reveal table and
+  the fourth number count the body and the appendix apart.
+- The closing chat message says how many of the main thread's rows stand in the
+  body.
+
+### Added
+
+- `placed: appendix` on a main-thread row in the wave record (absent means the
+  body). `check` refuses `correction: accepted` on an appendix row and `placed`
+  on a row of the owner's block. `stats` prints the body's accepted · amended ·
+  overturned and, apart, the appendix's rows · corrected · unread.
+- For records under a skill before 0.14.0, `stats` prints the uncorrected rows
+  as "без поправки" with a line saying why they are not agreement.
+
+### Note
+
+A skill change in §5–§6: the main thread's own-decisions number does not
+compare across it. Lens-side numbers are untouched.
+
 ## [0.13.0] — 2026-09-30
 
 Two proposals of a retrospective over the first thirty-one waves, both picked by

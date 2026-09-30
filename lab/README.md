@@ -76,7 +76,8 @@ step 2):
 | | `predicted`, `ruling` | `fix` · `no_fix` · `into_task` · `until_shown` ("I will know when I see it" — the finding stays open) |
 | | `fix` | `mine` · `own` · `delegated` ("your choice") · `none`. Only a `ruling: fix` carries a repair |
 | | `returned: true` | he took this row back from the main thread's block |
-| `agent` — every sensible fix gave a person the same thing; the main thread decided | `correction` | `accepted` (no correction — silence is assent once he has returned the file) · `amended` (the decision stands, made more exact) · `overturned` (a different decision replaces it). Left out until he has answered |
+| `agent` — every sensible fix gave a person the same thing; the main thread decided | `correction` | `accepted` (no correction on a row in the **body** — silence is assent there once he has returned the file) · `amended` (the decision stands, made more exact) · `overturned` (a different decision replaces it). Left out until he has answered, and left out for good on an appendix row he did not correct |
+| | `placed` | from skill 0.14.0: `appendix` for a row that did not need him and stood in the appendix; absent means the body. An appendix row without a correction is **unread**, and `check` refuses `accepted` on it |
 
 Two fields carry protection rather than data:
 
@@ -147,7 +148,11 @@ raw pile. From skill 0.9.0:
   nothing about the repertoire — it says the finding was sorted into the wrong
   block. Not fixing, a task and "when I see it" chose no repair either.
 - **the main thread's decisions** = accepted · amended · overturned, over the rows
-  of its own block he has answered, with the rows he took back counted beside.
+  of its own block that stood in the body, with the rows he took back counted
+  beside; the appendix is counted apart — rows, corrected, unread. Before skill
+  0.14.0 every row stood in the body, and the owner said afterwards that silence
+  over twenty rows had meant he had not read them: `stats` prints those waves'
+  uncorrected rows as "без поправки", not as accepted.
 
 Before skill 0.9.0 the three were **precision** (accepted ÷ ruled on, with
 `accept`, `accept_with_correction`, `downgrade` and `into_task` all accepting),

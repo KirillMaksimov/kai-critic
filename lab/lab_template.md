@@ -111,8 +111,10 @@ was sealed before he saw the file.
 | Wave | # | Lens | Sev | Predicted usefulness | His mark | Agreed | Predicted decision | His decision | Whose fix |
 |---|---|---|---|---|---|---|---|---|---|
 
-**The main thread's block** — findings it decided itself and showed as a row.
-Silence is assent; a correction is an amendment or an overturn.
+**The main thread's block** — findings it decided itself and showed as a row:
+in the body when the row needs the owner, in the appendix otherwise. Silence is
+assent in the body; an appendix row left alone is unread. A correction is an
+amendment or an overturn.
 
 | Wave | # | Lens | Sev | What the main thread chose | His correction | Accepted / amended / overturned |
 |---|---|---|---|---|---|---|
