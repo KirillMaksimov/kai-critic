@@ -741,8 +741,13 @@ rows, silence meant he had not read them — all ninety-eight rows of those wave
 had been counted as accepted, and the number measured nothing. A short list of
 what matters he reads. So in the body, once he has returned the file, a row
 without a correction stands. An appendix row he left alone is recorded as
-**unread**, never as accepted; one he corrected counts like any correction. A
-correction either amends your decision or overturns it (step 4). He may also
+**unread**, never as accepted; one he corrected counts like any correction.
+Only his own words make an appendix row read: when he says, in chat or in the
+file, that he went through those rows, his words go into the record (§6), and
+a row they cover that he left alone stands — counted apart from the body's, on
+his word. Never infer it, and never ask him for it: an unread appendix row is
+not a gap in his answers. A correction either amends your decision or
+overturns it (step 4). He may also
 take a row back from either place: it is then written out in full in his block,
 renumbered, and ruled on like the rest.
 
@@ -881,7 +886,8 @@ them; in chat, the headline and the numbers, not the tables again.
   exact or wider) · **overturned** (a different decision replaces yours) — and
   beside the table the counts he reads it by: for the body, decisions accepted ·
   amended · overturned; for the appendix, how many rows it held, how many he
-  corrected, and how many stayed unread; plus the rows he took back.
+  corrected, how many he said he had read and left alone, and how many stayed
+  unread; plus the rows he took back.
 
 Name the disagreements plainly and do not argue them — a disagreement is a
 labelled example, which is worth more than being right.
@@ -960,7 +966,11 @@ difference between a file and a dialog; that difference is gone.
   took; for yours, `placed: appendix` on every row that stood in the appendix,
   and `correction`: `accepted` for every **body** row he left alone, `amended` or
   `overturned` for a row he corrected wherever it stood — an appendix row he
-  left alone carries no `correction` at all, because it was not read). "Your choice" is `fix: delegated`,
+  left alone carries no `correction` at all, because it was not read; if he
+  said in so many words that he had read appendix rows, the wave's
+  `appendix_read` quotes him verbatim, says where — `chat` or `file` — and
+  names the rows, `all` or their ids, and those rows still carry no
+  `correction`). "Your choice" is `fix: delegated`,
   never `mine`; "when I see it" is `ruling: until_shown`; a row he took back
   moves to `block: owner` with `returned: true`. A finding you removed carries
   `status: removed` with the refutation that removed it; one set aside in step 1
@@ -987,8 +997,10 @@ difference between a file and a dialog; that difference is gone.
   `check` refuses a record that does not hold together — a topic attributed to a
   run that never named it, a removal with no refutation, a lens outside the three,
   an owner's mark on a row of your own block, the vocabulary of one skill era in a
-  record of the other, a reach it cannot read. Each of those, unvalidated, yields
-  a plausible number rather than an error. `stats` prints refutations and
+  record of the other, a reach it cannot read, `accepted` on an appendix row, an
+  `appendix_read` without his words or naming a row that is not in the
+  appendix. Each of those, unvalidated, yields a plausible number rather than
+  an error. `stats` prints refutations and
   set-asides apart, and `reach` groups his marks by the reach they were shown
   with — the question the reach line exists to answer.
 - **The lab** *(if there is one)*: lens ledger row **from the tool's output, not
@@ -1037,8 +1049,10 @@ difference between a file and a dialog; that difference is gone.
     rule on. Not fixing, a task and "when I see it" are out as well.
   - **your own decisions** = accepted · amended · overturned, over the rows of
     your block that stood in the body, with the rows he took back beside them;
-    and beside that, the appendix — rows, corrections, unread. An unread row is
-    never an accepted one.
+    and beside that, the appendix — rows, corrections, rows accepted on his
+    word, unread. An unread row is never an accepted one, and a row accepted on
+    his word is counted with neither the body's accepted nor the unread: three
+    kinds of uncorrected row, never added up.
   Read them together. A low agreement with a high usefulness means the lenses are
   fine and your triage is not. A low fix hit rate means the lenses find the right
   things and you keep reaching for the wrong instrument — usually the small one.

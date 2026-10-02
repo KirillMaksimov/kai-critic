@@ -113,8 +113,9 @@ was sealed before he saw the file.
 
 **The main thread's block** — findings it decided itself and showed as a row:
 in the body when the row needs the owner, in the appendix otherwise. Silence is
-assent in the body; an appendix row left alone is unread. A correction is an
-amendment or an overturn.
+assent in the body; an appendix row left alone is unread, unless he said in his
+own words that he read it — then it is accepted on his word, counted apart. A
+correction is an amendment or an overturn.
 
 | Wave | # | Lens | Sev | What the main thread chose | His correction | Accepted / amended / overturned |
 |---|---|---|---|---|---|---|

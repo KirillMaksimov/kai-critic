@@ -711,6 +711,66 @@ check("до 0.14.0 — не эпоха тела и приложения",
       ws.wave_stats(wave(charter_version="0.10.1", skill_version="0.10.1"))["placement"], False)
 
 
+# ------------------------- appendix rows he said he read (`appendix_read`, 0.17.0+)
+
+# His words make an appendix row read; silence still does not. A row he said he
+# read and did not correct is counted apart from the body's accepted and from
+# the unread, and a corrected row stays corrected whatever he said of the rest.
+SAID = {"where": "chat", "date": "2026-10-02", "quote": "Решения посмотрел, согласен"}
+
+
+def placed_wave(said) -> ws.Wave:
+    return wave(charter_version="0.14.0", skill_version="0.14.0", appendix_read=said, findings=[
+        agent_row("N1", "T2", correction="accepted"),
+        agent_row("N2", "T2", placed="appendix"),
+        agent_row("N3", "T3", placed="appendix"),
+        agent_row("N4", "T2", placed="appendix", correction="amended"),
+    ])
+
+
+def problems_about(said, needle="appendix_read") -> int:
+    return len([p for p in ws.validate(placed_wave(said)) if needle in p])
+
+
+all_read = placed_wave([{**SAID, "rows": "all"}])
+check("высказывание обо всём приложении проходит", ws.validate(all_read), [])
+s_all = ws.wave_stats(all_read)
+check("по слову — все непоправленные строки приложения", s_all["appendix_read"], 2)
+check("поправленная остаётся поправленной", s_all["appendix_corrected"], 1)
+check("по слову — не непрочитанные", s_all["appendix_unread"], 0)
+check("по слову — не принятые в теле", s_all["corrections"]["accepted"], 1)
+check("его слова доходят до stats", s_all["appendix_said"][0]["quote"], SAID["quote"])
+
+some_read = placed_wave([{**SAID, "rows": ["N2"]}])
+check("высказывание о части строк проходит", ws.validate(some_read), [])
+s_some = ws.wave_stats(some_read)
+check("названная строка — по слову", s_some["appendix_read"], 1)
+check("неназванная строка — не прочитана", s_some["appendix_unread"], 1)
+
+silent = ws.wave_stats(placed_wave(None))
+check("без высказывания молчание — не прочитано",
+      (silent["appendix_read"], silent["appendix_unread"]), (0, 2))
+
+check("без слов отвергнуто", problems_about([{"where": "chat", "rows": "all"}], "quote"), 1)
+check("пустые слова отвергнуты", problems_about([{**SAID, "quote": "  ", "rows": "all"}], "quote"), 1)
+check("неизвестное место отвергнуто", problems_about([{**SAID, "where": "call", "rows": "all"}]), 1)
+check("неизвестный ключ отвергнут", problems_about([{**SAID, "rows": "all", "qoute": "x"}]), 1)
+check("без rows отвергнуто", problems_about([SAID]), 1)
+check("несуществующая строка отвергнута", problems_about([{**SAID, "rows": ["N9"]}]), 1)
+check("строка тела отвергнута", problems_about([{**SAID, "rows": ["N1"]}]), 1)
+check("поправленная строка отвергнута", problems_about([{**SAID, "rows": ["N4"]}]), 1)
+check("не список отвергнут", problems_about({**SAID, "rows": "all"}), 1)
+check("высказывание ни о чём отвергнуто",
+      len([p for p in ws.validate(wave(charter_version="0.14.0", skill_version="0.14.0",
+                                       appendix_read=[{**SAID, "rows": "all"}],
+                                       findings=[agent_row("N1", "T2", correction="accepted")]))
+           if "appendix_read" in p]), 1)
+check("принятая по слову строка считается принятой у руки",
+      ws._counts_as_accepted(all_read, next(f for f in all_read.findings if f.id == "N2")), True)
+check("непрочитанная строка у руки не считается",
+      ws._counts_as_accepted(some_read, next(f for f in some_read.findings if f.id == "N3")), False)
+
+
 # ------------------------------------------------------------ the shipped template
 
 # The template is the first record anyone copies. If it does not pass the check it

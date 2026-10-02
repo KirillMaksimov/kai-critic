@@ -114,6 +114,18 @@ CORRECTIONS = ("accepted", "amended", "overturned")
 PLACES = ("body", "appendix")
 PLACEMENT_FROM = (0, 14, 0)
 
+# Only his own words make an appendix row read. When he says -- in chat, or in
+# the review file, over the appendix or in one row's slot -- that he went
+# through those rows, the
+# wave's `appendix_read` quotes him, says where, and names the rows (`all`, or
+# their ids). A row it covers that he did not correct stands, as it would in the
+# body; but it stood where silence means nothing, so it is counted apart from
+# both the body's "accepted" and the unread. The rows themselves carry no
+# `correction`: he corrected nothing, and the evidence is the quote, once.
+READ_WHERE = ("chat", "file")
+READ_WHERE_NAMES = {"chat": "чат", "file": "файл разбора"}
+READ_KEYS = ("where", "date", "quote", "rows")
+
 # The charter version that removed the seven-finding cap. Waves under an earlier
 # charter are a different population and are reported apart: comparing across a
 # charter change is exactly what such a change makes illegal.
@@ -308,6 +320,31 @@ class Wave:
         each optional. Subagent tokens live in `tokens.total`."""
         mt = self.raw.get("main_thread")
         return mt if isinstance(mt, dict) else {}
+
+    @property
+    def appendix_read(self) -> list[dict]:
+        """The owner's statements that he read appendix rows, as recorded. A
+        malformed field reads as none here; `check` refuses it."""
+        said = self.raw.get("appendix_read")
+        return [s for s in said if isinstance(s, dict)] if isinstance(said, list) else []
+
+    @property
+    def read_by_word(self) -> set[str]:
+        """Appendix rows he said he had read and did not correct. A row he
+        corrected is counted as corrected whatever he said about the rest."""
+        rows = {
+            f.id for f in self.findings
+            if f.status == "shown" and f.block == "agent" and f.placed == "appendix"
+            and not f.correction
+        }
+        out: set[str] = set()
+        for said in self.appendix_read:
+            covered = said.get("rows")
+            if covered == "all":
+                out |= rows
+            elif isinstance(covered, list):
+                out |= {str(i) for i in covered} & rows
+        return out
 
     @property
     def skill(self) -> str:
@@ -518,6 +555,7 @@ def validate(wave: Wave) -> list[str]:
                     )
 
     problems.extend(_validate_topic_pass(wave))
+    problems.extend(_validate_appendix_read(wave))
 
     run_ids = [r.id for r in wave.runs]
     if len(set(run_ids)) != len(run_ids):
@@ -647,6 +685,64 @@ def _validate_topic_pass(wave: Wave) -> list[str]:
     return problems
 
 
+def _validate_appendix_read(wave: Wave) -> list[str]:
+    """A statement that he read appendix rows is the only thing that turns their
+    silence into assent, so it must carry his words and say which rows it is
+    about. A statement naming a row it cannot be about -- a body row, a row of his
+    block, a row he overturned -- is a record contradicting itself."""
+    said = wave.raw.get("appendix_read")
+    if said is None:
+        return []
+    if not isinstance(said, list):
+        return ["`appendix_read` — ожидается список его высказываний: [{where, date, quote, rows}]"]
+    by_id = {f.id: f for f in wave.findings}
+    problems: list[str] = []
+    for i, st in enumerate(said, 1):
+        at = f"`appendix_read`, высказывание {i}"
+        if not isinstance(st, dict):
+            problems.append(f"{at}: ожидается {{where, date, quote, rows}}")
+            continue
+        problems.extend(
+            f"{at}: `{k}` — известны только {', '.join(READ_KEYS)}" for k in st if k not in READ_KEYS
+        )
+        if st.get("where") not in READ_WHERE:
+            problems.append(
+                f"{at}: `where: {st.get('where')}` — допустимо {'/'.join(READ_WHERE)}: "
+                "где он это сказал"
+            )
+        quote = st.get("quote")
+        if not isinstance(quote, str) or not quote.strip():
+            problems.append(
+                f"{at}: нет `quote` — прочитанной строку приложения делают только его "
+                "слова, дословно; без них это молчание, записанное как согласие"
+            )
+        rows = st.get("rows")
+        if rows != "all" and not (isinstance(rows, list) and rows):
+            problems.append(f"{at}: `rows` — `all` или непустой список id строк приложения")
+            continue
+        for rid in rows if isinstance(rows, list) else []:
+            f = by_id.get(str(rid))
+            if f is None:
+                problems.append(f"{at}: строки {rid} в записи нет")
+            elif not (f.status == "shown" and f.block == "agent" and f.placed == "appendix"):
+                problems.append(
+                    f"{at}: {rid} — не строка приложения; в теле молчание и так согласие, "
+                    "а у его блока свои ответы"
+                )
+            elif f.correction:
+                problems.append(
+                    f"{at}: {rid} несёт `correction: {f.correction}` — поправленная строка "
+                    "считается поправленной; назвать её прочитанной и принятой значит "
+                    "противоречить поправке"
+                )
+    if not problems and not wave.read_by_word:
+        problems.append(
+            "`appendix_read` не покрывает ни одной строки приложения без поправки — "
+            "записывать нечего, поле опускается"
+        )
+    return problems
+
+
 def _vocab(f: Finding, pairs) -> list[str]:
     return [
         f"находка {f.id}: `{key}: {val}` — допустимо {'/'.join(allowed)}"
@@ -718,7 +814,8 @@ def _validate_usefulness(f: Finding, useful: tuple[str, ...] = USEFUL) -> list[s
             problems.append(
                 f"находка {f.id}: строка из приложения с `correction: accepted` — в "
                 "приложении молчание значит «не прочитано», а не согласие; оставь "
-                "`correction` пустым, если поправки нет"
+                "`correction` пустым, если поправки нет, а если он сам сказал, что "
+                "прочитал, — запиши его слова в `appendix_read`"
             )
     if f.block == "owner" and f.placed:
         problems.append(
@@ -842,15 +939,15 @@ def _counts_as_accepted(wave: Wave, f: Finding) -> bool:
 
     Truth era: the owner's ruling accepted it. Usefulness era: in his block, he
     rated it anything but noise; in the main thread's block, he has returned the
-    file -- an overturned decision is still a finding that was real. Unanswered
-    findings count for nobody in either era.
+    file -- an overturned decision is still a finding that was real -- or said he
+    read the appendix row. Unanswered findings count for nobody in either era.
     """
     if not wave.usefulness_era:
         return f.ruling in ACCEPTING
     if f.status != "shown":
         return False
     if f.block == "agent":
-        return f.correction is not None
+        return f.correction is not None or f.id in wave.read_by_word
     return f.useful is not None and f.useful != "noise"
 
 
@@ -945,19 +1042,23 @@ def wave_stats(wave: Wave) -> dict:
         "authored": wave.authored_in_session,
         "lens_text": wave.lens_text,
         "placement": _version_tuple(wave.skill) >= PLACEMENT_FROM,
+        "appendix_said": wave.appendix_read,
     }
     era = (
-        _usefulness_ratios(shown, wave.useful_vocab)
+        _usefulness_ratios(shown, wave.useful_vocab, wave.read_by_word)
         if wave.usefulness_era
         else _truth_ratios(shown)
     )
     return {**common, **era}
 
 
-def _usefulness_ratios(shown: list[Finding], scale: tuple[str, ...] = USEFUL) -> dict:
+def _usefulness_ratios(
+    shown: list[Finding], scale: tuple[str, ...] = USEFUL, read: set[str] = frozenset()
+) -> dict:
     """Skill 0.9.0 and later: usefulness, two agreements, fix hit rate, and what
     became of the main thread's own decisions. `scale` is the ranks he rated on;
-    a rank he could not choose is left out rather than printed as a zero."""
+    a rank he could not choose is left out rather than printed as a zero. `read`
+    is the appendix rows he said he read and did not correct."""
     owner = [f for f in shown if f.block == "owner"]
     agent = [f for f in shown if f.block == "agent"]
 
@@ -978,12 +1079,14 @@ def _usefulness_ratios(shown: list[Finding], scale: tuple[str, ...] = USEFUL) ->
     took_mine = [f for f in chose if f.fix == "mine"]
 
     # The body is what he reads; the appendix is what he may not. A decision
-    # counts as accepted only where silence could mean assent.
+    # counts as accepted only where silence could mean assent -- in the body, or
+    # in an appendix row he said he read, which is counted apart from both.
     body = [f for f in agent if f.placed != "appendix"]
     appendix = [f for f in agent if f.placed == "appendix"]
     answered = [f for f in body if f.correction]
     corrections = {c: sum(1 for f in answered if f.correction == c) for c in CORRECTIONS}
     appendix_corrected = sum(1 for f in appendix if f.correction in ("amended", "overturned"))
+    appendix_read = sum(1 for f in appendix if f.id in read)
 
     return {
         "shown_owner": len(owner),
@@ -1009,7 +1112,8 @@ def _usefulness_ratios(shown: list[Finding], scale: tuple[str, ...] = USEFUL) ->
         "body": len(body),
         "appendix": len(appendix),
         "appendix_corrected": appendix_corrected,
-        "appendix_unread": len(appendix) - appendix_corrected,
+        "appendix_read": appendix_read,
+        "appendix_unread": len(appendix) - appendix_corrected - appendix_read,
         "returned": sum(1 for f in owner if f.returned),
     }
 
@@ -1205,8 +1309,10 @@ def _print_usefulness(s: dict) -> None:
         )
         print(
             f"  в приложении: {s['appendix']} строк · поправлено {s['appendix_corrected']} · "
-            f"не прочитано {s['appendix_unread']}"
+            f"принято по его слову {s['appendix_read']} · не прочитано {s['appendix_unread']}"
         )
+        for said in s["appendix_said"]:
+            print("  " + _said_line(said))
     else:
         print(
             f"  решения главного потока: без поправки {c['accepted']} · уточнено "
@@ -1218,6 +1324,15 @@ def _print_usefulness(s: dict) -> None:
             "файла, и молчание, по словам владельца,\n  значило «не читал»: «без поправки» "
             "здесь — не согласие."
         )
+
+
+def _said_line(said: dict) -> str:
+    """One statement of `appendix_read`, with his words as he said them."""
+    where = READ_WHERE_NAMES.get(said.get("where"), str(said.get("where")))
+    when = f", {said['date']}" if said.get("date") else ""
+    rows = said.get("rows")
+    which = "все строки приложения" if rows == "all" else ", ".join(map(str, rows or []))
+    return f"его слово ({where}{when}; {which}): «{str(said.get('quote', '')).strip()}»"
 
 
 def cmd_check(args, waves_dir: Path) -> int:
@@ -1349,8 +1464,38 @@ def cmd_ledger(args, waves_dir: Path) -> int:
                         ("mt_tokens", "токены гл")]))
     print("\n  «автор» — объект писала та же сессия, что вела волну (`authored_in_session`);")
     print("  «—» — запись этого не говорит. «отлож» — отложено вне поставки, не опровергнуто.")
+    _print_decisions(useful)
     print()
     return 0
+
+
+def _print_decisions(useful: list[dict]) -> None:
+    """The main thread's own decisions, from the skill that split body and
+    appendix. Three kinds of uncorrected row stand in three columns and are never
+    added up: accepted in the body, accepted on his word in the appendix, unread."""
+    placed = [
+        {**r, **{f"c_{k}": v for k, v in r["corrections"].items()}}
+        for r in useful if r["placement"]
+    ]
+    if not placed:
+        return
+    since = ".".join(map(str, PLACEMENT_FROM))
+    print(f"\n=== Решения главного потока · со скилла {since}, тело и приложение ===\n")
+    print(_table(placed, [("wave", "волна"), ("skill", "скилл"), ("body", "тело"),
+                          ("c_accepted", "принято"), ("c_amended", "уточн"),
+                          ("c_overturned", "измен"), ("returned", "возвр"),
+                          ("appendix", "прил"), ("appendix_corrected", "прил:попр"),
+                          ("appendix_read", "прил:по слову"),
+                          ("appendix_unread", "прил:не прочит")]))
+    print("\n  «принято» — строка тела без поправки: тело он читает, молчание там — согласие.")
+    print("  «прил:по слову» — строка приложения, про которую он сам сказал, что прочитал")
+    print("  (`appendix_read`, слова — в `stats`), и не поправил. «прил:не прочит» — молчание")
+    print("  в приложении. Три столбца не складываются: согласие тела, согласие по слову и")
+    print("  непрочитанное — разные вещи.")
+    before = [r["wave"] for r in useful if not r["placement"]]
+    if before:
+        print(f"  До {since} ({', '.join(before)}) весь блок стоял в теле, и молчание, по словам")
+        print("  владельца, значило «не читал»: эти волны сюда не входят, их счёт — в `stats`.")
 
 
 def cmd_median(args, waves_dir: Path) -> int:

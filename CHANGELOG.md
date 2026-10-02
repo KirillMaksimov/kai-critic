@@ -5,6 +5,58 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.17.0] — 2026-10-02
+
+An appendix row can be recorded as read when the owner says he read it. Since
+0.14.0 an appendix row he left alone counts as unread, because silence over a
+list he does not read means nothing. On the first wave after that, he said in
+chat, about every decision of the main thread's block, that he had looked at
+them and seemed to agree; sixteen of those nineteen rows stood in the appendix.
+The record had no way to say so: `check` rightly refuses `accepted` there, so the
+rows went in without a correction and `stats` printed them as unread — a number
+contradicting what he had said, with the truth kept only in a comment.
+
+### Added
+
+- **`appendix_read` in the wave record** (skill §6, template, `lab/README.md`):
+  a list of his statements that he read appendix rows — where he said it
+  (`chat` or `file`), when, his words verbatim, and which rows (`all`, meaning
+  every appendix row he did not correct, or their ids). The rows themselves
+  keep no `correction`: he corrected nothing, and the evidence is his words,
+  stated once.
+- **A third kind of uncorrected row in the numbers.** `stats` prints the
+  appendix as rows · corrected · **accepted on his word** · unread, with his
+  words under the line; a row he corrected stays corrected whatever he said of
+  the rest. `ledger` gains a table of the main thread's own decisions from
+  0.14.0 on — body accepted, amended, overturned, taken back, and the four
+  appendix counts — and names the earlier waves it leaves out and why. Accepted
+  in the body, accepted on his word and unread stand in three columns and are
+  never added up. On an experimental wave a row accepted on his word counts as
+  answered for its arm, like a corrected one.
+- **`check` refuses a statement that cannot carry that weight**: no quote or an
+  empty one, a place other than `chat` or `file`, an unknown key, a row that
+  does not exist, a row that is not in the appendix, a row he corrected, and a
+  statement that covers no row at all. `accepted` on an appendix row stays
+  refused, and the message now points to `appendix_read`.
+
+### Changed
+
+- **Only his own words make an appendix row read** (skill §5 step 3, step 4's
+  counts, §6's record and the main thread's numbers). Silence there is still
+  unread. The main thread never infers reading — from a quick reply, from rows
+  he must have scrolled past — and never asks him for it: an unread appendix
+  row is not a gap in his answers, and a question about it would turn the
+  appendix back into a list he is made to read.
+
+### Note
+
+The field records what he said, not something a skill asked, so it is legal on
+any record that has appendix rows — the wave that prompted it ran under skill
+0.16.0 and keeps that version. No earlier record changes: without the field
+every uncorrected appendix row is unread, exactly as before. The charter and
+the launch are untouched, so no lens-side number moves; the main thread's
+decision counts gain a column and lose nothing.
+
 ## [0.16.0] — 2026-10-02
 
 Grouped reading becomes the default. Since 0.11.0 it was the arm of one A/B: a
