@@ -5,6 +5,54 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.16.0] — 2026-10-02
+
+Grouped reading becomes the default. Since 0.11.0 it was the arm of one A/B: a
+lens that issues the reads it already knows it needs in one turn, instead of one
+per turn, against the same lens reading as before. The A/B ran on two different
+objects, one topic pass feeding both arms. Both times the batched arm's slowest
+lens finished sooner, the arm found no fewer topics, and the owner found no
+useful finding that only the plain arm had. He accepted the hypothesis, and this
+release makes it the configuration every ordinary run uses.
+
+### Changed
+
+- **Every lens of a `normal` or `enhanced` run carries `READS: batch`** (skill
+  §2, a new *Reading* row beside the topic pass; §3, both levels and the list of
+  what each lens prompt carries). Reading one call per turn is now the factor an
+  `experimental` arm varies by leaving the line out, never something a run does
+  by forgetting it — the same rule the topic pass has. An experimental arm that
+  varies anything else carries the line too, so it measures its factor in the
+  configuration the owner actually runs.
+- **The wave record carries `reads: batch` on every lens of such a run** (skill
+  §6, the template's example and comment). The template's example moves to
+  skill 0.16.0 and shows the field on each run.
+
+### Added
+
+- **`check` refuses a `normal` or `enhanced` wave under skill 0.16.0 or later
+  with a run that has no `reads`.** Without the field the median files the run
+  under the one-call-per-turn series, and nothing anywhere says so. An
+  `experimental` wave may leave it out on purpose; records from older skills
+  are read as they were written. `median` says in its footer which series the
+  default now feeds.
+
+### Note
+
+The charter is untouched, on purpose. Every batched run so far read exactly its
+current text, so the default runs on what was measured, and no new lens-text
+boundary cuts the batched series of the median: by step 0c a lens-side number
+under 0.16.0 compares with every earlier run that read in batches under charter
+0.12.0. The cost is one stale phrase — the charter still says that "an
+experiment may ask" for the line, which an ordinary run now always sends. It is
+left for the next release that changes the charter anyway, so the boundary is
+paid once.
+
+A skill change that touches launch (§§2–3), so lens-side numbers are affected,
+but only through the reading mode the median already splits by: an ordinary
+wave's lenses now join the series of the batched arms instead of the plain one.
+The main thread's ratios are unaffected.
+
 ## [0.15.0] — 2026-10-01
 
 The review file is written to be read one entry at a time, by someone who was

@@ -32,7 +32,7 @@ effort: normal # normal | enhanced | experimental
 # A change to either text cuts ITS numbers off from every wave before it and
 # leaves the other's alone.
 charter_version: '0.9.2'
-skill_version: '0.14.0'
+skill_version: '0.16.0'
 
 # Only when the owner rated on four ranks while an older skill still asked on
 # three — his marks are what the record keeps. Leave it out otherwise: the skill
@@ -90,8 +90,12 @@ runs:
     # than guess: a missing value prints blank, a guessed one reads as measured.
     duration_ms: 780000
     tool_uses: 84
-    # reads: batch — only on a run launched with the `READS: batch` line; omit
-    # otherwise. Such runs are a series of their own in `median`.
+    reads: batch
+    # `reads: batch` goes on every run launched with the `READS: batch` line: from
+    # skill 0.16.0 that is every lens of a normal or enhanced wave, and `check`
+    # refuses such a wave with one missing. Omit only on a run that read one
+    # call per turn — an experimental arm measuring reading, or a wave from
+    # before 0.16.0. Each mode is a series of its own in `median`.
     # extra_topics: 1 — when one finding the lens returned carried two topics;
     # `raw_findings` stays what the lens returned. Omit when every finding had one.
   - id: adv-1
@@ -102,6 +106,7 @@ runs:
     topics: [T2, T3, T4, T11]
     duration_ms: 912000
     tool_uses: 89
+    reads: batch
   - id: aud-1
     lens: auditor
     arm: A
@@ -110,6 +115,7 @@ runs:
     topics: [T5, T6]
     duration_ms: 1050000
     tool_uses: 83
+    reads: batch
 
 # ---------------------------------------------------------------------------
 # One entry per finding AFTER the merge.

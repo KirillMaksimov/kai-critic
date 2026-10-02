@@ -123,6 +123,7 @@ Where another instrument fits better:
 | `EFFORT` | `normal` — the default: one topic pass on Opus, then one run per lens on Sonnet. `enhanced` — one topic pass on Opus, then two runs per lens on Sonnet in the same batch, and a third run offered per lens by saturation (§4). `experimental` — the configuration a hypothesis under test prescribes, run as an A/B on one object (§3). The owner picks; never escalate on your own |
 | `SHAPE` | one sentence: how the object changes the shape of what it replaces ("a self-contained file becomes a long-lived local service"). Passed to every lens verbatim. Omit when nothing is replaced — the lens then derives it |
 | Topic pass | on in `normal` and `enhanced`: `kai-critic:kai-topics` runs first and its merged list reaches every lens as `TOPICS:`. Off only as an experimental arm — whether the pass pays is answered by an arm that runs without it, never by switching it off quietly |
+| Reading | grouped in `normal` and `enhanced`: every lens prompt carries `READS: batch`, so a lens issues the reads it already knows it needs in one turn instead of one per turn. Measured as an A/B on two objects before it became the default: the slowest lens finished sooner, and the batched arm lost no topic the plain arm found. One call per turn only as an experimental arm, never by leaving the line out quietly |
 
 **`blind`:** the artifact and nothing else — inlined in the task message, or one
 named path when it is large. Say explicitly that no other file may be opened.
@@ -205,26 +206,29 @@ anchor on the first and three seats collapse into one with an echo. How many
 calls is set by `EFFORT`:
 
 - **`normal`** — one topic-pass call on Opus, then three lens calls, one per
-  lens, on Sonnet. About a million subagent tokens on a grounded design of
-  ordinary size. Subagent cost barely moves with the cap gone — a lens pays for
-  reading, not for writing — but **your own** cost does: more findings to merge,
-  more refutations to run, a longer pile in your context. The token line the
-  owner sees should say which of the two grew.
+  lens, on Sonnet, each with `READS: batch`. About a million subagent tokens
+  on a grounded design of ordinary size. Subagent cost barely moves with the
+  cap gone — a lens pays for reading, not for writing — but **your own** cost
+  does: more findings to merge, more refutations to run, a longer pile in your
+  context. The token line the owner sees should say which of the two grew.
 - **`enhanced`** — one topic-pass call on Opus, then six lens calls, two per
-  lens, byte-identical prompts within a lens (nothing distinguishes run 1 from
-  run 2 except its result). After the
+  lens, each with `READS: batch`, byte-identical prompts within a lens
+  (nothing distinguishes run 1 from run 2 except its result). After the
   merge (§4) look at each lens on its own: if its second run added at least
   one topic to what its first run found, **offer** the owner a third run of
   that lens, with its cost; a lens whose second run added nothing has
   saturated and is not offered. The third run is never launched unasked.
 - **`experimental`** — an A/B on one object: two configurations that differ in
   **exactly one factor** — the model of a lens, the model of the topic pass,
-  the presence of the topic pass, one sweep question switched off, grouped
-  reading (`READS: batch` in one arm's lens prompts, both arms fed from one
-  topic pass) — same
+  the presence of the topic pass, one sweep question switched off, reading
+  one call per turn (`READS: batch` left out of one arm's lens prompts, both
+  arms fed from one topic pass) — same
   object, same paths, same day, compared at topic level (§4). The hypothesis in
   the lab names the factor and the measure; the run record names the arm each
-  agent belonged to. One factor, or the result cannot be attributed.
+  agent belonged to. One factor, or the result cannot be attributed. Every arm
+  whose factor is not reading carries `READS: batch` as a `normal` run does:
+  an arm that measures something else measures it in the configuration the
+  owner actually runs.
 
 **Models.** Both charters default to Sonnet. `normal` and `enhanced` alike lift
 the topic pass to Opus through the `Agent` tool's `model` parameter. That was
@@ -256,7 +260,8 @@ was run cannot be compared with one that ran without it.
 Identical prompts except `LENS:`. Each carries: `LENS` / `MODE` / `OBJECT`, the
 problem the proposal must solve (written from the beneficiary's world, not the
 author's), the proposal, the readable paths, the unreachable list, the desk
-path from step 0, and in a two-stage run the topics file — the desk and the
+path from step 0, `READS: batch` except in an arm that measures reading, and in
+a two-stage run the topics file — the desk and the
 topics inlined instead of named when `MODE: blind`, so the single-artifact rule
 still holds.
 
@@ -942,7 +947,10 @@ difference between a file and a dialog; that difference is gone.
   `${CLAUDE_PLUGIN_ROOT}/lab/wave_template.yaml`: the runs (one entry per run,
   with its lens, model, arm, **raw findings**, the **topic ids** it named, and
   `duration_ms` and `tool_uses` copied as they stand from the usage line of the
-  agent's result, `reads: batch` on a run launched with that line, and
+  agent's result, `reads: batch` on every run launched with that line, which
+  is every lens of a `normal` or `enhanced` wave (`check` refuses such a wave
+  with one missing: the run would silently join the one-call-per-turn series
+  of the median), and
   `extra_topics` when a finding it returned carried more than one topic — the
   raw count stays what the lens returned, never split to fit), and
   the findings after the merge (topic, the runs it came `from`, severity, axis,

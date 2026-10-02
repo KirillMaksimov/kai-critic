@@ -536,6 +536,32 @@ check("неизвестный режим чтения отвергнут",
       len([p for p in ws.validate(wave(runs=[arm_run("A", "auditor", ["T1"], "fast")]))
            if "reads" in p]), 1)
 
+# From skill 0.16.0 every lens of a normal or enhanced wave reads in batches. A
+# run there without the field is a record that forgot it, and the median would
+# file it under the one-call-per-turn series without a word.
+def default_reads(effort: str, skill: str, reads) -> ws.Wave:
+    return wave(effort=effort, charter_version="0.12.0", skill_version=skill, runs=[
+        arm_run("A", "beneficiary", ["T1"], "batch"),
+        arm_run("A", "adversary", ["T2"], reads),
+        arm_run("A", "auditor", ["T3"], "batch"),
+    ])
+
+
+def reads_problems(w: ws.Wave) -> list[str]:
+    return [p for p in ws.validate(w) if "reads" in p]
+
+
+check("обычная волна 0.16.0 без `reads` у прогона — отказ",
+      len(reads_problems(default_reads("normal", "0.16.0", None))), 1)
+check("усиленная волна 0.16.0 без `reads` у прогона — отказ",
+      len(reads_problems(default_reads("enhanced", "0.16.0", None))), 1)
+check("обычная волна 0.16.0, все прогоны пачками — проходит",
+      ws.validate(default_reads("normal", "0.16.0", "batch")), [])
+check("рука experimental читает по одному на 0.16.0 — проходит",
+      reads_problems(default_reads("experimental", "0.16.0", None)), [])
+check("обычная волна скилла 0.15.0 без `reads` — проходит, как записана",
+      reads_problems(default_reads("normal", "0.15.0", None)), [])
+
 
 # ------------------------------------------ a finding with two topics (0.13.0+)
 

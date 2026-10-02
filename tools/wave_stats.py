@@ -139,6 +139,11 @@ TOPIC_PASS_NONE = "не было"
 # plain arm would otherwise be pooled into the plain series without a word.
 READS_MODES = ("batch",)
 READS_LABELS = {None: "по одному", "batch": "пакетом"}
+# From skill 0.16.0 a `normal` or `enhanced` run passes the line to every lens,
+# so a run there without `reads` is a record that forgot the field -- and the
+# median would file it under "по одному" without a word. An `experimental` arm
+# may leave it out on purpose; older records keep their absent field as written.
+BATCH_DEFAULT_FROM = (0, 16, 0)
 
 # Plugin versions that changed a text the lenses read -- the charter or the topic
 # pass. A lens-side number compares only between runs under one such text (skill
@@ -551,6 +556,15 @@ def validate(wave: Wave) -> list[str]:
             problems.append(
                 f"прогон {r.id}: `reads: {r.reads}` — допустимо только "
                 f"{'/'.join(READS_MODES)}, или поле опускается"
+            )
+        if (r.reads is None and doc.get("effort") in ("normal", "enhanced")
+                and _version_tuple(wave.skill) >= BATCH_DEFAULT_FROM):
+            problems.append(
+                f"прогон {r.id}: нет `reads: batch` — со скилла "
+                + ".".join(map(str, BATCH_DEFAULT_FROM))
+                + " обычная и усиленная волна читают пачками, и без поля прогон "
+                "молча уйдёт в ряд «по одному»; чтение по одному — только рука "
+                "experimental"
             )
 
     known_runs = set(run_ids)
@@ -1361,7 +1375,10 @@ def cmd_median(args, waves_dir: Path) -> int:
     print("  текстом (скилл, шаг 0c). Линзы читают список прохода тем, поэтому их темы")
     print("  сравнимы и только при одной модели прохода. Рука, шедшая со")
     print("  своим проходом, — своя точка ряда (W28/A), уникальность считается внутри руки.")
-    print("  Так же делится и по чтению: рука с `reads: batch` — свой ряд «пакетом».")
+    print("  Так же делится и по чтению: прогоны с `reads: batch` — свой ряд «пакетом».")
+    print("  Со скилла " + ".".join(map(str, BATCH_DEFAULT_FROM)) + " так читает каждая "
+          "обычная и усиленная волна; ряд")
+    print("  «по одному» после неё пополняет только рука experimental, которая меряет чтение.")
     labels = {r["topic_pass"] for r in res["rows"]}
     if TOPIC_PASS_UNRECORDED in labels:
         print(f"  «{TOPIC_PASS_UNRECORDED}» — в записи нет `topic_pass`: прохода не было или его")
