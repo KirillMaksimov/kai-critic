@@ -22,7 +22,8 @@ committed here by accident.
    measures. Rename it as you like.
 2. Create a `waves/` directory beside it.
 3. Set the plugin's **`lab_path`** user config to that file. The skill reads it at
-   step 0b, keeps it out of every run's allowed paths, and passes it to the tool.
+   step 0b, puts it and its `waves/` in the never tier of every run, and passes
+   it to the tool.
 
 The tool accepts either the lab **file** or the **directory** holding it, and looks
 for `waves/` beside it. Point it at the file: that is the type the config field
@@ -36,7 +37,7 @@ python "${CLAUDE_PLUGIN_ROOT}/tools/wave_stats.py" --lab <your lab dir> ledger
 
 or through the `KAI_CRITIC_LAB` environment variable.
 
-> **Never put the lab in a run's allowed paths, and never inline it.** It holds
+> **The lab sits in the never tier of every run, and is never inlined.** It holds
 > the hypotheses under test and the lens ledger; an agent that reads them stops
 > being their test and starts playing to the scoreboard. The desk is the file the
 > agent may read — it teaches how to look. The lab measures whether the looking
@@ -59,7 +60,8 @@ computed from it, and none of them is ever counted by hand.
 | `charter_version` | **the charter the lenses actually ran under** — it decides what they return, and it separates the eras of the lens-side numbers |
 | `skill_version` | **the skill the main thread worked under** — it decides what the owner is asked, and it separates the eras of the main thread's ratios. Required from 0.9.0; a record without it is read as the era before. From 0.10.0 usefulness is rated on four ranks, before it on three |
 | `useful_scale` | optional, `4` only: the owner rated on four ranks while an older skill still asked on three. His marks are what the record keeps; without the field the skill version decides |
-| `note`, `paths` | optional pointers for whoever reads the lab later |
+| `note` | optional pointer to the review note, for whoever reads the lab later — and the list the skill takes the critic's review files from when it fills the never tier |
+| `paths` | what the lenses were granted (skill §2). From 0.18.0 three tiers, each a list of paths: `must_read` (the artifact, its key neighbours, the instructions files that attach on their own), `may_search` (directories that hold the subject — the lens greps there and opens what it finds; may be empty) and `never` (the lab and its `waves/`, the critic's review files, sealed files, `.kai/.critic/`). `check` refuses a `grounded` wave from 0.18.0 without all three, with an empty `must_read` or `never`, or with a readable path inside a never one. Older records keep what they wrote — a count of paths, or one flat list — and the tool reads it as the must-read tier, the only tier there was; `stats` prints the grant either way |
 | `tokens.total`, `tokens.by_arm` | subagent cost; per-arm only on experimental waves |
 | `main_thread` | optional, from 0.13.0: the main thread's own half — `duration_ms` (launch of the topic pass to the review file on disk, from two timestamps) and `tokens` (only when the host reports the session's usage). Either is left out rather than guessed |
 | `authored_in_session` | optional, from 0.13.0: `true` when the session that ran the wave also wrote the object — the authorship confound. `ledger` shows it beside the wave |
@@ -109,7 +111,7 @@ is read when it is invoked.
 |---|---|---|
 | charter 0.6.0 — the cap on findings per lens came off | raw findings, topics, unique topics per lens; `median` reports the two sides apart | — |
 | skill 0.9.0 — "is it true?" became "was it useful?" | precision, triage agreement, fix hit rate: `stats` computes each record by the rules of its own era, and `ledger` prints one table per era with the boundary named between them | everything lens-side, the `median` included — the charter did not move |
-| every later change of the text the lenses read — 0.9.2, 0.10.2, 0.11.0, 0.12.0 (`LENS_TEXT_CHANGES` in the tool) | lens-side numbers across it: from 0.13.0 `median` splits its series by the lens text a record ran under, as skill step 0c always said it should | the main thread's ratios |
+| every later change of the text the lenses read — 0.9.2, 0.10.2, 0.11.0, 0.12.0, 0.18.0 (`LENS_TEXT_CHANGES` in the tool) | lens-side numbers across it: from 0.13.0 `median` splits its series by the lens text a record ran under, as skill step 0c always said it should | the main thread's ratios |
 | skill 0.10.0 — four ranks of usefulness; the topic pass of a `normal` run moved from Sonnet to Opus | the shares of usefulness and the agreement on usefulness (`ledger` prints three and four ranks as two tables); every lens-side number across a change of topic-pass model (`median` splits by the model in `topic_pass`) | the agreement on the decision, the fix hit rate, the main thread's own decisions; lens-side numbers between waves whose topic pass ran on the same model |
 
 **Records from before skill 0.9.0 keep their own vocabulary and stay valid as they

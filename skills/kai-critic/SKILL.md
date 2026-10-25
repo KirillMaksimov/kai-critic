@@ -42,11 +42,11 @@ it supplies the arithmetic. Counting any of it by hand re-introduces exactly the
 error the layer exists to prevent, and the mistake does not raise — it prints a
 plausible number.
 
-> **Never put the lab in a run's allowed paths, and never inline it.** It holds
-> the hypotheses under test and the lens ledger; an agent that reads them stops
-> being their test and starts playing to the scoreboard. The desk is the file
-> the agent may read — it teaches how to look. The lab is what measures whether
-> the looking worked, and it stays behind the agent's back.
+> **The lab sits in the never tier of every run (§2), and is never inlined.** It
+> holds the hypotheses under test and the lens ledger; an agent that reads them
+> stops being their test and starts playing to the scoreboard. The desk is the
+> file the agent may read — it teaches how to look. The lab is what measures
+> whether the looking worked, and it stays behind the agent's back.
 
 **Step 0c — read the lab's hypotheses journal**, if the lab keeps one. It lists
 what is currently believed about the mechanism itself — which model, how many
@@ -137,20 +137,59 @@ the single-path form was measured cheaper by 3× on artifacts with nothing above
 them, and that measurement does not carry to a path inside an instrumented
 repository.
 
-**`grounded`:** list the readable paths — the artifact, plus the neighbours where
-a reader might find that an apparent gap is already closed. Also **name what is
-unreachable** from this session (code in another repo, a generated artifact that
-was never committed); the charter turns claims about those into `## Checks to run`
-instead of findings.
+**`grounded`:** name the paths in **three tiers** — two the lens may read, which
+together are its grant, and one it may not — each path in exactly one of them.
 
-**Then enumerate what the host will attach on its own, and put it in the same
-list.** For every path you name, the standing instructions of that directory and
-of the directories above it reach the lens whether you list them or not. Reading
-them is usually right: when the object under review is a repository's own
-machinery — a skill, a plugin, a pipeline — its instructions are part of what is
-being judged. What is not right is a record that says ten paths when the lens read
-twelve. The wave cannot be reproduced, and the next run cannot be framed the same
-way on purpose. List them, and the record matches what happened.
+1. **must read** — the artifact and its key neighbours, where a reader is most
+   likely to find that an apparent gap is already closed. Every lens reads every
+   one of them, so keep the tier to what every seat needs; a file only one seat
+   might want belongs in the next tier.
+2. **may search** — the directories that hold the subject: the code, the notes,
+   the configuration the artifact describes or changes. The lens greps and globs
+   there and opens what it finds. Name the directory whole rather than picking
+   files out of it. Read and search are both instructions only — the lens's tools
+   reach any file — so the grant is what a disciplined lens will stay inside, and
+   it has to be wide enough to stay inside: the charter tells the lens that an
+   empty search is not an absence, and a lens that obeys a list too narrow to
+   search may report as missing a gap that is closed in the next file, the most
+   expensive thing the critic produces. Seen once: about forty files granted,
+   and four of nine agents searched the whole code folder beyond them, declared
+   it, and were right to — the grant was too small, and the record said forty
+   paths while the lenses read more.
+3. **never** — whatever carries the author's or the critic's own reasoning about
+   the answer: the lab you resolved at step 0b and its `waves/`, every record
+   and sealed file included; every review file of this critic that a readable
+   tier could reach (the records' `note` fields list them where a lab is kept);
+   every sealed file (`W*_sealed.md`) wherever it sits; the run scratch
+   `.kai/.critic/` as a whole (below); and anything else of that kind you know
+   of. Name every one, even where no readable tier contains it: the record then
+   says what was kept back, and a lens is told the boundary rather than left to
+   infer it. A never path inside a may-search directory — a notes repository
+   whose project folder holds the lab — is exactly the case the tier exists for,
+   and the charter tells the lens how to search around it. The one file under a
+   never path a lens does read is the topics file its `TOPICS:` line names (§3).
+
+Also **name what is unreachable** from this session (code in another repo, a
+generated artifact that was never committed); the charter turns claims about
+those into `## Checks to run` instead of findings.
+
+**Then enumerate what the host will attach on its own, and put it in the
+must-read tier.** For every must-read path and every may-search directory, the
+standing instructions of that directory and of the directories above it reach
+the lens whether you list them or not. Reading them is usually right: when the
+object under review is a repository's own machinery — a skill, a plugin, a
+pipeline — its instructions are part of what is being judged. What is not right
+is a record that says ten paths when the lens read twelve. The wave cannot be
+reproduced, and the next run cannot be framed the same way on purpose. List them,
+and the record matches what happened. Instructions files *below* a may-search
+directory are inside the grant already; the lens names the ones it received in
+its `## Run` header.
+
+The wave record keeps all three tiers as you granted them (§6), and each lens
+names in its `## Run` header what it actually opened — the must-read paths it
+read, the files it opened from a search, anything outside the grant. Between
+the two, a wave can be reproduced and the next one framed the same way on
+purpose.
 
 Before launching: **snapshot the input** (copy it into the wave's scratch folder,
 record the commit). The calibration is prospective — the verdict arrives when
@@ -192,9 +231,10 @@ On the first write, lay two things if they are missing:
   ```
 
 The folder outlives its wave, so earlier waves' worksheets sit beside this one,
-findings and all. Never point a lens at `.kai/.critic/` as a whole, at a
-worksheet, or into another wave's folder: a lens that reads an old worksheet has
-been handed a summary of previous runs (§3). And write no instructions file —
+findings and all. That is why `.kai/.critic/` goes into the never tier whole,
+not only this wave's folder: a lens that reads an old worksheet has been handed
+a summary of previous runs (§3). The topics file is the single exception, and
+the `TOPICS:` line is what names it. And write no instructions file —
 a `CLAUDE.md` or its equivalent — anywhere under `.kai/`: the blind rule above
 decides by what attaches to a named path.
 
@@ -222,9 +262,9 @@ calls is set by `EFFORT`:
   **exactly one factor** — the model of a lens, the model of the topic pass,
   the presence of the topic pass, one sweep question switched off, reading
   one call per turn (`READS: batch` left out of one arm's lens prompts, both
-  arms fed from one topic pass) — same
-  object, same paths, same day, compared at topic level (§4). The hypothesis in
-  the lab names the factor and the measure; the run record names the arm each
+  arms fed from one topic pass) — same object, same three tiers, same day,
+  compared at topic level (§4). The hypothesis in the lab names the factor and
+  the measure; the run record names the arm each
   agent belonged to. One factor, or the result cannot be attributed. Every arm
   whose factor is not reading carries `READS: batch` as a `normal` run does:
   an arm that measures something else measures it in the configuration the
@@ -243,9 +283,9 @@ it is an existential check, the class where a cheap tier has produced false
 negatives before.
 
 **Order of launch.** The topic pass goes first — `subagent_type:
-"kai-critic:kai-topics"`, the same problem statement, proposal, paths,
-unreachable list, `SHAPE:` and desk path as a lens would get; one call, two
-only when a hypothesis says so. Merge its list yourself: drop duplicates, keep
+"kai-critic:kai-topics"`, the same problem statement, proposal, three tiers
+of paths, unreachable list, `SHAPE:` and desk path as a lens would get; one
+call, two only when a hypothesis says so. Merge its list yourself: drop duplicates, keep
 every seat tag, cap at forty, number them `T1…`. **Write the merged list once**,
 to `topics.txt` in the wave's scratch folder (`.kai/.critic/W<NN>/`, §2), and
 end the otherwise identical prompt with `TOPICS: <that path>`. Do not retype
@@ -259,8 +299,9 @@ was run cannot be compared with one that ran without it.
 
 Identical prompts except `LENS:`. Each carries: `LENS` / `MODE` / `OBJECT`, the
 problem the proposal must solve (written from the beneficiary's world, not the
-author's), the proposal, the readable paths, the unreachable list, the desk
-path from step 0, `READS: batch` except in an arm that measures reading, and in
+author's), the proposal, the three tiers of paths under their names (`must
+read`, `may search`, `never`), the unreachable list, the desk path from step 0,
+`READS: batch` except in an arm that measures reading, and in
 a two-stage run the topics file — the desk and the
 topics inlined instead of named when `MODE: blind`, so the single-artifact rule
 still holds.
@@ -284,6 +325,12 @@ a counter, now happens here where the paths and the tools are. Budget for it: on
 a grounded object of ordinary size the raw pile is several times what a capped
 run returned, most of the growth sits in the low and medium bands, and a real
 share of it is the same problem said twice.
+
+**Before the five jobs, read each `## Run` header against the grant (§2).** A
+path a lens opened outside both readable tiers is a breach it has named, and the
+charter has already turned what rests on it into a check. A never path it
+opened is worse: that run has read someone's answer, and the review file's
+account of what ran says so, naming the run and the file.
 
 1. **Duplicates, across seats and inside one.** The same finding from two lenses
    *from different sides* goes up in severity, not into a merged blur. The same
@@ -950,7 +997,12 @@ difference between a file and a dialog; that difference is gone.
   after he has ruled is worse than never asking.
 - **The wave record — write this first, because everything else reads it.** One
   YAML file at `<lab>/waves/W<NN>.yaml`, from the template at
-  `${CLAUDE_PLUGIN_ROOT}/lab/wave_template.yaml`: the runs (one entry per run,
+  `${CLAUDE_PLUGIN_ROOT}/lab/wave_template.yaml`: on a `grounded` wave the
+  grant, `paths`, with the three tiers of §2 exactly as the lenses got them —
+  `must_read`, `may_search` and `never`, each a list of paths, the attached
+  instructions files among the must-read (a record from before 0.18.0 keeps the
+  count or the flat list it wrote, and the tool reads it as the must-read tier,
+  the only one there was then); the runs (one entry per run,
   with its lens, model, arm, **raw findings**, the **topic ids** it named, and
   `duration_ms` and `tool_uses` copied as they stand from the usage line of the
   agent's result, `reads: batch` on every run launched with that line, which
@@ -999,8 +1051,9 @@ difference between a file and a dialog; that difference is gone.
   an owner's mark on a row of your own block, the vocabulary of one skill era in a
   record of the other, a reach it cannot read, `accepted` on an appendix row, an
   `appendix_read` without his words or naming a row that is not in the
-  appendix. Each of those, unvalidated, yields a plausible number rather than
-  an error. `stats` prints refutations and
+  appendix, a grounded wave from 0.18.0 whose grant is missing, flat or short
+  of a tier, a readable path inside a never one. Each of those, unvalidated,
+  yields a plausible number or an unreproducible wave rather than an error. `stats` prints refutations and
   set-asides apart, and `reach` groups his marks by the reach they were shown
   with — the question the reach line exists to answer.
 - **The lab** *(if there is one)*: lens ledger row **from the tool's output, not
@@ -1070,8 +1123,11 @@ difference between a file and a dialog; that difference is gone.
   0.10.0 moved the launch: the topic pass of a `normal` wave runs on Opus now,
   so a `normal` wave's lens-side numbers compare only with waves whose topic
   pass ran on the same model. The record says which (`topic_pass`), and
-  `median` splits its series by it. **Your own decisions do not compare across
-  0.14.0**: before it every row stood in the body and his silence was counted as
+  `median` splits its series by it. 0.18.0 moved the lenses' text: a lens
+  searches the subject's directories now rather than reading a list, so
+  `median` starts a new series there, split by lens text as step 0c says.
+  **Your own decisions do not compare across 0.14.0**: before it every row
+  stood in the body and his silence was counted as
   assent, which he has since said meant he had not read them. The tool prints
   those waves' counts as rows without a correction, not as agreement.
 

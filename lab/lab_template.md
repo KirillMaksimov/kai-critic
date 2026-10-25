@@ -6,8 +6,8 @@ it stays wherever your work lives. A plugin update replaces the plugin's own
 directory — anything you keep here is destroyed by the next install.
 
 Set the plugin's `lab_path` user config to the directory you copy it into, and
-the skill will find it, pass it to the tool, and keep it out of every run's
-allowed paths.
+the skill will find it, pass it to the tool, and put it in the never tier of
+every run.
 
 ---
 
@@ -26,7 +26,7 @@ one: a lens that reads "your precision is 0.67, you have a tic about measuring
 reuse" starts suppressing findings not because they are wrong but because it read
 that they are penalised. Goodhart on its own scoreboard.
 
-**Never put this file in a run's allowed paths, and never inline it.**
+**This file sits in the never tier of every run, and is never inlined.**
 
 ---
 

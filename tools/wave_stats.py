@@ -166,7 +166,19 @@ BATCH_DEFAULT_FROM = (0, 16, 0)
 #   0.5.0  sweep, SHAPE / TOPICS / SWEEP lines     0.6.0  no cap on findings
 #   0.9.2  the opening no longer says hold back    0.10.2 the topic list as a file
 #   0.11.0 the READS paragraph                     0.12.0 Reach line, rule 11
-LENS_TEXT_CHANGES = ((0, 5, 0), (0, 6, 0), (0, 9, 2), (0, 10, 2), (0, 11, 0), (0, 12, 0))
+#   0.18.0 three tiers of paths: a lens searches the subject's directories
+LENS_TEXT_CHANGES = (
+    (0, 5, 0), (0, 6, 0), (0, 9, 2), (0, 10, 2), (0, 11, 0), (0, 12, 0), (0, 18, 0)
+)
+
+# What the lenses were granted (skill §2). From skill 0.18.0 a grounded run grants
+# three tiers -- must read, may search, never -- and the record keeps all three,
+# each a list of paths. Before it the grant was one list, and a record kept either
+# that list or only its length: both read as the must-read tier, the only tier
+# there was, and the other two are unknown rather than empty.
+TIERS = ("must_read", "may_search", "never")
+TIERS_FROM = (0, 18, 0)
+TIER_LABELS = {"must_read": "обязательно", "may_search": "искать в", "never": "никогда"}
 
 # The owner's standing ruling (charter rule 11, skill 0.12.0): findings about his
 # plans, a later delivery or state not yet created are set aside rather than
@@ -320,6 +332,25 @@ class Wave:
         each optional. Subagent tokens live in `tokens.total`."""
         mt = self.raw.get("main_thread")
         return mt if isinstance(mt, dict) else {}
+
+    @property
+    def grant(self) -> dict | None:
+        """What the lenses were granted, as three tiers whatever form the record
+        wrote it in: each tier a list of paths, or -- for a record that kept only
+        a count -- that count in `must_read`. A flat list or a count reads as
+        the must-read tier and leaves the other two None, not empty: nobody
+        recorded them. `form` says which shape the record used. None when there
+        is no `paths`, or it cannot be read; `check` refuses the latter."""
+        p = self.raw.get("paths")
+        if p is None or isinstance(p, bool):
+            return None
+        if isinstance(p, int):
+            return {"form": "count", "must_read": p, "may_search": None, "never": None}
+        if isinstance(p, list):
+            return {"form": "list", "must_read": list(p), "may_search": None, "never": None}
+        if isinstance(p, dict):
+            return {"form": "tiers", **{t: p.get(t) for t in TIERS}}
+        return None
 
     @property
     def appendix_read(self) -> list[dict]:
@@ -556,6 +587,7 @@ def validate(wave: Wave) -> list[str]:
 
     problems.extend(_validate_topic_pass(wave))
     problems.extend(_validate_appendix_read(wave))
+    problems.extend(_validate_paths(wave))
 
     run_ids = [r.id for r in wave.runs]
     if len(set(run_ids)) != len(run_ids):
@@ -741,6 +773,98 @@ def _validate_appendix_read(wave: Wave) -> list[str]:
             "записывать нечего, поле опускается"
         )
     return problems
+
+
+def _norm_path(p: str) -> str:
+    return p.strip().replace("\\", "/").rstrip("/")
+
+
+def _within(path: str, root: str) -> bool:
+    """True when `path` is `root` or lies under it -- by the text of the two
+    paths, which is all a record holds."""
+    a, b = _norm_path(path), _norm_path(root)
+    return a == b or a.startswith(b + "/")
+
+
+def _validate_paths(wave: Wave) -> list[str]:
+    """The grant must say what the lenses could read and what they could not.
+    Before skill 0.18.0 `paths` was an optional pointer -- a count or one list --
+    and stays legal as written. From 0.18.0 a grounded wave carries three tiers:
+    without them the record cannot be reproduced, and a flat list would be read
+    as must-read only, hiding what the lenses were allowed to search."""
+    p = wave.raw.get("paths")
+    tiered_era = _version_tuple(wave.skill) >= TIERS_FROM
+    grounded = wave.raw.get("mode") == "grounded"
+    since = ".".join(map(str, TIERS_FROM))
+    need_tiers = (
+        f"со скилла {since} запись обоснованной волны называет три яруса доступа линз — "
+        "`paths: {must_read, may_search, never}`"
+    )
+    if p is None:
+        return [f"нет `paths` — {need_tiers}"] if grounded and tiered_era else []
+    if isinstance(p, bool) or not isinstance(p, (int, list, dict)):
+        return [
+            f"`paths: {p}` — ожидается {{must_read, may_search, never}}; у записей до "
+            f"{since} — число выданных путей или их список"
+        ]
+    if isinstance(p, int):
+        problems = [f"`paths: {p}` — число путей не бывает отрицательным"] if p < 0 else []
+        if grounded and tiered_era:
+            problems.append(f"`paths: {p}` — одно число вместо ярусов; {need_tiers}")
+        return problems
+    if isinstance(p, list):
+        problems = _tier_items("paths", p)
+        if grounded and tiered_era:
+            problems.append(
+                f"`paths` одним списком — {need_tiers}; плоский список читается как "
+                f"must_read только в записях до {since}"
+            )
+        return problems
+
+    problems = [
+        f"`paths.{k}` — известны только {', '.join(TIERS)}" for k in p if k not in TIERS
+    ]
+    for tier in TIERS:
+        if tier not in p:
+            problems.append(
+                f"`paths`: нет `{tier}` — ярус, которого нет в записи, неотличим от "
+                "забытого; пустой ярус пишется `[]`"
+            )
+            continue
+        val = p[tier]
+        if not isinstance(val, list):
+            problems.append(f"`paths.{tier}` — ожидается список путей")
+            continue
+        problems.extend(_tier_items(f"paths.{tier}", val))
+    must, search, never = (
+        [x for x in p.get(t) or [] if isinstance(x, str) and x.strip()]
+        if isinstance(p.get(t), list) else []
+        for t in TIERS
+    )
+    if "must_read" in p and isinstance(p["must_read"], list) and not must:
+        problems.append("`paths.must_read` пуст — в нём по меньшей мере сам артефакт")
+    if "never" in p and isinstance(p["never"], list) and not never:
+        problems.append(
+            "`paths.never` пуст — в нём по меньшей мере черновик прогонов `.kai/.critic/`, "
+            "а при лаборатории — она сама и её `waves/`"
+        )
+    for tier, readable in (("must_read", must), ("may_search", search)):
+        for path in readable:
+            shut = [n for n in never if _within(path, n)]
+            if shut:
+                problems.append(
+                    f"`paths.{tier}`: {path} лежит в запретном {shut[0]} — путь не может "
+                    "быть и выдан, и запрещён; файл тем (`TOPICS:`) в ярусы не пишется"
+                )
+    return problems
+
+
+def _tier_items(key: str, items: list) -> list[str]:
+    return [
+        f"`{key}`: {item!r} — ожидается непустая строка пути"
+        for item in items
+        if not isinstance(item, str) or not item.strip()
+    ]
 
 
 def _vocab(f: Finding, pairs) -> list[str]:
@@ -1043,6 +1167,7 @@ def wave_stats(wave: Wave) -> dict:
         "lens_text": wave.lens_text,
         "placement": _version_tuple(wave.skill) >= PLACEMENT_FROM,
         "appendix_said": wave.appendix_read,
+        "grant": wave.grant,
     }
     era = (
         _usefulness_ratios(shown, wave.useful_vocab, wave.read_by_word)
@@ -1326,6 +1451,28 @@ def _print_usefulness(s: dict) -> None:
         )
 
 
+def _grant_line(grant: dict) -> str:
+    """What the lenses were granted, in one line. A record from before the tiers
+    says so, rather than printing the old count as if it were the must-read tier
+    of a three-tier grant with two empty tiers."""
+    must = grant["must_read"]
+    if grant["form"] != "tiers":
+        n = must if grant["form"] == "count" else len(must)
+        return (
+            f"Доступ линз: выдано путей {n} — запись до трёх ярусов (скилл до "
+            + ".".join(map(str, TIERS_FROM))
+            + "), читается как «обязательно»; что можно было искать и что запрещено, "
+            "не записано"
+        )
+    search = grant["may_search"] or []
+    return (
+        f"Доступ линз: {TIER_LABELS['must_read']} {len(must or [])} · "
+        f"{TIER_LABELS['may_search']} {len(search)}"
+        + (f" ({', '.join(map(str, search))})" if search else "")
+        + f" · {TIER_LABELS['never']} {len(grant['never'] or [])}"
+    )
+
+
 def _said_line(said: dict) -> str:
     """One statement of `appendix_read`, with his words as he said them."""
     where = READ_WHERE_NAMES.get(said.get("where"), str(said.get("where")))
@@ -1371,6 +1518,8 @@ def cmd_stats(args, waves_dir: Path) -> int:
     )
     if s["authored"] is not None:
         print(f"Объект писала эта же сессия: {_fmt(s['authored'])}\n")
+    if s["grant"] is not None:
+        print(_grant_line(s["grant"]) + "\n")
     print("Четыре счёта волны:")
     print(f"  сырых от всех линз : {s['raw_total']}")
     print(f"  после сведения     : {s['after_merge']}")
