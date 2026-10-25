@@ -771,6 +771,88 @@ check("непрочитанная строка у руки не считаетс
       ws._counts_as_accepted(some_read, next(f for f in some_read.findings if f.id == "N3")), False)
 
 
+# ------------------------------------------------------------ the grant, three tiers
+
+# From skill 0.18.0 a grounded wave records what the lenses could read in three
+# tiers. A record from before keeps the count or the flat list it wrote, and both
+# read as the must-read tier -- the only tier there was. Without the tiers the
+# wave cannot be framed the same way twice, and a flat list read as the whole
+# grant would hide that the lenses were allowed to search.
+TIERED = {
+    "must_read": ["docs/design.md", "CLAUDE.md"],
+    "may_search": ["src/", "notes/"],
+    "never": ["notes/lab.md", "notes/waves/", ".kai/.critic/"],
+}
+
+
+def granted(paths=..., skill="0.18.0", mode="grounded") -> ws.Wave:
+    over = {"charter_version": skill, "skill_version": skill, "mode": mode}
+    if paths is not ...:
+        over["paths"] = paths
+    return wave(**over)
+
+
+def grant_problems(paths=..., skill="0.18.0", mode="grounded") -> int:
+    return len([p for p in ws.validate(granted(paths, skill, mode)) if "paths" in p])
+
+
+# old records stay valid as written, and read as the must-read tier
+check("до 0.18.0: число путей законно", grant_problems(40, skill="0.17.0"), 0)
+check("до 0.18.0: плоский список законен", grant_problems(["a.md", "b.md"], skill="0.17.0"), 0)
+check("до 0.18.0: без paths законно", grant_problems(skill="0.17.0"), 0)
+check("до 0.18.0: три яруса тоже законны", grant_problems(TIERED, skill="0.17.0"), 0)
+check("число читается как «обязательно»", granted(40, skill="0.17.0").grant,
+      {"form": "count", "must_read": 40, "may_search": None, "never": None})
+check("плоский список читается как «обязательно»", granted(["a.md"], skill="0.17.0").grant,
+      {"form": "list", "must_read": ["a.md"], "may_search": None, "never": None})
+check("без paths доступа нет", granted(skill="0.17.0").grant, None)
+check("три яруса читаются как есть", granted(TIERED).grant, {"form": "tiers", **TIERED})
+
+# from 0.18.0 a grounded wave must carry all three
+check("0.18.0: три яруса проходят", grant_problems(TIERED), 0)
+check("0.18.0: без paths отвергнуто", grant_problems(), 1)
+check("0.18.0: число вместо ярусов отвергнуто", grant_problems(40), 1)
+check("0.18.0: плоский список отвергнут", grant_problems(["a.md"]), 1)
+check("0.18.0: слепой волне ярусы не нужны", grant_problems(mode="blind"), 0)
+check("нет яруса — отвергнуто",
+      grant_problems({k: v for k, v in TIERED.items() if k != "may_search"}), 1)
+check("пустой «искать» законен", grant_problems({**TIERED, "may_search": []}), 0)
+check("пустой «обязательно» отвергнут", grant_problems({**TIERED, "must_read": []}), 1)
+check("пустой «никогда» отвергнут", grant_problems({**TIERED, "never": []}), 1)
+check("неизвестный ярус отвергнут", grant_problems({**TIERED, "maybe": ["x/"]}), 1)
+check("ярус не списком отвергнут", grant_problems({**TIERED, "may_search": "src/"}), 1)
+check("пустая строка пути отвергнута", grant_problems({**TIERED, "must_read": ["a.md", " "]}), 1)
+check("отрицательное число отвергнуто", grant_problems(-1, skill="0.17.0"), 1)
+check("строка вместо paths отвергнута", grant_problems("forty", skill="0.17.0"), 1)
+
+# a path cannot be both granted and shut; a shut path inside a searched one is the
+# case the never tier exists for
+check("«обязательно» внутри запретного отвергнуто",
+      grant_problems({**TIERED, "must_read": ["docs/design.md", ".kai/.critic/W27/topics.txt"]}), 1)
+check("«искать» внутри запретного отвергнуто",
+      grant_problems({**TIERED, "may_search": ["notes/waves/2026/"]}), 1)
+check("запретное внутри «искать» законно", grant_problems(TIERED), 0)
+check("обратные косые черты сводятся к прямым",
+      grant_problems({**TIERED, "must_read": ["docs/design.md", ".kai\\.critic\\W1\\in.md"]}), 1)
+check("общий префикс — не вложенность",
+      grant_problems({**TIERED, "may_search": ["notes/waves_old/"]}), 0)
+
+# the line `stats` prints, and the lens-text series the tiers start
+check("строка доступа: три яруса", ws._grant_line(granted(TIERED).grant),
+      "Доступ линз: обязательно 2 · искать в 2 (src/, notes/) · никогда 3")
+check("строка доступа: старое число названо старым",
+      "выдано путей 40 — запись до трёх ярусов" in ws._grant_line(granted(40, skill="0.17.0").grant),
+      True)
+check("текст линз 0.17.0 — ещё 0.12.0", ws.lens_text("0.17.0"), "0.12.0")
+check("текст линз 0.18.0 — новый ряд", ws.lens_text("0.18.0"), "0.18.0")
+tiers_median = ws.median_unique([
+    wave(wave="W40", charter_version="0.17.0", skill_version="0.17.0"),
+    wave(wave="W43", charter_version="0.18.0", skill_version="0.18.0", paths=TIERED),
+])
+check("медиана делит ряды до и после трёх ярусов",
+      sorted({r["lens_text"] for r in tiers_median["rows"]}), ["0.12.0", "0.18.0"])
+
+
 # ------------------------------------------------------------ the shipped template
 
 # The template is the first record anyone copies. If it does not pass the check it
@@ -782,6 +864,7 @@ template = ws.parse(yaml.safe_load(template_path.read_text(encoding="utf-8")), t
 check("шаблон записи волны проходит проверку", ws.validate(template), [])
 check("шаблон записи волны — эпохи пользы", template.usefulness_era, True)
 check("шаблон записи волны — четыре ступени пользы", template.useful_scale, 4)
+check("шаблон записи волны — доступ тремя ярусами", (template.grant or {}).get("form"), "tiers")
 
 
 # ----------------------------------------------------------------------- result

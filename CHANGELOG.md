@@ -5,6 +5,70 @@ All notable changes to this plugin are recorded here. The format follows
 `version` field of `.claude-plugin/plugin.json`, and a release is a version bump
 plus an entry here in the same commit.
 
+## [0.18.0] — 2026-10-25
+
+A `grounded` run grants the lenses three tiers of paths instead of one list.
+The list was an instruction only — a lens's tools reach any file — and on one
+wave of about forty listed paths, four of nine agents searched the whole code
+folder beyond it and said so in their headers. The discipline held; the grant
+was too small. The charter's own rule that an empty search is not an absence
+pushes a lens to search, and a lens that obeys a narrow list may report as
+missing a gap closed in the next file — the most expensive error the critic
+makes. Meanwhile the record said forty paths while the lenses read more, so the
+wave could not be framed the same way on purpose. The owner ruled the three
+tiers on 2026-10-25.
+
+### Changed
+
+- **Three tiers** (skill §2, charter §1 and rules 4, 6, 10, the topic pass §1
+  and rule 6): **must read** — the artifact and its key neighbours, read by
+  every lens; **may search** — the directories that hold the subject, where a
+  lens greps, globs and opens what it finds; **never** — whatever carries the
+  author's or the critic's own reasoning about the answer: the lab and its
+  `waves/`, the critic's review files, every sealed file, the scratch
+  `.kai/.critic/` as a whole. The topics file a `TOPICS:` line names is the one
+  file under a never path a lens reads. A never path inside a may-search
+  directory is the case the tier exists for: the lens searches for file names
+  first and opens only the hits outside it.
+- **The lab rule folds into the never tier** (skill step 0b, `README.md`,
+  `lab/README.md`, `lab/lab_template.md`): "never in a run's allowed paths"
+  becomes "in the never tier of every run". The scratch rule of §2 folds in the
+  same way.
+- **Attached instructions files go into the must-read tier.** The paragraph
+  that enumerates what the host attaches on its own keeps its point: the
+  standing instructions at and above every must-read path and every may-search
+  directory reach the lens, and are listed. Those below a may-search directory
+  are inside the grant already, and the lens names the ones it received.
+- **The `## Run` header** of a lens and of the topic pass gains `Opened from
+  search`, and `Paths opened outside the list` becomes `Paths opened outside
+  the grant`, with a `never` mark on a never path. The merge reads every header
+  against the grant first, and a run that opened a never path is named in the
+  review file's account of what ran.
+- **The generic desk** says "within your grant" where it said "within the paths
+  you were given".
+
+### Added
+
+- **The wave record keeps the grant** (skill §6, the template, `lab/README.md`):
+  `paths: {must_read, may_search, never}`, each a list of paths, exactly as the
+  lenses got them. `check` refuses a `grounded` wave from skill 0.18.0 whose
+  `paths` is missing, a count, a flat list or short of a tier, one whose
+  `must_read` or `never` is empty, an unknown tier, a tier that is not a list of
+  paths, and a readable path inside a never one. `stats` prints the grant in one
+  line.
+- **0.18.0 joins the lens-text changes** of the tool: the lenses search now
+  rather than read a list, so `median` starts a new series at it.
+
+### Note
+
+Old records stay valid as written. They kept `paths` as a count of the paths
+granted (every record in use) or, in principle, as one flat list; the tool
+reads either as the must-read tier, the only tier there was, leaves the other
+two unrecorded rather than empty, and `stats` says so instead of printing the
+count as a three-tier grant. The new requirement starts at skill 0.18.0 and
+binds `grounded` waves only. The charter moved, so lens-side numbers do not
+compare across this release; the main thread's ratios are untouched.
+
 ## [0.17.0] — 2026-10-02
 
 An appendix row can be recorded as read when the owner says he read it. Since

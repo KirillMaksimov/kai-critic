@@ -32,16 +32,35 @@ effort: normal # normal | enhanced | experimental
 # A change to either text cuts ITS numbers off from every wave before it and
 # leaves the other's alone.
 charter_version: '0.9.2'
-skill_version: '0.17.0'
+skill_version: '0.18.0'
 
 # Only when the owner rated on four ranks while an older skill still asked on
 # three — his marks are what the record keeps. Leave it out otherwise: the skill
 # version decides.
 # useful_scale: 4
 
-# Optional pointers, for the human reading the lab later.
+# Optional pointer to the review note, for the human reading the lab later. A
+# later run also takes the critic's review files from these for its never tier.
 note: path/to/review-note.md
-paths: 40 # how many paths the run was granted
+
+# What the lenses were granted (skill §2), exactly as they got it. From 0.18.0 a
+# grounded wave carries all three tiers, and `check` refuses one without them:
+#   must_read  — the artifact, its key neighbours, and the instructions files
+#                the host attaches on its own at and above every granted path
+#   may_search — the directories that hold the subject: the lens greps and globs
+#                there and opens what it finds; `[]` when there is none
+#   never      — what carries the author's or the critic's reasoning about the
+#                answer: the lab and its waves/, the critic's review files, the
+#                sealed files, the scratch .kai/.critic/
+# A path inside a never one may not stand in a readable tier; a never path inside
+# a may-search directory is legal — it is what the tier is for. What each lens
+# actually opened is in its `## Run` header, not here. Records from before
+# 0.18.0 keep what they wrote — a count (`paths: 40`) or one flat list — and the
+# tool reads either as the must-read tier, the only one there was.
+paths:
+  must_read: [docs/design/sync_v2.md, docs/decisions.md, CLAUDE.md, src/sync/CLAUDE.md]
+  may_search: [src/sync/, docs/design/]
+  never: [notes/critic_lab.md, notes/waves/, notes/reviews/, .kai/.critic/]
 
 tokens:
   total: 2100000
